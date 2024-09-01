@@ -1,0 +1,8 @@
+.idea/
+.fleet/
+.gradle/
+.kotlin/
+build/
+out/
+local.properties
+*.config.json
