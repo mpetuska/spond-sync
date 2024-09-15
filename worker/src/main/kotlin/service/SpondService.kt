@@ -91,7 +91,7 @@ class SpondService @Inject constructor(
 
     return try {
       val event = client.updateEvent(updatedSpondEvent)
-      if (updatedSpondEvent.matchInfo?.scoresSetEver == true) {
+      if (updatedSpondEvent.matchInfo?.scoresSetEver == true && event.matchInfo != updatedSpondEvent.matchInfo) {
         val matchInfo = checkNotNull(updatedSpondEvent.matchInfo)
         client.updateMatchScore(
           id = updatedSpondEvent.id,
