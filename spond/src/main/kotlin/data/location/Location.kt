@@ -1,15 +1,40 @@
 package spond.data.location
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.json.JsonObject
 import spond.data.WithId
+import spond.data.location.Location.Serializer
 import utils.Identifiable
+import utils.serialization.PreservingJsonSerializer
 
 typealias LocationId = String
 
-@Serializable
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable(Location.Serializer::class)
+@KeepGeneratedSerializer
 data class Location(
-  override val id: LocationId,
-) : Identifiable, WithId {
-  override val identity: String
-    get() = "Location(id=$id)"
+  @SerialName("featureName")
+  private var _featureName: String? = null,
+  @SerialName("feature")
+  private var _feature: String? = _featureName,
+  @SerialName("addressLine")
+  private var _addressLine: String? = null,
+  @SerialName("address")
+  private var _address: String? = _addressLine,
+  @SerialName("#json")
+  private val json: JsonObject,
+) : Identifiable {
+
+  init {
+    _featureName = _featureName ?: _feature
+    _feature = _feature ?: _featureName
+    _addressLine = _addressLine ?: _address
+    _address = _address ?: _addressLine
+  }
+
+  override val identity: String get() = "Location(feature=$feature, address=$address)"
+  val feature get() = checkNotNull(_feature)
+  val address get() = checkNotNull(_address)
+
+  internal object Serializer : PreservingJsonSerializer<Location>(generatedSerializer())
 }

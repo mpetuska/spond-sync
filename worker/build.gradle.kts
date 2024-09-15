@@ -20,10 +20,12 @@ kotlin {
         api(project(":utils"))
         implementation(libs.ktor.client.cio)
         implementation(libs.ktor.client.auth)
+        implementation(libs.ktor.client.logging)
         implementation(libs.ktor.client.content.negotiation)
         implementation(libs.ktor.serialization.kotlinx.json)
         implementation(libs.kermit)
         implementation(libs.dagger)
+        implementation(libs.ksoup)
         implementation(libs.kotlinx.datetime)
       }
     }

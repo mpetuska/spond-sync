@@ -23,6 +23,7 @@ kotlin {
         implementation(libs.kermit)
         implementation(libs.dagger)
         implementation(libs.kotlinx.datetime)
+        implementation(libs.kotlinx.serialization.json)
       }
     }
   }

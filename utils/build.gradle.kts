@@ -14,6 +14,7 @@ kotlin {
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.dagger)
         implementation(libs.ktor.client.core)
+        implementation(libs.kermit)
       }
     }
   }

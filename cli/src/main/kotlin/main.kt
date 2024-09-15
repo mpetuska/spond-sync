@@ -1,6 +1,7 @@
 package cli
 
 import cli.config.DaggerCliComponent
+import co.touchlab.kermit.Severity
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -9,14 +10,15 @@ import worker.WorkerConfig
 import java.io.File
 
 @OptIn(ExperimentalSerializationApi::class)
-suspend fun main() {
-  val config: WorkerConfig = File("cli.config.json").inputStream().use(Json::decodeFromStream)
+suspend fun main(vararg args: String) {
+  val configFile = requireNotNull(args[0])
+  val config: WorkerConfig = File(configFile ).inputStream().use(Json::decodeFromStream)
   val component = DaggerCliComponent.builder()
-    .team(config.team)
-    .spond(config.spond)
-    .sportpress(config.sportpress)
+    .config(config)
+    .logSeverity(Severity.Verbose)
     .build()
 
   val worker = component.worker()
-  worker.syncGroup(config.team, false)
+//  worker.debug()
+  worker.syncGroup(clean = true)
 }

@@ -1,100 +1,85 @@
 package worker
 
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.*
-import spond.Spond
-import spond.data.group.Group
-import spond.data.group.GroupId
 import worker.service.SpondService
-import worker.service.SportpressService
+import worker.service.SyncService
+import worker.service.TimeService
+import worker.util.exit
 import javax.inject.Inject
 
 
 class SyncWorker @Inject constructor(
   private val spondService: SpondService,
-  private val sportpressService: SportpressService,
+  private val syncService: SyncService,
+  private val timeService: TimeService,
   baseLogger: Logger,
-  private val config: WorkerConfig,
+  config: WorkerConfig,
 ) {
   private val log = baseLogger.withTag("SyncWorker")
+  private val groupName = config.spond.group
+  private val teamsSourceToSpond = config.teams
 
-  fun debug() {
-    println("ALL GOOD: $config")
-  }
-
-  suspend fun cleanGroup(name: String) {
-    val group = spondService.findGroup(name)
+  suspend fun cleanGroup() {
+    val group = spondService.findGroup(groupName)
     if (group != null) {
       log.i("Found spond group ${group.identity}")
       log.d { "Cancelling all spond events for ${group.identity}" }
       spondService.cancelAllEvents(group)
       log.i { "Cancelled all spond events for ${group.identity}" }
     } else {
-      exit("Unable to find spond Group(name=$name)")
+      log.exit("Unable to find spond Group(name=$groupName)")
     }
   }
 
   /**
    * Syncs sportpress events to spond.
-   * 1. List spond sub-groups.
-   * 2. Determine sportpress season start date.
-   * 3. Find sportpress season.
-   * 4. Find all sportpress teams.
-   * 5. Find all sportpress events for each team.
    */
-  suspend fun syncGroup(name: String, clean: Boolean = false) {
-    val group = spondService.findGroup(name)
+  suspend fun syncGroup(clean: Boolean = false) {
+    log.d("Looking for spond group by name $groupName")
+    val group = spondService.findGroup(groupName)
     if (group != null) {
       log.i("Found spond group ${group.identity}")
     } else {
-      exit("Unable to find spond Group(name=$name)")
+      log.exit("Unable to find spond group Group(name=$groupName)")
     }
 
     if (clean) {
-      log.d { "Cancelling all spond events for ${group.identity}" }
+      log.d("Cancelling all spond events for ${group.identity}")
       spondService.cancelAllEvents(group)
-      log.i { "Cancelled all spond events for ${group.identity}" }
+      log.i("Cancelled all spond events for ${group.identity}")
     }
 
-    val seasonStartDate = determineSeasonStart(yearOffset = -1)
+    log.d("Determining season start date")
+    val seasonStartDate = determineSeasonStart()
     log.i("Assuming season start at $seasonStartDate")
 
-    val season = sportpressService.findActiveSeason(seasonStartDate)
-    if (season != null) {
-      log.i("Selected sportpress ${season.identity}")
-    } else {
-      exit("No active sportpress season found")
-    }
-
-    val teams = sportpressService.findTeams(season, config.team)
-    if (teams.isNotEmpty()) {
-      log.i("Found ${teams.size} sporkpress teams")
-    } else {
-      exit("No sporkpress teams found")
-    }
-
-    val events = sportpressService.findEvents(season, teams)
-    if (events.isNotEmpty()) {
-      log.i("Found sporkpress events for ${events.size} teams")
-    } else {
-      exit("No sporkpress events found")
-    }
+    val seasonStartInstant = seasonStartDate.toInstant(TimeZone.UTC)
+    val teams = teamsSourceToSpond.mapNotNull { (team, spondTeam) ->
+      val subGroup = group.subGroups.firstOrNull { subGroup -> subGroup.name == spondTeam }
+      if (subGroup == null) {
+        log.w("Unable to find spond subGroup $spondTeam linked to source team $team")
+        null
+      } else {
+        team to subGroup
+      }
+    }.toMap()
+    syncService.sync(
+      seasonStartInstant,
+      group,
+      teams,
+    )
   }
 
-  private fun exit(message: String): Nothing {
-    throw IllegalStateException(message)
-  }
-
-  private fun determineSeasonStart(yearOffset: Int = 0): LocalDateTime {
+  private fun determineSeasonStart(): LocalDateTime {
     val now = Clock.System.now().toLocalDateTime(TimeZone.UTC)
     val year = if (now.month >= Month.AUGUST) {
       now.year
     } else {
       now.year - 1
-    } + yearOffset
+    }
     val month = "${Month.SEPTEMBER.ordinal}".padStart(2, '0')
     val start = LocalDateTime.parse("$year-$month-01T00:00:00")
-    return start
+    return timeService.offset(start)
   }
 }

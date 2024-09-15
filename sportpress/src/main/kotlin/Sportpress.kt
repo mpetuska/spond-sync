@@ -1,12 +1,10 @@
 package sportpress
 
-import co.touchlab.kermit.Logger
 import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-import sportpress.data.calendar.Calendar
 import sportpress.data.event.Event
 import sportpress.data.event.EventId
 import sportpress.data.league.LeagueId
@@ -21,9 +19,7 @@ class Sportpress @Inject constructor(
   credentials: SportpressCredentials,
   baseClient: HttpClient,
   private val json: Json,
-  baseLogger: Logger,
 ) {
-  private val log = baseLogger.withTag("Sportpress")
   private val client = buildHttpClient(baseClient, credentials, json)
 
   /**

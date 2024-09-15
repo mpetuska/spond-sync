@@ -6,7 +6,6 @@ import io.ktor.client.statement.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -24,20 +23,18 @@ inline fun <reified T> HttpClient.paginate(
   var lastValue: T? = null
   while (true) {
     val last = prepareGet {
-      setPage(lastValue, ++page)
       builder()
-    }.execute {
+      setPage(lastValue, ++page)
+    }.execute { response ->
       var emittedValues = 0u
-      it.bodyAsChannel().toInputStream().use { stream ->
-        json.decodeToSequence<T>(
-          stream = stream,
-        ).forEach { value ->
+      response.bodyAsChannel().toInputStream().use { stream ->
+        json.decodeToSequence<T>(stream = stream).forEach { value ->
           lastValue = value
           emittedValues++
           emit(value)
         }
       }
-      isLastPage(page, it, emittedValues)
+      isLastPage(page, response, emittedValues)
     }
     if (last || lastValue == null) break
   }

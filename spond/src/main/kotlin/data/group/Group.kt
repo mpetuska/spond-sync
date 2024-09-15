@@ -11,6 +11,7 @@ data class Group(
   override val id: GroupId,
   val name: String,
   val subGroups: List<SubGroup> = listOf(),
+  val members: List<Member> = listOf(),
 ) : Identifiable, WithId {
   override val identity: String
     get() = "Group(id=$id, name=$name)"

@@ -4,14 +4,13 @@ import kotlinx.serialization.Serializable
 import spond.data.WithId
 import utils.Identifiable
 
-typealias SubGroupId = String
+typealias MemberId = String
 
 @Serializable
-data class SubGroup(
-  override val id: SubGroupId,
-  val name: String,
-  val color: String,
+data class Member(
+  override val id: MemberId,
+  val subGroups: List<SubGroupId>
 ) : Identifiable, WithId {
   override val identity: String
-    get() = "SubGroup(id=$id, name=$name)"
+    get() = "Member(id=$id)"
 }

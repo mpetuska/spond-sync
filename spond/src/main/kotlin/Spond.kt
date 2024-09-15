@@ -2,28 +2,23 @@ package spond
 
 import co.touchlab.kermit.Logger
 import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.auth.*
-import io.ktor.client.plugins.auth.providers.*
-import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.call.body
 import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import spond.data.WithId
 import spond.data.event.Event
 import spond.data.event.EventId
+import spond.data.event.NewEvent
 import spond.data.group.Group
 import spond.data.group.GroupId
 import spond.data.location.AutocompleteLocation
 import spond.data.location.Location
 import spond.data.location.LocationId
-import javax.inject.Inject
-import utils.tokens.TokenHandler
 import utils.http.paginate
+import utils.tokens.TokenHandler
+import javax.inject.Inject
 
 class Spond @Inject constructor(
   credentials: SpondCredentials,
@@ -38,7 +33,7 @@ class Spond @Inject constructor(
   /**
    * Get details of all group memberships and all members of those groups.
    */
-  fun listGroups(): Flow<Group> = paginate {
+  fun listGroups(): Flow<Group> = paginate(UInt.MAX_VALUE) {
     url("groups")
   }
 
@@ -78,6 +73,7 @@ class Spond @Inject constructor(
    * @param subGroupId only include events in this subgroup.
    * @param includeScheduled include scheduled events.
    * @param includeHidden include hidden/cancelled events.
+   * @param includeRepeating include repeating events.
    * @param includeComments return event comments.
    * @param addProfileInfo return full profileInfos.
    * @param minStart only include events which start after or at this datetime.
@@ -93,6 +89,7 @@ class Spond @Inject constructor(
     subGroupId: GroupId? = null,
     includeScheduled: Boolean = false,
     includeHidden: Boolean = false,
+    includeRepeating: Boolean = false,
     includeComments: Boolean = false,
     addProfileInfo: Boolean = false,
     minStart: Instant? = null,
@@ -100,14 +97,15 @@ class Spond @Inject constructor(
     minEnd: Instant? = null,
     maxEnd: Instant? = null,
     descending: Boolean = false,
-    limit: UInt = 100u,
-  ): Flow<Event> = paginate {
+    limit: UInt = 20u,
+  ): Flow<Event> = paginate(limit) {
     url("sponds")
     parameter("groupId", groupId)
     parameter("subGroupId", subGroupId)
     parameter("scheduled", includeScheduled)
     parameter("includeHidden", includeHidden)
     parameter("includeComments", includeComments)
+    parameter("excludeRepeating", !includeRepeating)
     parameter("addProfileInfo", addProfileInfo)
     parameter("minStartTimestamp", minStart)
     parameter("maxStartTimestamp", maxStart)
@@ -117,14 +115,14 @@ class Spond @Inject constructor(
     parameter("max", limit)
   }
 
-//  /**
-//   * Create a new event.
-//   *
-//   * @param newEvent the details of the event to be created.
-//   */
-//  suspend fun createEvent(newEvent: NewEvent): Event = client.post("sponds") {
-//    setBody(newEvent)
-//  }.body()
+  /**
+   * Create a new event.
+   *
+   * @param newEvent the details of the event to be created.
+   */
+  suspend fun createEvent(newEvent: NewEvent): Event = client.post("sponds") {
+    setBody(newEvent)
+  }.body()
 
   /**
    * Get existing event.
@@ -167,7 +165,7 @@ class Spond @Inject constructor(
    *
    * @param search term to lookup.
    */
-  suspend fun autocompleteLocation(search: String): Flow<AutocompleteLocation> = paginate {
+  fun autocompleteLocation(search: String): Flow<AutocompleteLocation> = paginate(UInt.MAX_VALUE) {
     url("locations/autocomplete")
     parameter("keyword", search)
     parameter("sessionToken", null)
@@ -182,13 +180,17 @@ class Spond @Inject constructor(
   }.body()
 
   private inline fun <reified T : WithId> paginate(
+    limit: UInt,
     crossinline builder: HttpRequestBuilder.() -> Unit,
   ): Flow<T> = client.paginate(
     json = json,
     setPage = { lastValue, _ ->
       parameter("prevId", lastValue?.id)
     },
-    isLastPage = { _, _, pageValueCount -> pageValueCount == 0u },
+    isLastPage = { _, _, pageValueCount ->
+      // TODO this should be `pageValueCount == 0u` but for some reason spond is not paginating via `prevId`
+      pageValueCount < limit
+    },
     builder = builder,
   )
 }

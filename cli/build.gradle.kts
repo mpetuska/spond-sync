@@ -27,6 +27,7 @@ kotlin {
         implementation(libs.ktor.serialization.kotlinx.json)
         implementation(libs.kermit)
         implementation(libs.dagger)
+        runtimeOnly(libs.logback)
       }
     }
   }
