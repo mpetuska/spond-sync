@@ -19,6 +19,7 @@ import sportpress.Sportpress
 import sportpress.data.event.Event
 import sportpress.data.season.Season
 import sportpress.data.team.Team
+import sportpress.data.team.TeamId
 import worker.data.SourceEvent
 import worker.util.exit
 import javax.inject.Inject
@@ -87,6 +88,7 @@ class SportpressEventSource @Inject constructor(
     log.v("Extracting teamA and teamB from ${event.name} for ${event.identity}")
     val (teamA, teamB) = event.name.split("&#8211;", limit = 2).map(String::trim)
     val homeMatch = teamA == team.name
+    val (teamAId, teamBId) = event.teams
     log.v { "Extracted teamA=$teamA, teamA=$teamB, homeMatch=$homeMatch for ${event.identity}" }
 
     val description = buildString {
@@ -99,16 +101,58 @@ class SportpressEventSource @Inject constructor(
     val startDate = event.dateGmt.toInstant(GMT)
     return SourceEvent(
       provider = name,
+      id = "${event.id}",
       name = event.name,
       start = startDate,
       end = startDate + TRIANGLE_DURATION,
       description = description,
       teamA = teamA,
+      teamAId = teamAId,
       teamB = teamB,
+      teamBId = teamBId,
       host = host,
       homeMatch = homeMatch,
       address = resolveAddress(event),
+      result = buildResult(event, teamAId, teamBId),
     )
+  }
+
+  private data class TeamResult(
+    val id: TeamId,
+    val sets: UInt,
+    val scores: List<UInt>,
+  )
+
+  private fun buildResult(
+    event: Event,
+    teamAId: TeamId,
+    teamBId: TeamId,
+  ): SourceEvent.Result? {
+    return if (event.results.isEmpty()) {
+      null
+    } else {
+      val teamAScores = event.results.getValue(teamAId).run { listOfNotNull(one, two, three) }
+      val teamBScores = event.results.getValue(teamBId).run { listOfNotNull(one, two, three) }
+      val teamASets = teamAScores.indices.map { if (teamAScores[it] > teamBScores[it]) 1u else 0u }.sum()
+      val teamBSets = teamBScores.indices.map { if (teamAScores[it] < teamBScores[it]) 1u else 0u }.sum()
+      val teamAResult = TeamResult(id = teamAId, sets = teamASets, scores = teamAScores)
+      val teamBResult = TeamResult(id = teamBId, sets = teamBSets, scores = teamBScores)
+
+      val (winner, loser) = if (teamASets > teamBSets) Pair(teamAResult, teamBResult) else Pair(
+        teamBResult,
+        teamAResult
+      )
+
+      SourceEvent.Result(
+        winnerId = if (teamAResult.sets > teamBResult.sets) teamAId else teamBId,
+        loserId = if (teamAResult.sets < teamBResult.sets) teamAId else teamBId,
+        sets = teamAResult.sets + teamBResult.sets,
+        winnerSets = winner.sets,
+        loserSets = loser.sets,
+        winnerScores = winner.scores,
+        loserScores = loser.scores,
+      )
+    }
   }
 
   private suspend fun resolveAddress(event: Event): String {

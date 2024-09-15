@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Instant
 import spond.Spond
 import spond.data.event.Event
+import spond.data.event.MatchScore
 import spond.data.group.Group
 import spond.data.group.MemberId
 import spond.data.group.SubGroup
@@ -47,7 +48,7 @@ class SpondService @Inject constructor(
     groupId = group.id,
     subGroupId = team.id,
     minStart = seasonStart,
-    includeScheduled = false,
+    includeScheduled = true,
     includeHidden = false,
     includeRepeating = false,
     limit = 500u,
@@ -89,7 +90,21 @@ class SpondService @Inject constructor(
     log.d("Prepared merged spond event data for source event ${sourceEvent.identity}")
 
     return try {
-      client.updateEvent(updatedSpondEvent)
+      val event = client.updateEvent(updatedSpondEvent)
+      if (updatedSpondEvent.matchInfo?.scoresSetEver == true) {
+        val matchInfo = checkNotNull(updatedSpondEvent.matchInfo)
+        client.updateMatchScore(
+          id = updatedSpondEvent.id,
+          score = MatchScore(
+            teamScore = matchInfo.teamScore,
+            opponentScore = matchInfo.opponentScore,
+            scoresPublic = matchInfo.scoresPublic,
+            scoresFinal = matchInfo.scoresFinal,
+          )
+        )
+      } else {
+        event
+      }
     } catch (e: ClientRequestException) {
       log.e("Failed to persist spond event update ${updatedSpondEvent.identity}", e)
       null

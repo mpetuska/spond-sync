@@ -1,5 +1,6 @@
 package worker
 
+import co.touchlab.kermit.Severity
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -41,7 +42,11 @@ interface WorkerModule {
     )
 
     @Provides
-    fun httpClient(baseLogger: co.touchlab.kermit.Logger, @Named("debug") debug: Boolean): HttpClient = HttpClient {
+    fun httpClient(
+      baseLogger: co.touchlab.kermit.Logger,
+      severity: Severity,
+      @Named("debug") debug: Boolean,
+    ): HttpClient = HttpClient {
       install(Logging) {
         logger = object : Logger {
           private val log = baseLogger.withTag("KTOR")
@@ -50,7 +55,12 @@ interface WorkerModule {
             log.v(message)
           }
         }
-        level = if (debug) LogLevel.ALL else LogLevel.INFO
+        level =
+          when {
+            severity > Severity.Verbose -> LogLevel.NONE
+            debug -> LogLevel.ALL
+            else -> LogLevel.ALL
+          }
       }
     }
 

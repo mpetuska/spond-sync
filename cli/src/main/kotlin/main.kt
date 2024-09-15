@@ -15,10 +15,10 @@ suspend fun main(vararg args: String) {
   val config: WorkerConfig = File(configFile ).inputStream().use(Json::decodeFromStream)
   val component = DaggerCliComponent.builder()
     .config(config)
-    .logSeverity(Severity.Verbose)
+    .logSeverity(Severity.Debug)
     .build()
 
   val worker = component.worker()
-//  worker.debug()
-  worker.syncGroup(clean = true)
+  worker.syncGroup()
+//  worker.cleanGroup()
 }

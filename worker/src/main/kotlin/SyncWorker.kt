@@ -35,19 +35,13 @@ class SyncWorker @Inject constructor(
   /**
    * Syncs sportpress events to spond.
    */
-  suspend fun syncGroup(clean: Boolean = false) {
+  suspend fun syncGroup() {
     log.d("Looking for spond group by name $groupName")
     val group = spondService.findGroup(groupName)
     if (group != null) {
       log.i("Found spond group ${group.identity}")
     } else {
       log.exit("Unable to find spond group Group(name=$groupName)")
-    }
-
-    if (clean) {
-      log.d("Cancelling all spond events for ${group.identity}")
-      spondService.cancelAllEvents(group)
-      log.i("Cancelled all spond events for ${group.identity}")
     }
 
     log.d("Determining season start date")

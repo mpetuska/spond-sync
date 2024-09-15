@@ -6,6 +6,7 @@ import spond.data.event.Event
 import spond.data.group.Group
 import spond.data.group.SubGroup
 import worker.data.SourceEvent
+import worker.service.EventBuilderService.Companion.extractSourceEventId
 import worker.source.EventSource
 import javax.inject.Inject
 
@@ -29,8 +30,9 @@ class SyncService @Inject constructor(
       start = seasonStart,
     )
     log.i("Fetched source events from ${source.name} for ${sourceEvents.size} teams")
+    val spondSeasonStart = timeService.reset(seasonStart)
     for ((team, events) in sourceEvents) {
-      syncTeam(seasonStart, group, teams.getValue(team), events)
+      syncTeam(spondSeasonStart, group, teams.getValue(team), events)
     }
   }
 
@@ -40,7 +42,7 @@ class SyncService @Inject constructor(
     team: SubGroup,
     events: List<SourceEvent>,
   ) {
-    val eventQueue = events.associateBy(SourceEvent::name).toMutableMap()
+    val eventQueue = events.associateBy(SourceEvent::id).toMutableMap()
     val unmatchedSpondEvents = mutableListOf<Event>()
     log.i("Processing spond events for team ${team.identity}")
 
@@ -50,10 +52,11 @@ class SyncService @Inject constructor(
       seasonStart = seasonStart,
     ).collect { spondEvent ->
       log.i("Processing existing spond event ${spondEvent.identity}")
-      val sourceEvent = eventQueue[spondEvent.name]
+      val spondLocalId = extractSourceEventId(spondEvent)
+      val sourceEvent = spondLocalId?.let(eventQueue::get)
       if (sourceEvent != null) {
         log.d("Matched spond event ${spondEvent.identity} to source event ${sourceEvent.identity}")
-        eventQueue -= sourceEvent.name
+        eventQueue.remove(sourceEvent.id)
       } else {
         log.e("Unable to match spond event ${spondEvent.identity} to source event")
         unmatchedSpondEvents += spondEvent

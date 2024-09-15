@@ -8,9 +8,11 @@ data class MatchInfo(
   val opponentName: String,
   val type: MatchType,
   val teamColour: String? = null,
-  val opponentColour: String?,
+  val opponentColour: String? = null,
   val scoresFinal: Boolean? = null,
   val scoresPublic: Boolean? = null,
   val scoresSet: Boolean? = null,
   val scoresSetEver: Boolean? = null,
+  val teamScore: UInt? = null,
+  val opponentScore: UInt? = null,
 )

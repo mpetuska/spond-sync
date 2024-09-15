@@ -15,7 +15,9 @@ class TimeService @Inject constructor(
 ) {
   private val offset = (365 * config.yearOffset).days
 
-  fun now(): Instant = Clock.System.now() + offset
+  fun now(): Instant = realNow() + offset
+
+  fun realNow(): Instant = Clock.System.now()
 
   fun offset(time: Instant): Instant = time + offset
 

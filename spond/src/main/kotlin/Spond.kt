@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 import spond.data.WithId
 import spond.data.event.Event
 import spond.data.event.EventId
+import spond.data.event.MatchScore
 import spond.data.event.NewEvent
 import spond.data.group.Group
 import spond.data.group.GroupId
@@ -159,6 +160,15 @@ class Spond @Inject constructor(
       reason?.let { parameter("reason", it) }
     }
   }
+
+  /**
+   * Update a given match score.
+   * @param id the [Event.id] of the event to update the score at.
+   * @param score the updates score data.
+   */
+  suspend fun updateMatchScore(id: EventId, score: MatchScore): Event = client.post("sponds/${id}/matchUpdate") {
+    setBody(score)
+  }.body()
 
   /**
    * Autocompletes location candidates from a given [search] term.
