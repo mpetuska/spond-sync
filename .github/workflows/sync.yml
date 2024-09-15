@@ -13,8 +13,9 @@ on:
 env:
   LOG_LEVEL: ${{ github.event.inputs.logLevel }}
 
-permissions:
-  packages: read
+concurrency:
+  group: sync
+  cancel-in-progress: true
 
 jobs:
   sync:
