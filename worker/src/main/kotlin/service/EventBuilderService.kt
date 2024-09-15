@@ -76,8 +76,7 @@ class EventBuilderService @Inject constructor(
   private fun SourceEvent.description() = buildString {
     appendLine(description)
     if (result != null) {
-      val teamId = if (homeMatch) teamAId else teamBId
-      val (scoresA, scoresB, sets) = if (result.winnerId == teamId) {
+      val (scoresA, scoresB, sets) = if (result.winnerId == teamAId) {
         Triple(result.winnerScores, result.loserScores, "${result.winnerSets}-${result.loserSets}")
       } else {
         Triple(result.loserScores, result.winnerScores, "${result.loserSets}-${result.winnerSets}")

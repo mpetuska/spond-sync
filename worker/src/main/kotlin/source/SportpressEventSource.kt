@@ -138,10 +138,11 @@ class SportpressEventSource @Inject constructor(
       val teamAResult = TeamResult(id = teamAId, sets = teamASets, scores = teamAScores)
       val teamBResult = TeamResult(id = teamBId, sets = teamBSets, scores = teamBScores)
 
-      val (winner, loser) = if (teamASets > teamBSets) Pair(teamAResult, teamBResult) else Pair(
-        teamBResult,
-        teamAResult
-      )
+      val (winner, loser) = if (teamASets > teamBSets) {
+        Pair(teamAResult, teamBResult)
+      } else {
+        Pair(teamBResult, teamAResult)
+      }
 
       SourceEvent.Result(
         winnerId = if (teamAResult.sets > teamBResult.sets) teamAId else teamBId,
