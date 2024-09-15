@@ -47,4 +47,4 @@ jobs:
         run: echo '${{ secrets.SYNC_CONFIG }}' > '${{ github.workspace }}/.config'
 
       - name: Sync Data
-        run: ./gradlew :cli:run '${{ github.workspace }}/.config'
+        run: ./gradlew :cli:run --args='${{ github.workspace }}/.config'
