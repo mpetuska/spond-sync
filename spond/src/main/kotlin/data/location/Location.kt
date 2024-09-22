@@ -29,7 +29,7 @@ data class Location(
     _featureName = _featureName ?: _feature
     _feature = _feature ?: _featureName
     _addressLine = _addressLine ?: _address
-    _address = _address ?: _addressLine
+    _address = _address ?: _addressLine ?: _feature
   }
 
   override val identity: String get() = "Location(feature=$feature, address=$address)"

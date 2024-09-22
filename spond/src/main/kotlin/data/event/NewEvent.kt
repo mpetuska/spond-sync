@@ -12,7 +12,7 @@ data class NewEvent(
   @SerialName("heading")
   val name: String,
   val matchInfo: MatchInfo,
-  val location: Location,
+  val location: Location?,
   val recipients: Recipients.New,
   @SerialName("startTimestamp")
   val start: Instant,

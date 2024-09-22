@@ -1,7 +1,7 @@
 package worker
 
 import co.touchlab.kermit.Severity
-import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import io.ktor.client.*
@@ -15,19 +15,35 @@ import utils.tokens.FileTokenHandler
 import utils.tokens.TokenHandler
 import worker.source.EventSource
 import worker.source.SportpressEventSource
+import worker.source.VolleyZoneEventSource
+import worker.util.exit
 import javax.inject.Named
 
 @Module
 interface WorkerModule {
-  @Binds
-  fun eventSource(impl: SportpressEventSource): EventSource
-
   companion object {
     @Provides
     fun spondConfig(config: WorkerConfig): WorkerConfig.Spond = config.spond
 
     @Provides
-    fun sportpressConfig(config: WorkerConfig): WorkerConfig.Sportpress = config.sportpress
+    fun sportpressConfig(config: WorkerConfig): WorkerConfig.Sportpress = checkNotNull(config.sportpress)
+
+    @Provides
+    fun volleyzoneConfig(config: WorkerConfig): WorkerConfig.Volleyzone = checkNotNull(config.volleyzone)
+
+    @Provides
+    fun eventSource(
+      config: WorkerConfig,
+      sportpress: Lazy<SportpressEventSource>,
+      volleyzone: Lazy<VolleyZoneEventSource>,
+      logger: co.touchlab.kermit.Logger,
+    ): EventSource {
+      return when (config.source) {
+        "sportpress" -> sportpress.get()
+        "volleyzone" -> volleyzone.get()
+        else -> logger.exit("Event source ${config.source} is invalid.")
+      }
+    }
 
     @Provides
     fun spondCredentials(config: WorkerConfig.Spond): SpondCredentials = SpondCredentials(

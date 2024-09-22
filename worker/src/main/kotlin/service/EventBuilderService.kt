@@ -1,5 +1,6 @@
 package worker.service
 
+import co.touchlab.kermit.Logger
 import kotlinx.datetime.Instant
 import spond.data.event.Event
 import spond.data.event.MatchInfo
@@ -19,7 +20,9 @@ class EventBuilderService @Inject constructor(
   private val locationService: LocationService,
   private val timeService: TimeService,
   config: WorkerConfig.Spond,
+  baseLogger: Logger,
 ) {
+  private val log = baseLogger.withTag("EventBuilderService")
   private val maxAccepted = config.maxAccepted
   private val invitationDayBeforeStart = config.invitationDayBeforeStart
   private val rsvpDeadlineBeforeStart = config.rsvpDeadlineBeforeStart
@@ -81,9 +84,11 @@ class EventBuilderService @Inject constructor(
       } else {
         Triple(result.loserScores, result.winnerScores, "${result.loserSets}-${result.winnerSets}")
       }
-      appendLine("SETS ($sets):")
-      for (set in scoresA.indices) {
-        appendLine("  - ${scoresA[set].toString().padStart(2)}:${scoresB[set].toString().padStart(2)}")
+      if (scoresA != null && scoresB != null) {
+        appendLine("SETS ($sets):")
+        for (set in scoresA.indices) {
+          appendLine("  - ${scoresA[set].toString().padStart(2)}:${scoresB[set].toString().padStart(2)}")
+        }
       }
     }
     appendLine()
@@ -93,9 +98,13 @@ class EventBuilderService @Inject constructor(
     }
   }
 
-  private suspend fun SourceEvent.location(): Location {
-    return checkNotNull(locationService.resolveSpondLocation(address)) {
-      "Unable to resolve spond location for $identity"
+  private suspend fun SourceEvent.location(): Location? {
+    val resolved = locationService.resolveSpondLocation(address)
+    return if(resolved != null) {
+      resolved
+    } else {
+      log.w("Unable to resolve location from address $address for $identity")
+      null
     }
   }
 

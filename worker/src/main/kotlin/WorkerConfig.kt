@@ -4,13 +4,16 @@ import kotlinx.serialization.Serializable
 
 
 /**
+ * @property source one of "volleyzone" or "sportpress" to determine which source should be used.
  * @property teams a mapping between source team names and spond subgroup name.
  */
 @Serializable
 data class WorkerConfig(
   val spond: Spond,
-  val sportpress: Sportpress,
   val teams: Map<String, String>,
+  val source: String,
+  val sportpress: Sportpress? = null,
+  val volleyzone: Volleyzone? = null,
   val yearOffset: Int = 0,
   val debug: Boolean = false,
 ) {
@@ -38,5 +41,15 @@ data class WorkerConfig(
   data class Sportpress(
     val club: String,
     val apiUrl: String,
+  )
+
+  /**
+   * @property sources a map of named urls to VolleyZone leagues to scrape for events.
+   * @property addresses a mapping between VolleyZone event venue address and full address.
+   */
+  @Serializable
+  data class Volleyzone(
+    val sources: Map<String, String>,
+    val addresses: Map<String, String>,
   )
 }

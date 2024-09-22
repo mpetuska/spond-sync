@@ -27,7 +27,7 @@ data class SourceEvent(
     val sets: UInt,
     val winnerSets: UInt,
     val loserSets: UInt,
-    val winnerScores: List<UInt>,
-    val loserScores: List<UInt>,
+    val winnerScores: List<UInt>?,
+    val loserScores: List<UInt>?,
   )
 }

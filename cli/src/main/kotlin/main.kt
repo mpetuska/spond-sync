@@ -19,6 +19,6 @@ suspend fun main(vararg args: String) {
     .build()
 
   val worker = component.worker()
-  worker.syncGroup()
 //  worker.cleanGroup()
+  worker.syncGroup()
 }
