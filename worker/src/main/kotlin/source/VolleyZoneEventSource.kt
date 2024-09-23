@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
 import kotlinx.datetime.format.MonthNames
@@ -79,22 +80,25 @@ class VolleyZoneEventSource @Inject constructor(
       )
     }.groupBy(VolleyZoneEvent::triangleId).mapValues { (triangleId, events) ->
       val sample = events.first()
-      val startDate = LocalDate.parse(
+      val startDateLocal = LocalDate.parse(
         input = sample.date,
         format = LocalDate.Format {
           dayOfMonth(); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); year()
         }
-      ).atTime(LocalTime.parse(sample.time))
-        .toInstant(GMT)
-        .let(timeService::reset)
+      )
+      val timezone =
+        if (startDateLocal >= LocalDate(startDateLocal.year, Month.MARCH, 25) &&
+          startDateLocal < LocalDate(startDateLocal.year, Month.OCTOBER, 25)
+        ) BST else GMT
+      val start = startDateLocal.atTime(LocalTime.parse(sample.time)).toInstant(timezone)
       val host = events.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
       val address = resolveAddress(host)
       Triangle(
         id = triangleId,
         host = host.homeTeam,
         address = address,
-        start = startDate,
-        end = startDate + TRIANGLE_DURATION,
+        start = start,
+        end = start + TRIANGLE_DURATION,
         teams = events.flatMap { listOf(it.homeTeam, it.awayTeam) }.toSet(),
         events = events.sortedBy(VolleyZoneEvent::id),
       )
@@ -173,6 +177,7 @@ class VolleyZoneEventSource @Inject constructor(
 
   private companion object {
     val GMT = TimeZone.of("GMT")
+    val BST = TimeZone.of("GMT+1")
     val TRIANGLE_DURATION = 4.hours
   }
 

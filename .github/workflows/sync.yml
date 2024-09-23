@@ -43,7 +43,9 @@ jobs:
           java-version: 21
 
       - name: Prepare Config
-        run: echo '${{ secrets.SYNC_CONFIG }}' > '${{ github.workspace }}/.config'
+        run: echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
+        env:
+          SYNC_CONFIG: ${{ secrets.SYNC_CONFIG }}
 
       - name: Sync Data
         run: ./gradlew :cli:run --args='${{ github.workspace }}/.config'
