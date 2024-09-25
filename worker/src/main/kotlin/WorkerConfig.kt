@@ -50,6 +50,6 @@ data class WorkerConfig(
   @Serializable
   data class Volleyzone(
     val sources: Map<String, String>,
-    val addresses: Map<String, String>,
+    val addresses: Map<String, String> = mapOf(),
   )
 }

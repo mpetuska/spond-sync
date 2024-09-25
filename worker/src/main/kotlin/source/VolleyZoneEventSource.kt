@@ -68,6 +68,7 @@ class VolleyZoneEventSource @Inject constructor(
     }
     val eventRows = fixturesTable.getElementsByClass("table-body")
     return eventRows.map { row ->
+      val venue = row.attr("data-venue").trim()
       VolleyZoneEvent(
         id = row.attr("data-comment").trim(),
         date = row.attr("data-date").trim(),
@@ -76,7 +77,9 @@ class VolleyZoneEventSource @Inject constructor(
         awayTeam = row.attr("data-awayteam").trim(),
         homeScore = row.attr("data-homescore").takeIf(String::isNotBlank)?.toUInt(),
         awayScore = row.attr("data-awayscore").takeIf(String::isNotBlank)?.toUInt(),
-        venue = row.attr("data-venue").trim(),
+        venue = venue,
+        venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
+          ?.takeIf { it.startsWith(venue, ignoreCase = true) }
       )
     }.groupBy(VolleyZoneEvent::triangleId).mapValues { (triangleId, events) ->
       val sample = events.first()
@@ -139,9 +142,9 @@ class VolleyZoneEventSource @Inject constructor(
     return if (mapped != null) {
       mapped
     } else {
-      val venue = "${event.venue}, England, United Kingdom"
+      val venue = "${event.venueExtra ?: event.venue}, England, United Kingdom"
       log.w("Unable to map address ${event.venue} for event ${event.id}. Falling back to raw venue $venue")
-      event.venue
+      venue
     }
   }
 
@@ -187,6 +190,7 @@ class VolleyZoneEventSource @Inject constructor(
     val date: String,
     val time: String,
     val venue: String,
+    val venueExtra: String?,
     val homeTeam: String,
     val awayTeam: String,
     val homeScore: UInt?,
