@@ -127,7 +127,7 @@ class VolleyZoneEventSource @Inject constructor(
         teamB = event.awayTeam,
         teamBId = awayTeamId,
         host = triangle.host,
-        homeMatch = event.homeTeam == team,
+        homeMatch = triangle.host == team,
         address = triangle.address,
         result = buildResult(event, homeTeamId, awayTeamId),
       )
@@ -139,8 +139,9 @@ class VolleyZoneEventSource @Inject constructor(
     return if (mapped != null) {
       mapped
     } else {
-      log.exit("Unable to map address ${event.venue} for event ${event.id}")
-      ""
+      val venue = "${event.venue}, England, United Kingdom"
+      log.w("Unable to map address ${event.venue} for event ${event.id}. Falling back to raw venue $venue")
+      event.venue
     }
   }
 
