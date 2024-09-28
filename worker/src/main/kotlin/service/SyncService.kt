@@ -72,24 +72,28 @@ class SyncService @Inject constructor(
       }
     }
 
-    if (eventQueue.isEmpty()) return
-    log.i("Creating new spond event for remaining ${eventQueue.size} source events")
-    val subGroupMembers = group.members.filter { team.id in it.subGroups }.map { it.id }
-    val today = timeService.now()
-    for (sourceEvent in eventQueue.values) {
-      if (sourceEvent.start > today) {
-        log.i("Processing new source event ${sourceEvent.identity}")
-      } else {
-        log.i("Skipping new source event ${sourceEvent.identity} as it has already passed")
-        continue
+    if (eventQueue.isNotEmpty()) {
+      log.i("Creating new spond event for remaining ${eventQueue.size} source events")
+      val subGroupMembers = group.members.filter { team.id in it.subGroups }.map { it.id }
+      val today = timeService.now()
+      for (sourceEvent in eventQueue.values) {
+        if (sourceEvent.start > today) {
+          log.i("Processing new source event ${sourceEvent.identity}")
+        } else {
+          log.i("Skipping new source event ${sourceEvent.identity} as it has already passed")
+          continue
+        }
+        log.v("Creating a new spond event for source event ${sourceEvent.identity}")
+        val created = spond.createEvent(group, team, subGroupMembers, sourceEvent)
+        if (created != null) {
+          log.i("Created a new spond event ${created.identity}")
+        } else {
+          log.w("Failed to create a spond event for source event ${sourceEvent.identity}")
+        }
       }
-      log.v("Creating a new spond event for source event ${sourceEvent.identity}")
-      val created = spond.createEvent(group, team, subGroupMembers, sourceEvent)
-      if (created != null) {
-        log.i("Created a new spond event ${created.identity}")
-      } else {
-        log.w("Failed to create a spond event for source event ${sourceEvent.identity}")
-      }
+    }
+    for (unmatchedEvent in unmatchedSpondEvents) {
+      log.w("Spond event ${unmatchedEvent.identity} could not be matched")
     }
   }
 }

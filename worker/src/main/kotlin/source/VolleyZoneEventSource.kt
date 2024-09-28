@@ -66,8 +66,7 @@ class VolleyZoneEventSource @Inject constructor(
     if (fixturesTable == null) {
       log.exit("Unable to find fixtures at $url")
     }
-    val eventRows = fixturesTable.getElementsByClass("table-body")
-    return eventRows.map { row ->
+    val vzEvents = fixturesTable.getElementsByClass("table-body").map { row ->
       val venue = row.attr("data-venue").trim()
       VolleyZoneEvent(
         id = row.attr("data-comment").trim(),
@@ -81,38 +80,66 @@ class VolleyZoneEventSource @Inject constructor(
         venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
           ?.takeIf { it.startsWith(venue, ignoreCase = true) }
       )
-    }.groupBy(VolleyZoneEvent::triangleId).mapValues { (triangleId, events) ->
-      val sample = events.first()
-      val startDateLocal = LocalDate.parse(
-        input = sample.date,
-        format = LocalDate.Format {
-          dayOfMonth(); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); year()
-        }
-      )
-      val timezone =
-        if (startDateLocal >= LocalDate(startDateLocal.year, Month.MARCH, 25) &&
-          startDateLocal < LocalDate(startDateLocal.year, Month.OCTOBER, 25)
-        ) BST else GMT
-      val start = startDateLocal.atTime(LocalTime.parse(sample.time)).toInstant(timezone)
-      val host = events.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
-      val address = resolveAddress(host)
-      Triangle(
-        id = triangleId,
-        host = host.homeTeam,
-        address = address,
-        start = start,
-        end = start + TRIANGLE_DURATION,
-        teams = events.flatMap { listOf(it.homeTeam, it.awayTeam) }.toSet(),
-        events = events.sortedBy(VolleyZoneEvent::id),
-      )
     }
+    vzEvents.groupBy(VolleyZoneEvent::triangleId)
+
+    val processedTriangles: List<Pair<Triangle?, List<VolleyZoneEvent>?>> =
+      vzEvents.groupBy(VolleyZoneEvent::triangleId)
+        .values
+        .map { events ->
+          if (events.size != 3) return@map null to events
+          buildTriangle(url, events) to null
+        }
+    val correctTriangles = processedTriangles.map { it.first }.filterNotNull()
+    val fuckedTriangles = processedTriangles.map { it.second }.filterNotNull()
+      .flatten()
+      .groupBy { event -> "${event.date}${event.time}${event.venue}" }
+      .values
+      .map { events ->
+        buildTriangle(url, events)
+      }
+
+    val triangles = fuckedTriangles + correctTriangles
+
+    return triangles.associateBy(Triangle::id)
+  }
+
+  private fun buildTriangle(
+    url: String,
+    events: Collection<VolleyZoneEvent>
+  ): Triangle {
+    val sample = events.first()
+    val startDateLocal = LocalDate.parse(
+      input = sample.date,
+      format = LocalDate.Format {
+        dayOfMonth(); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); year()
+      }
+    )
+    val timezone =
+      if (startDateLocal >= LocalDate(startDateLocal.year, Month.MARCH, 25) &&
+        startDateLocal < LocalDate(startDateLocal.year, Month.OCTOBER, 25)
+      ) BST else GMT
+    val start = startDateLocal.atTime(LocalTime.parse(sample.time)).toInstant(timezone)
+    val host = events.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
+    val triangleId = host.id.dropLast(1)
+    val address = resolveAddress(host)
+    return Triangle(
+      id = triangleId,
+      url = url.removeSuffix("/"),
+      host = host.homeTeam,
+      address = address,
+      start = start,
+      end = start + TRIANGLE_DURATION,
+      teams = events.flatMap { listOf(it.homeTeam, it.awayTeam) }.toSet(),
+      events = events.sortedBy(VolleyZoneEvent::id),
+    )
   }
 
   private fun parseTriangle(team: String, triangle: Triangle): List<SourceEvent> {
     val description = buildString {
       appendLine("Triangle ID: ${triangle.id}")
       appendLine("Host: ${triangle.host}")
-      // TODO appendLine("Link: $url")
+      appendLine("Link: ${triangle.url}")
       appendLine("Last updated: ${timeService.realNow()}")
     }
     return triangle.events.filter { it.homeTeam == team || it.awayTeam == team }.map { event ->
@@ -201,6 +228,7 @@ class VolleyZoneEventSource @Inject constructor(
 
   private data class Triangle(
     val id: String,
+    val url: String,
     val host: String,
     val address: String,
     val start: Instant,
