@@ -50,3 +50,7 @@ jobs:
 
       - name: Sync Data
         run: ./gradlew :cli:run --args='${{ github.workspace }}/.config'
+
+      - name: Cleanup config
+        if: always()
+        run: rm -rf '${{ github.workspace }}/.config'
