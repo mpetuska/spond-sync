@@ -49,8 +49,13 @@ class VolleyZoneEventSource @Inject constructor(
     start: Instant,
     end: Instant?
   ): Map<String, List<SourceEvent>> {
-    val triangles = config.sources.values.asFlow()
-      .flatMapConcat { parseLeagueTriangles(it).entries.asFlow() }
+    val triangles = config.sources.entries.asFlow()
+      .flatMapConcat { (name, url) ->
+        log.d("Fetching events for $name from $url")
+        val triangles = parseLeagueTriangles(url)
+        log.i("Fetched ${triangles.size} triangles for $name")
+        triangles.entries.asFlow()
+      }
       .filter { (_, it) -> it.start >= start && it.end <= (end ?: it.end) }
       .toList()
       .associate { (k, v) -> k to v }
@@ -82,14 +87,19 @@ class VolleyZoneEventSource @Inject constructor(
           ?.takeIf { it.startsWith(venue, ignoreCase = true) }
       )
     }
-    vzEvents.groupBy(VolleyZoneEvent::triangleId)
+    vzEvents.sortedBy(VolleyZoneEvent::id).groupBy(VolleyZoneEvent::triangleId)
 
     val processedTriangles: List<Pair<Triangle?, List<VolleyZoneEvent>?>> =
       vzEvents.groupBy(VolleyZoneEvent::triangleId)
         .values
         .map { events ->
-          if (events.size != 3) return@map null to events
-          buildTriangle(url, events) to null
+          if (events.size != 3) {
+            val eventsStr = events.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
+            log.w("Invalid triangle! Events:$eventsStr")
+            null to events
+          } else {
+            buildTriangle(url, events) to null
+          }
         }
     val correctTriangles = processedTriangles.map { it.first }.filterNotNull()
     val fuckedTriangles = processedTriangles.map { it.second }.filterNotNull()
@@ -100,7 +110,7 @@ class VolleyZoneEventSource @Inject constructor(
         if (events.size == 3) {
           buildTriangle(url, events)
         } else {
-          log.w("Could not fix fucked triangle, still got events != 3: ${events.map { it.identity }}")
+          log.e("Could not fix fucked triangle, still got events != 3: ${events.map(VolleyZoneEvent::shortIdentity)}")
           null
         }
       }
@@ -121,20 +131,13 @@ class VolleyZoneEventSource @Inject constructor(
     url: String,
     events: Collection<VolleyZoneEvent>
   ): Triangle {
-    val sample = events.first()
-    val startDateLocal = LocalDate.parse(
-      input = sample.date,
-      format = LocalDate.Format {
-        dayOfMonth(); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); year()
-      }
-    )
-    val timezone =
-      if (startDateLocal >= LocalDate(startDateLocal.year, Month.MARCH, 25) &&
-        startDateLocal < LocalDate(startDateLocal.year, Month.OCTOBER, 25)
-      ) BST else GMT
-    val start = startDateLocal.atTime(LocalTime.parse(sample.time)).toInstant(timezone)
     val host = events.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
     val triangleId = host.id.dropLast(1)
+    if (events.map { "${it.date}${it.time}" }.toSet().size != 1) {
+      val eventsStr = events.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
+      log.w("Invalid triangle times for triangle ${triangleId}! Events:$eventsStr")
+    }
+    val start = parseTime(host)
     val address = resolveAddress(host)
     return Triangle(
       id = triangleId,
@@ -172,7 +175,7 @@ class VolleyZoneEventSource @Inject constructor(
         homeMatch = triangle.host == team,
         address = triangle.address,
         result = buildResult(event, homeTeamId, awayTeamId),
-        lastUpdated = timeService.realNow(),
+        lastUpdated = timeService.now(),
       )
     }
   }
@@ -223,6 +226,22 @@ class VolleyZoneEventSource @Inject constructor(
     val GMT = TimeZone.of("GMT")
     val BST = TimeZone.of("GMT+1")
     val TRIANGLE_DURATION = 4.hours
+
+    fun parseTime(event: VolleyZoneEvent): Instant {
+      val dateLocal = LocalDate.parse(
+        input = event.date,
+        format = LocalDate.Format {
+          dayOfMonth(); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); year()
+        }
+      )
+      val timezone = if (dateLocal >= LocalDate(dateLocal.year, Month.MARCH, 25) && dateLocal < LocalDate(
+          dateLocal.year,
+          Month.OCTOBER,
+          25
+        )
+      ) BST else GMT
+      return dateLocal.atTime(LocalTime.parse(event.time)).toInstant(timezone)
+    }
   }
 
   private data class VolleyZoneEvent(
@@ -238,7 +257,8 @@ class VolleyZoneEventSource @Inject constructor(
   ) : Identifiable {
     val triangleId: String = id.take(4)
     override val identity: String =
-      "VolleyZoneEvent(id=$id, triangleId=$triangleId, homeTeam=$homeTeam, awayTeam=$awayTeam)"
+      "VolleyZoneEvent(id=$id, date=$date, time=$time, homeTeam=$homeTeam, awayTeam=$awayTeam)"
+    val shortIdentity get() = "$id $date $time $homeTeam - $awayTeam"
   }
 
   private data class Triangle(
@@ -251,8 +271,12 @@ class VolleyZoneEventSource @Inject constructor(
     val teams: Set<String>,
     val events: List<VolleyZoneEvent>,
   ) : Identifiable {
-    override val identity: String =
-      "Triangle(id=$id, address=$address, host=$host, teams=$teams, events=${events.map(VolleyZoneEvent::identity)})"
+    override val identity: String
+      get() = "Triangle(id=$id, address=$address, host=$host, teams=$teams, events=${
+        events.map(
+          VolleyZoneEvent::identity
+        )
+      })"
   }
 
   private data class TeamResult(

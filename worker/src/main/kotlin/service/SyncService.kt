@@ -29,7 +29,7 @@ class SyncService @Inject constructor(
       teams = teams.keys,
       start = seasonStart,
     )
-    log.i("Fetched source events from ${source.name} for ${sourceEvents.size} teams")
+    log.i("Fetched ${sourceEvents.size} source events from ${source.name} for ${sourceEvents.size} teams")
     val spondSeasonStart = timeService.reset(seasonStart)
     for ((team, events) in sourceEvents) {
       syncTeam(spondSeasonStart, group, teams.getValue(team), events)
@@ -75,7 +75,7 @@ class SyncService @Inject constructor(
     if (eventQueue.isNotEmpty()) {
       log.i("Creating new spond event for remaining ${eventQueue.size} source events")
       val subGroupMembers = group.members.filter { team.id in it.subGroups }.map { it.id }
-      val today = timeService.now()
+      val today = timeService.offsetNow()
       for (sourceEvent in eventQueue.values) {
         if (sourceEvent.start > today) {
           log.i("Processing new source event ${sourceEvent.identity}")

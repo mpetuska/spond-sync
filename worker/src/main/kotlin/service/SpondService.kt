@@ -13,10 +13,12 @@ import spond.data.group.SubGroup
 import worker.WorkerConfig
 import worker.data.SourceEvent
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.hours
 
 class SpondService @Inject constructor(
   private val client: Spond,
   private val eventBuilderService: EventBuilderService,
+  private val timeService: TimeService,
   config: WorkerConfig.Spond,
   baseLogger: Logger,
 ) {
@@ -95,10 +97,14 @@ class SpondService @Inject constructor(
     }
 
     return try {
-      val event = client.updateEvent(updatedSpondEvent)
+      val freshEvent = if (updatedSpondEvent.start > timeService.now() + 1.hours) {
+        client.updateEvent(updatedSpondEvent)
+      } else {
+        event
+      }
       if (updatedSpondEvent.matchInfo?.teamScore != null &&
-        (event.matchInfo?.teamScore != updatedSpondEvent.matchInfo?.teamScore ||
-          event.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
+        (freshEvent.matchInfo?.teamScore != updatedSpondEvent.matchInfo?.teamScore ||
+          freshEvent.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
       ) {
         val matchInfo = checkNotNull(updatedSpondEvent.matchInfo)
         client.updateMatchScore(
@@ -111,7 +117,7 @@ class SpondService @Inject constructor(
           )
         )
       } else {
-        event
+        freshEvent
       }
     } catch (e: ClientRequestException) {
       log.e("Failed to persist spond event update ${updatedSpondEvent.identity}", e)
