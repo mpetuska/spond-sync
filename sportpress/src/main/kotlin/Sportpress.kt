@@ -63,6 +63,7 @@ class Sportpress @Inject constructor(
    * @param leagues limit result set to item…n the leagues taxonomy.
    * @param limit maximum number of items to be returned in result set.
    */
+  @Suppress("LongParameterList")
   fun listEvents(
     before: Instant? = null,
     after: Instant? = null,

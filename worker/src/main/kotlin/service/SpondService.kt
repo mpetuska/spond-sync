@@ -79,6 +79,7 @@ class SpondService @Inject constructor(
       }
   }
 
+  @Suppress("ReturnCount")
   suspend fun updateEvent(team: SubGroup, event: Event, sourceEvent: SourceEvent): Event? {
     log.v("Preparing merged spond event data for source event ${sourceEvent.identity}")
     val updatedSpondEvent = runCatching {

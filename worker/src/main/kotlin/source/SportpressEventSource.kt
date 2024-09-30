@@ -21,6 +21,7 @@ import sportpress.data.season.Season
 import sportpress.data.team.Team
 import sportpress.data.team.TeamId
 import worker.data.SourceEvent
+import worker.service.TimeService
 import worker.util.exit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
@@ -28,6 +29,7 @@ import kotlin.time.Duration.Companion.hours
 class SportpressEventSource @Inject constructor(
   private val client: Sportpress,
   private val http: HttpClient,
+  private val timeService: TimeService,
   baseLogger: Logger,
 ) : EventSource {
   private val log = baseLogger.withTag("SportpressSource")
@@ -91,7 +93,7 @@ class SportpressEventSource @Inject constructor(
     val (teamAId, teamBId) = event.teams
     log.v { "Extracted teamA=$teamA, teamA=$teamB, homeMatch=$homeMatch for ${event.identity}" }
 
-    val startDate = event.dateGmt.toInstant(GMT)
+    val startDate = timeService.reset(event.dateGmt.toInstant(GMT))
     return SourceEvent(
       provider = name,
       source = event.link,
@@ -108,7 +110,7 @@ class SportpressEventSource @Inject constructor(
       homeMatch = homeMatch,
       address = resolveAddress(event),
       result = buildResult(event, teamAId, teamBId),
-      lastUpdated = event.modifiedGmt.toInstant(GMT),
+      lastUpdated = timeService.reset(event.modifiedGmt.toInstant(GMT)),
     )
   }
 

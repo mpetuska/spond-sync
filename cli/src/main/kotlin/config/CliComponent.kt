@@ -11,7 +11,6 @@ import dagger.Provides
 import worker.SyncWorker
 import worker.WorkerConfig
 import worker.WorkerModule
-import javax.inject.Named
 
 @Module(includes = [WorkerModule::class])
 interface CliModule {

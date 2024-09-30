@@ -2,6 +2,10 @@ package worker.service
 
 import co.touchlab.kermit.Logger
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.JsonObject
 import spond.data.event.Event
 import spond.data.event.MatchInfo
@@ -19,7 +23,6 @@ import kotlin.time.Duration.Companion.days
 
 class EventBuilderService @Inject constructor(
   private val locationService: LocationService,
-  private val timeService: TimeService,
   config: WorkerConfig,
   baseLogger: Logger,
 ) {
@@ -37,8 +40,8 @@ class EventBuilderService @Inject constructor(
       description = description(),
       matchInfo = matchInfo(subGroup),
       location = location(),
-      start = timeService.reset(start),
-      end = timeService.reset(end),
+      start = start,
+      end = end,
       inviteTime = inviteTime(),
       rsvpDate = rsvpDate(),
       maxAccepted = maxAccepted,
@@ -65,8 +68,8 @@ class EventBuilderService @Inject constructor(
         ),
         groupMembers = subGroupMembers,
       ),
-      start = timeService.reset(start),
-      end = timeService.reset(end),
+      start = start,
+      end = end,
       inviteTime = inviteTime(),
       rsvpDate = rsvpDate(),
       maxAccepted = maxAccepted,
@@ -87,7 +90,7 @@ class EventBuilderService @Inject constructor(
       old.end == new.end &&
       old.description
         ?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } == new.description
-      ?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } &&
+        ?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } &&
       sameLocation &&
       sameResult &&
       old.maxAccepted == new.maxAccepted &&
@@ -97,12 +100,16 @@ class EventBuilderService @Inject constructor(
   }
 
   private fun SourceEvent.inviteTime(): Instant {
-    return timeService.reset(start - invitationDayBeforeStart.toInt().days)
+    return (start - invitationDayBeforeStart.toInt().days).atNoon()
   }
 
   private fun SourceEvent.rsvpDate(): Instant {
-    return timeService.reset(start - rsvpDeadlineBeforeStart.toInt().days)
+    return (start - rsvpDeadlineBeforeStart.toInt().days).atNoon()
   }
+
+  private fun Instant.atNoon(): Instant = toLocalDateTime(TimeZone.UTC).date
+    .atTime(12, 0)
+    .toInstant(TimeZone.UTC)
 
   private fun SourceEvent.description() = buildString {
     appendLine("Triangle ID: $triangleId")
@@ -123,8 +130,8 @@ class EventBuilderService @Inject constructor(
       }
     }
     appendLine()
-    appendLine("${PREFIX_EVENT_ID}${id}")
-    appendLine("${PREFIX_LAST_UPDATED}${lastUpdated}")
+    appendLine("${PREFIX_EVENT_ID}$id")
+    appendLine("${PREFIX_LAST_UPDATED}$lastUpdated")
     if (descriptionByline != null) {
       appendLine(descriptionByline)
     }
@@ -142,10 +149,14 @@ class EventBuilderService @Inject constructor(
 
   private fun SourceEvent.matchInfo(subGroup: SubGroup): MatchInfo {
     val team = subGroupsToTeams[subGroup.name]
+
+    @Suppress("UseCheckOrError")
     val opponent = when {
       teamA == team -> teamB
       teamB == team -> teamA
-      else -> throw IllegalStateException("Neither teamA=$teamA nor teamB=$teamB match the team=$team for source event $identity")
+      else -> throw IllegalStateException(
+        "Neither teamA=$teamA nor teamB=$teamB match the team=$team for source event $identity"
+      )
     }
     val base = MatchInfo(
       type = if (homeMatch) MatchType.Home else MatchType.Away,

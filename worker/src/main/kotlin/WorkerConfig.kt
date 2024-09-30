@@ -3,10 +3,14 @@ package worker
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-
 /**
- * @property source one of "volleyzone" or "sportpress" to determine which source should be used.
+ * @property spond spond sink config
  * @property teams a mapping between source team names and spond subgroup name.
+ * @property source one of "volleyzone" or "sportpress" to determine which source should be used.
+ * @property sportpress sportpress source config
+ * @property volleyzone volleyzone source config
+ * @property yearOffset how many years source data should be offset when fetching events
+ * @property debug turns on extra logging with sensitive information
  */
 @Serializable
 data class WorkerConfig(
@@ -25,6 +29,10 @@ data class WorkerConfig(
   val subGroups = teams.map { (k, v) -> v to k }.toMap()
 
   /**
+   * @property group spond group name
+   * @property username spond username
+   * @property password spond password
+   * @property apiUrl spond api url
    * @property opponentColourHex a hexadecimal colour value to use for opponent teams.
    * @property invitationDayBeforeStart a number of days before the match start time to send an invitation at.
    * @property rsvpDeadlineBeforeStart a number of days before the match start time to set as RSVP deadline.

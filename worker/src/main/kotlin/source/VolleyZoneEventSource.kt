@@ -135,7 +135,7 @@ class VolleyZoneEventSource @Inject constructor(
     val triangleId = host.id.dropLast(1)
     if (events.map { "${it.date}${it.time}" }.toSet().size != 1) {
       val eventsStr = events.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
-      log.w("Invalid triangle times for triangle ${triangleId}! Events:$eventsStr")
+      log.w("Invalid triangle times for triangle $triangleId! Events:$eventsStr")
     }
     val start = parseTime(host)
     val address = resolveAddress(host)
@@ -160,9 +160,9 @@ class VolleyZoneEventSource @Inject constructor(
         source = triangle.url,
         triangleId = triangle.id,
         id = event.id,
-        name = "${event.homeTeam} vs ${event.awayTeam}",
-        start = triangle.start,
-        end = triangle.end,
+        name = "${event.homeTeam} - ${event.awayTeam}",
+        start = timeService.reset(triangle.start),
+        end = timeService.reset(triangle.end),
         teamA = event.homeTeam,
         teamAId = homeTeamId,
         teamB = event.awayTeam,
@@ -170,7 +170,7 @@ class VolleyZoneEventSource @Inject constructor(
         host = triangle.host,
         homeMatch = triangle.host == team,
         address = triangle.address,
-        result = buildResult(event, homeTeamId, awayTeamId),
+        result = buildResult(event, homeTeamId = homeTeamId, awayTeamId = awayTeamId),
         lastUpdated = timeService.now(),
       )
     }
@@ -191,18 +191,14 @@ class VolleyZoneEventSource @Inject constructor(
     return if (event.homeScore == null || event.awayScore == null) {
       null
     } else {
-      val teamASets = event.homeScore
-      val teamBSets = event.awayScore
-      val totalSets = (teamASets + teamBSets).toInt()
-      val teamAScores = List(totalSets) { 0u }
-      val teamBScores = List(totalSets) { 0u }
-      val teamAResult = TeamResult(id = homeTeamId, sets = teamASets, scores = teamAScores)
-      val teamBResult = TeamResult(id = awayTeamId, sets = teamBSets, scores = teamBScores)
+      // TODO Can we parse scores??
+      val teamAResult = TeamResult(id = homeTeamId, sets = event.homeScore, scores = null)
+      val teamBResult = TeamResult(id = awayTeamId, sets = event.awayScore, scores = null)
 
-      val (winner, loser) = if (teamASets > teamBSets) {
-        Pair(teamAResult, teamBResult)
+      val (winner, loser) = if (teamAResult.sets > teamBResult.sets) {
+        teamAResult to teamBResult
       } else {
-        Pair(teamBResult, teamAResult)
+        teamBResult to teamAResult
       }
 
       SourceEvent.Result(
@@ -211,9 +207,8 @@ class VolleyZoneEventSource @Inject constructor(
         sets = teamAResult.sets + teamBResult.sets,
         winnerSets = winner.sets,
         loserSets = loser.sets,
-        // TODO
-        winnerScores = null,
-        loserScores = null,
+        winnerScores = winner.scores,
+        loserScores = loser.scores,
       )
     }
   }
@@ -235,7 +230,11 @@ class VolleyZoneEventSource @Inject constructor(
           Month.OCTOBER,
           25
         )
-      ) BST else GMT
+      ) {
+        BST
+      } else {
+        GMT
+      }
       return dateLocal.atTime(LocalTime.parse(event.time)).toInstant(timezone)
     }
   }
@@ -278,6 +277,6 @@ class VolleyZoneEventSource @Inject constructor(
   private data class TeamResult(
     val id: TeamId,
     val sets: UInt,
-    val scores: List<UInt>,
+    val scores: List<UInt>?,
   )
 }

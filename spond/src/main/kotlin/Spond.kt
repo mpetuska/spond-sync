@@ -21,6 +21,7 @@ import utils.http.paginate
 import utils.tokens.TokenHandler
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 class Spond @Inject constructor(
   credentials: SpondCredentials,
   tokenHandler: TokenHandler,
@@ -44,7 +45,6 @@ class Spond @Inject constructor(
    * @param id the [Group.id] of the group to fetch.
    */
   suspend fun getGroup(id: GroupId): Group = client.get("group/$id").body()
-
 
   /**
    * Delete a group.
@@ -174,7 +174,7 @@ class Spond @Inject constructor(
    * @param id the [Event.id] of the event to update the score at.
    * @param score the updates score data.
    */
-  suspend fun updateMatchScore(id: EventId, score: MatchScore): Event = client.post("sponds/${id}/matchUpdate") {
+  suspend fun updateMatchScore(id: EventId, score: MatchScore): Event = client.post("sponds/$id/matchUpdate") {
     setBody(score)
   }.body()
 

@@ -2,8 +2,6 @@ package spond.data.location
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.JsonObject
-import spond.data.WithId
-import spond.data.location.Location.Serializer
 import utils.Identifiable
 import utils.serialization.PreservingJsonSerializer
 
@@ -12,6 +10,7 @@ typealias LocationId = String
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable(Location.Serializer::class)
 @KeepGeneratedSerializer
+@Suppress("ConstructorParameterNaming")
 data class Location(
   @SerialName("featureName")
   private var _featureName: String? = null,

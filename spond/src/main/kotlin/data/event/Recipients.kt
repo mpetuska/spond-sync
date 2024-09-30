@@ -3,8 +3,8 @@ package spond.data.event
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import spond.data.group.GroupId
 import spond.data.group.Group
+import spond.data.group.GroupId
 import spond.data.group.Member
 import spond.data.group.MemberId
 

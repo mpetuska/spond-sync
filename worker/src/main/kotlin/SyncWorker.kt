@@ -8,7 +8,6 @@ import worker.service.TimeService
 import worker.util.exit
 import javax.inject.Inject
 
-
 class SyncWorker @Inject constructor(
   private val spondService: SpondService,
   private val syncService: SyncService,

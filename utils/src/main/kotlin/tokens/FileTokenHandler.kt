@@ -7,8 +7,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import javax.inject.Inject
 import kotlin.io.path.*
 
@@ -22,7 +20,9 @@ class FileTokenHandler @Inject constructor(private val json: Json, key: String) 
   override suspend fun onLoadTokens(): SerializableBearerTokens? {
     return if (file.exists()) {
       file.inputStream().use(json::decodeFromStream)
-    } else null
+    } else {
+      null
+    }
   }
 
   override suspend fun onRefreshTokens(tokens: SerializableBearerTokens) {
