@@ -89,6 +89,11 @@ class SpondService @Inject constructor(
     }
     log.d("Prepared merged spond event data for source event ${sourceEvent.identity}")
 
+    if (!eventBuilderService.modified(event, updatedSpondEvent)) {
+      log.i("Skipping the update... Updated spond event is the same as previous event ${event.identity}")
+      return event
+    }
+
     return try {
       val event = client.updateEvent(updatedSpondEvent)
       if (updatedSpondEvent.matchInfo?.teamScore != null &&

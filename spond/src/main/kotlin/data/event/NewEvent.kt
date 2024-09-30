@@ -5,7 +5,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import spond.data.location.Location
 import utils.Identifiable
-import kotlin.time.Duration.Companion.hours
 
 @Serializable
 data class NewEvent(

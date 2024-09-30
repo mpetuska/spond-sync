@@ -95,7 +95,6 @@ class SportpressEventSource @Inject constructor(
       appendLine("Triangle ID: $triangleId")
       appendLine("Host: $host")
       appendLine("Link: ${event.link}")
-      appendLine("Last updated: ${event.modifiedGmt.toInstant(GMT)}")
     }
 
     val startDate = event.dateGmt.toInstant(GMT)
@@ -114,6 +113,7 @@ class SportpressEventSource @Inject constructor(
       homeMatch = homeMatch,
       address = resolveAddress(event),
       result = buildResult(event, teamAId, teamBId),
+      lastUpdated = event.modifiedGmt.toInstant(GMT),
     )
   }
 

@@ -46,10 +46,13 @@ data class WorkerConfig(
   /**
    * @property sources a map of named urls to VolleyZone leagues to scrape for events.
    * @property addresses a mapping between VolleyZone event venue address and full address.
+   * @property attemptToFixBrokenTriangles try to fix broken triangles
+   *   (where more than 3 events refer to the same triangle ID), by building triangles via `date + time + venue` keys.
    */
   @Serializable
   data class Volleyzone(
     val sources: Map<String, String>,
     val addresses: Map<String, String> = mapOf(),
+    val attemptToFixBrokenTriangles: Boolean = false,
   )
 }

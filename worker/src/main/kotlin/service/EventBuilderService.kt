@@ -2,6 +2,7 @@ package worker.service
 
 import co.touchlab.kermit.Logger
 import kotlinx.datetime.Instant
+import kotlinx.serialization.json.JsonObject
 import spond.data.event.Event
 import spond.data.event.MatchInfo
 import spond.data.event.MatchType
@@ -40,6 +41,9 @@ class EventBuilderService @Inject constructor(
       inviteTime = inviteTime(),
       rsvpDate = rsvpDate(),
       maxAccepted = maxAccepted,
+      json = base.json.toMutableMap().apply {
+        remove("responses")
+      }.let(::JsonObject)
     )
   }
 
@@ -68,6 +72,28 @@ class EventBuilderService @Inject constructor(
     )
   }
 
+  /**
+   * Compares the two events and returns two if [new] has been updated.
+   */
+  fun modified(old: Event, new: Event): Boolean {
+    val sameLocation = old.location?.address == new.location?.address &&
+      old.location?.feature == new.location?.feature
+    val sameResult = old.matchInfo?.opponentScore == old.matchInfo?.opponentScore &&
+      old.matchInfo?.teamScore == new.matchInfo?.teamScore
+    val sameInviteTime = old.inviteTime == null || old.inviteTime == new.inviteTime
+    val same = old.start == new.start &&
+      old.end == new.end &&
+      old.description
+        ?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } == new.description
+      ?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } &&
+      sameLocation &&
+      sameResult &&
+      old.maxAccepted == new.maxAccepted &&
+      sameInviteTime &&
+      old.rsvpDate == new.rsvpDate
+    return !same
+  }
+
   private fun SourceEvent.inviteTime(): Instant {
     return timeService.reset(start - invitationDayBeforeStart.toInt().days)
   }
@@ -93,6 +119,7 @@ class EventBuilderService @Inject constructor(
     }
     appendLine()
     appendLine("${PREFIX_EVENT_ID}${id}")
+    appendLine("${PREFIX_LAST_UPDATED}${lastUpdated}")
     if (descriptionByline != null) {
       appendLine(descriptionByline)
     }
@@ -100,7 +127,7 @@ class EventBuilderService @Inject constructor(
 
   private suspend fun SourceEvent.location(): Location? {
     val resolved = locationService.resolveSpondLocation(address)
-    return if(resolved != null) {
+    return if (resolved != null) {
       resolved
     } else {
       log.w("Unable to resolve location from address $address for $identity")
@@ -139,6 +166,7 @@ class EventBuilderService @Inject constructor(
 
   companion object {
     private const val PREFIX_EVENT_ID = "Event ID: "
+    private const val PREFIX_LAST_UPDATED = "Last updated: "
 
     fun extractSourceEventId(event: Event): String? {
       return event.description

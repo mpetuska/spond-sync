@@ -142,8 +142,16 @@ class Spond @Inject constructor(
    * Update the existing event
    *
    * @param updatedEvent new event state
+   * @param clearResponses require recipients to answer again
+   * @param sendUpdate notify recipients about the changes
    */
-  suspend fun updateEvent(updatedEvent: Event): Event = client.post("sponds/${updatedEvent.id}") {
+  suspend fun updateEvent(
+    updatedEvent: Event,
+    clearResponses: Boolean = false,
+    sendUpdate: Boolean = true,
+  ): Event = client.post("sponds/${updatedEvent.id}") {
+    header("X-Spond-ClearResponses", clearResponses)
+    header("X-Spond-SendUpdate", sendUpdate)
     setBody(updatedEvent)
   }.body()
 

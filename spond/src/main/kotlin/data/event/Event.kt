@@ -31,7 +31,7 @@ data class Event(
   val rsvpDate: Instant? = null,
   val maxAccepted: UInt? = null,
   @SerialName("#json")
-  private val json: JsonObject,
+  val json: JsonObject,
 ) : Identifiable, WithId {
   override val identity: String
     get() = "Event(id=$id, name=$name)"

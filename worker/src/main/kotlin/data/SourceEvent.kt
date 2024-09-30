@@ -18,6 +18,7 @@ data class SourceEvent(
   val homeMatch: Boolean,
   val address: String,
   val result: Result?,
+  val lastUpdated: Instant,
 ) : Identifiable {
   override val identity: String = "SourceEvent(provider=$provider, name=$name)"
 

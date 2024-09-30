@@ -32,3 +32,9 @@ kotlin {
     }
   }
 }
+
+tasks {
+  named("run", JavaExec::class) {
+    standardInput = System.`in`
+  }
+}

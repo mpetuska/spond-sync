@@ -23,6 +23,11 @@ class SyncWorker @Inject constructor(
   suspend fun cleanGroup() {
     val group = spondService.findGroup(groupName)
     if (group != null) {
+      log.a("Are you sure you want to clear spond group ${group.identity}? [y/n]: ")
+      val yes = readln()
+      if (yes != "y") {
+        log.exit("User declined - aborting...")
+      }
       log.i("Found spond group ${group.identity}")
       log.d { "Cancelling all spond events for ${group.identity}" }
       spondService.cancelAllEvents(group)

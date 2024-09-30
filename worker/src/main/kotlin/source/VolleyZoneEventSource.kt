@@ -20,6 +20,7 @@ import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toInstant
 import sportpress.data.team.TeamId
+import utils.Identifiable
 import worker.WorkerConfig
 import worker.data.SourceEvent
 import worker.service.TimeService
@@ -95,11 +96,23 @@ class VolleyZoneEventSource @Inject constructor(
       .flatten()
       .groupBy { event -> "${event.date}${event.time}${event.venue}" }
       .values
-      .map { events ->
-        buildTriangle(url, events)
+      .mapNotNull { events ->
+        if (events.size == 3) {
+          buildTriangle(url, events)
+        } else {
+          log.w("Could not fix fucked triangle, still got events != 3: ${events.map { it.identity }}")
+          null
+        }
       }
 
-    val triangles = fuckedTriangles + correctTriangles
+    val triangles = if (config.attemptToFixBrokenTriangles) {
+      fuckedTriangles + correctTriangles
+    } else {
+      fuckedTriangles.forEach { triangle ->
+        log.w("Discarding fucked triangle ${triangle.identity}")
+      }
+      correctTriangles
+    }
 
     return triangles.associateBy(Triangle::id)
   }
@@ -140,7 +153,6 @@ class VolleyZoneEventSource @Inject constructor(
       appendLine("Triangle ID: ${triangle.id}")
       appendLine("Host: ${triangle.host}")
       appendLine("Link: ${triangle.url}")
-      appendLine("Last updated: ${timeService.realNow()}")
     }
     return triangle.events.filter { it.homeTeam == team || it.awayTeam == team }.map { event ->
       val homeTeamId = event.homeTeam.hashCode().toUInt()
@@ -160,12 +172,13 @@ class VolleyZoneEventSource @Inject constructor(
         homeMatch = triangle.host == team,
         address = triangle.address,
         result = buildResult(event, homeTeamId, awayTeamId),
+        lastUpdated = timeService.realNow(),
       )
     }
   }
 
   private fun resolveAddress(event: VolleyZoneEvent): String {
-    val mapped = config.addresses[event.venue]
+    val mapped = config.addresses.entries.firstOrNull { (k, _) -> event.venue.startsWith(k, ignoreCase = true) }?.value
     return if (mapped != null) {
       mapped
     } else {
@@ -222,8 +235,10 @@ class VolleyZoneEventSource @Inject constructor(
     val awayTeam: String,
     val homeScore: UInt?,
     val awayScore: UInt?,
-  ) {
+  ) : Identifiable {
     val triangleId: String = id.take(4)
+    override val identity: String =
+      "VolleyZoneEvent(id=$id, triangleId=$triangleId, homeTeam=$homeTeam, awayTeam=$awayTeam)"
   }
 
   private data class Triangle(
@@ -235,7 +250,10 @@ class VolleyZoneEventSource @Inject constructor(
     val end: Instant,
     val teams: Set<String>,
     val events: List<VolleyZoneEvent>,
-  )
+  ) : Identifiable {
+    override val identity: String =
+      "Triangle(id=$id, address=$address, host=$host, teams=$teams, events=${events.map(VolleyZoneEvent::identity)})"
+  }
 
   private data class TeamResult(
     val id: TeamId,
