@@ -18,6 +18,11 @@ data class WorkerConfig(
   val debug: Boolean = false,
 ) {
   /**
+   * An inverse of [teams] which maps Spond subGroup to source team name.
+   */
+  val subGroups = teams.map { (k, v) -> v to k }.toMap()
+
+  /**
    * @property opponentColourHex a hexadecimal colour value to use for opponent teams.
    * @property invitationDayBeforeStart a number of days before the match start time to send an invitation at.
    * @property rsvpDeadlineBeforeStart a number of days before the match start time to set as RSVP deadline.

@@ -20,21 +20,22 @@ import kotlin.time.Duration.Companion.days
 class EventBuilderService @Inject constructor(
   private val locationService: LocationService,
   private val timeService: TimeService,
-  config: WorkerConfig.Spond,
+  config: WorkerConfig,
   baseLogger: Logger,
 ) {
   private val log = baseLogger.withTag("EventBuilderService")
-  private val maxAccepted = config.maxAccepted
-  private val invitationDayBeforeStart = config.invitationDayBeforeStart
-  private val rsvpDeadlineBeforeStart = config.rsvpDeadlineBeforeStart
-  private val descriptionByline = config.descriptionByline
-  private val opponentColourHex = config.opponentColourHex
+  private val maxAccepted = config.spond.maxAccepted
+  private val invitationDayBeforeStart = config.spond.invitationDayBeforeStart
+  private val rsvpDeadlineBeforeStart = config.spond.rsvpDeadlineBeforeStart
+  private val descriptionByline = config.spond.descriptionByline
+  private val opponentColourHex = config.spond.opponentColourHex
+  private val subGroupsToTeams = config.subGroups
 
   suspend fun SourceEvent.toEvent(base: Event, subGroup: SubGroup): Event {
     return base.copy(
       name = name,
       description = description(),
-      matchInfo = matchInfo(subGroup.color),
+      matchInfo = matchInfo(subGroup),
       location = location(),
       start = timeService.reset(start),
       end = timeService.reset(end),
@@ -55,7 +56,7 @@ class EventBuilderService @Inject constructor(
     return NewEvent(
       name = name,
       description = description(),
-      matchInfo = matchInfo(subGroup.color),
+      matchInfo = matchInfo(subGroup),
       location = location(),
       recipients = Recipients.New(
         group = Recipients.NewRecipientsGroup(
@@ -79,7 +80,8 @@ class EventBuilderService @Inject constructor(
     val sameLocation = old.location?.address == new.location?.address &&
       old.location?.feature == new.location?.feature
     val sameResult = old.matchInfo?.opponentScore == old.matchInfo?.opponentScore &&
-      old.matchInfo?.teamScore == new.matchInfo?.teamScore
+      old.matchInfo?.teamScore == new.matchInfo?.teamScore &&
+      old.matchInfo?.teamColour == new.matchInfo?.teamColour
     val sameInviteTime = old.inviteTime == null || old.inviteTime == new.inviteTime
     val same = old.start == new.start &&
       old.end == new.end &&
@@ -135,18 +137,24 @@ class EventBuilderService @Inject constructor(
     }
   }
 
-  private fun SourceEvent.matchInfo(homeColourHex: String): MatchInfo {
+  private fun SourceEvent.matchInfo(subGroup: SubGroup): MatchInfo {
+    val team = subGroupsToTeams[subGroup.name]
+    val opponent = when {
+      teamA == team -> teamB
+      teamB == team -> teamA
+      else -> throw IllegalStateException("Neither teamA=$teamA nor teamB=$teamB match the team=$team for source event $identity")
+    }
     val base = MatchInfo(
       type = if (homeMatch) MatchType.Home else MatchType.Away,
-      teamName = if (homeMatch) teamA else teamB,
-      teamColour = homeColourHex,
-      opponentName = if (homeMatch) teamB else teamA,
+      teamName = subGroup.name,
+      teamColour = subGroup.color,
+      opponentName = opponent,
       opponentColour = opponentColourHex,
     )
     return if (result == null) {
       base
     } else {
-      val teamId = if (homeMatch) teamAId else teamBId
+      val teamId = if (teamA == team) teamAId else teamBId
       val (teamSets, opponentSets) = if (result.winnerId == teamId) {
         Pair(result.winnerSets, result.loserSets)
       } else {

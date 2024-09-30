@@ -5,6 +5,8 @@ import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import io.ktor.client.*
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -62,7 +64,13 @@ interface WorkerModule {
       baseLogger: co.touchlab.kermit.Logger,
       severity: Severity,
       @Named("debug") debug: Boolean,
-    ): HttpClient = HttpClient {
+    ): HttpClient = HttpClient(CIO) {
+      engine {
+        endpoint {
+          pipelineMaxSize = 2
+          maxConnectionsPerRoute = 2
+        }
+      }
       install(Logging) {
         logger = object : Logger {
           private val log = baseLogger.withTag("KTOR")
