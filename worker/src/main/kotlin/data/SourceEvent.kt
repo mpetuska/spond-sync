@@ -5,9 +5,10 @@ import utils.Identifiable
 
 data class SourceEvent(
   val provider: String,
+  val source: String,
+  val triangleId: String,
   val id: String,
   val name: String,
-  val description: String,
   val start: Instant,
   val end: Instant,
   val host: String,

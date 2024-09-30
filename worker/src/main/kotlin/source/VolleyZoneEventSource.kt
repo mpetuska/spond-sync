@@ -152,21 +152,17 @@ class VolleyZoneEventSource @Inject constructor(
   }
 
   private fun parseTriangle(team: String, triangle: Triangle): List<SourceEvent> {
-    val description = buildString {
-      appendLine("Triangle ID: ${triangle.id}")
-      appendLine("Host: ${triangle.host}")
-      appendLine("Link: ${triangle.url}")
-    }
     return triangle.events.filter { it.homeTeam == team || it.awayTeam == team }.map { event ->
       val homeTeamId = event.homeTeam.hashCode().toUInt()
       val awayTeamId = event.awayTeam.hashCode().toUInt()
       SourceEvent(
         provider = name,
+        source = triangle.url,
+        triangleId = triangle.id,
         id = event.id,
         name = "${event.homeTeam} vs ${event.awayTeam}",
         start = triangle.start,
         end = triangle.end,
-        description = description,
         teamA = event.homeTeam,
         teamAId = homeTeamId,
         teamB = event.awayTeam,

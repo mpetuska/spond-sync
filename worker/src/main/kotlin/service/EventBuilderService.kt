@@ -105,7 +105,9 @@ class EventBuilderService @Inject constructor(
   }
 
   private fun SourceEvent.description() = buildString {
-    appendLine(description)
+    appendLine("Triangle ID: $triangleId")
+    appendLine("Host: $host")
+    appendLine("Source: $source")
     if (result != null) {
       val (scoresA, scoresB, sets) = if (result.winnerId == teamAId) {
         Triple(result.winnerScores, result.loserScores, "${result.winnerSets}-${result.loserSets}")
@@ -113,6 +115,7 @@ class EventBuilderService @Inject constructor(
         Triple(result.loserScores, result.winnerScores, "${result.loserSets}-${result.winnerSets}")
       }
       if (scoresA != null && scoresB != null) {
+        appendLine()
         appendLine("SETS ($sets):")
         for (set in scoresA.indices) {
           appendLine("  - ${scoresA[set].toString().padStart(2)}:${scoresB[set].toString().padStart(2)}")

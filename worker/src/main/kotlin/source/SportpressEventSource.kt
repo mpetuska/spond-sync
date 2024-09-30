@@ -91,20 +91,15 @@ class SportpressEventSource @Inject constructor(
     val (teamAId, teamBId) = event.teams
     log.v { "Extracted teamA=$teamA, teamA=$teamB, homeMatch=$homeMatch for ${event.identity}" }
 
-    val description = buildString {
-      appendLine("Triangle ID: $triangleId")
-      appendLine("Host: $host")
-      appendLine("Link: ${event.link}")
-    }
-
     val startDate = event.dateGmt.toInstant(GMT)
     return SourceEvent(
       provider = name,
+      source = event.link,
+      triangleId = triangleId,
       id = "${event.id}",
       name = event.name,
       start = startDate,
       end = startDate + TRIANGLE_DURATION,
-      description = description,
       teamA = teamA,
       teamAId = teamAId,
       teamB = teamB,
