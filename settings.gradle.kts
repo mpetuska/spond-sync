@@ -6,7 +6,7 @@ plugins {
   id("settings")
 }
 
-rootProject.name = "sportpress-to-spond"
+rootProject.name = "spond-sync"
 include(
   ":spond",
   ":sportpress",

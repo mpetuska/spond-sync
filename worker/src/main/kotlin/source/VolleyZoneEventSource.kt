@@ -49,7 +49,7 @@ class VolleyZoneEventSource @Inject constructor(
     start: Instant,
     end: Instant?
   ): Map<String, List<SourceEvent>> {
-    val triangles = config.sources.entries.asFlow()
+    val triangles = config.leagues.entries.asFlow()
       .flatMapConcat { (name, url) ->
         log.d("Fetching events for $name from $url")
         val triangles = parseLeagueTriangles(url)

@@ -1,6 +1,7 @@
 package worker
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 
 /**
@@ -20,6 +21,7 @@ data class WorkerConfig(
   /**
    * An inverse of [teams] which maps Spond subGroup to source team name.
    */
+  @Transient
   val subGroups = teams.map { (k, v) -> v to k }.toMap()
 
   /**
@@ -49,14 +51,14 @@ data class WorkerConfig(
   )
 
   /**
-   * @property sources a map of named urls to VolleyZone leagues to scrape for events.
+   * @property leagues a map of named urls to VolleyZone leagues to scrape for events.
    * @property addresses a mapping between VolleyZone event venue address and full address.
    * @property attemptToFixBrokenTriangles try to fix broken triangles
    *   (where more than 3 events refer to the same triangle ID), by building triangles via `date + time + venue` keys.
    */
   @Serializable
   data class Volleyzone(
-    val sources: Map<String, String>,
+    val leagues: Map<String, String>,
     val addresses: Map<String, String> = mapOf(),
     val attemptToFixBrokenTriangles: Boolean = false,
   )
