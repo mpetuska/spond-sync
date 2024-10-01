@@ -12,7 +12,7 @@ import java.io.File
 suspend fun main(vararg args: String) {
   val configFile = requireNotNull(args[0])
   val config: WorkerConfig = File(configFile).inputStream().use(Json::decodeFromStream)
-  val logSeverity = System.getenv("LOG_LEVEL")?.let { level ->
+  val logSeverity = System.getenv("LOG_LEVEL")?.takeIf { it.isNotBlank() }?.let { level ->
     Severity.entries.firstOrNull { it.name.startsWith(level, ignoreCase = true) }
   } ?: Severity.Info
   val component = DaggerCliComponent.builder()
