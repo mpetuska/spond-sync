@@ -95,7 +95,7 @@ class VolleyZoneEventSource @Inject constructor(
         .map { events ->
           if (events.size != 3) {
             val eventsStr = events.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
-            log.w("Invalid triangle! Events:$eventsStr")
+            log.w("Invalid triangle event count! Events:$eventsStr")
             null to events
           } else {
             buildTriangle(url, events) to null
@@ -103,8 +103,26 @@ class VolleyZoneEventSource @Inject constructor(
         }
     val correctTriangles = processedTriangles.map { it.first }.filterNotNull()
     val fuckedTriangles = processedTriangles.map { it.second }.filterNotNull()
-      .flatten()
-      .groupBy { event -> "${event.date}${event.time}${event.venue}" }
+
+    if (fuckedTriangles.isNotEmpty()) {
+      log.w("Detected ${fuckedTriangles.size} broken triangles!")
+    }
+
+    val triangles = if (config.attemptToFixBrokenTriangles) {
+      val correctedFuckedTriangles = correctFuckedTriangles(url, fuckedTriangles.flatten())
+      correctedFuckedTriangles + correctTriangles
+    } else {
+      fuckedTriangles.forEach { events ->
+        log.w("Discarding fucked triangle: ${events.map(VolleyZoneEvent::shortIdentity)}")
+      }
+      correctTriangles
+    }
+
+    return triangles.associateBy(Triangle::id)
+  }
+
+  private fun correctFuckedTriangles(url: String, events: List<VolleyZoneEvent>): List<Triangle> {
+    return events.groupBy { event -> "${event.date}${event.time}${event.venue}" }
       .values
       .mapNotNull { events ->
         if (events.size == 3) {
@@ -114,27 +132,17 @@ class VolleyZoneEventSource @Inject constructor(
           null
         }
       }
-
-    val triangles = if (config.attemptToFixBrokenTriangles) {
-      fuckedTriangles + correctTriangles
-    } else {
-      fuckedTriangles.forEach { triangle ->
-        log.w("Discarding fucked triangle ${triangle.identity}")
-      }
-      correctTriangles
-    }
-
-    return triangles.associateBy(Triangle::id)
   }
 
   private fun buildTriangle(
     url: String,
     events: Collection<VolleyZoneEvent>
   ): Triangle {
-    val host = events.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
+    val sortedEvents = events.sortedBy(VolleyZoneEvent::id)
+    val host = sortedEvents.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
     val triangleId = host.id.dropLast(1)
-    if (events.map { "${it.date}${it.time}" }.toSet().size != 1) {
-      val eventsStr = events.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
+    if (sortedEvents.map { "${it.date}${it.time}" }.toSet().size != 1) {
+      val eventsStr = sortedEvents.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
       log.w("Invalid triangle times for triangle $triangleId! Events:$eventsStr")
     }
     val start = parseTime(host)
@@ -146,8 +154,8 @@ class VolleyZoneEventSource @Inject constructor(
       address = address,
       start = start,
       end = start + TRIANGLE_DURATION,
-      teams = events.flatMap { listOf(it.homeTeam, it.awayTeam) }.toSet(),
-      events = events.sortedBy(VolleyZoneEvent::id),
+      teams = sortedEvents.flatMap { listOf(it.homeTeam, it.awayTeam) }.toSet(),
+      events = sortedEvents,
     )
   }
 
