@@ -38,6 +38,7 @@ data class WorkerConfig(
    * @property rsvpDeadlineBeforeStart a number of days before the match start time to set as RSVP deadline.
    * @property maxAccepted a number of players to allow accepting the invite.
    * @property descriptionByline an optional byline to insert at the bottom of description to identify managed events.
+   * @property syncResults whether to also update match results for managed events.
    */
   @Serializable
   data class Spond(
@@ -49,7 +50,8 @@ data class WorkerConfig(
     val invitationDayBeforeStart: UInt = 7u,
     val rsvpDeadlineBeforeStart: UInt = 2u,
     val maxAccepted: UInt = 10u,
-    val descriptionByline: String? = null,
+    val descriptionByline: String = "Managed event.",
+    val syncResults: Boolean = false,
   )
 
   @Serializable

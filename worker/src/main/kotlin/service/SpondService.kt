@@ -24,6 +24,7 @@ class SpondService @Inject constructor(
 ) {
   private val log = baseLogger.withTag("SpondService")
   private val descriptionByline = config.descriptionByline
+  private val syncResults: Boolean = config.syncResults
 
   /**
    * Finds a group by name.
@@ -37,9 +38,7 @@ class SpondService @Inject constructor(
 
   private fun eventFilter(event: Event): Boolean {
     val description = event.description
-    return event.matchInfo != null && (descriptionByline == null || (description != null && description.contains(
-      descriptionByline
-    )))
+    return event.matchInfo != null && description?.contains(descriptionByline) == true
   }
 
   fun listMatches(
@@ -103,7 +102,8 @@ class SpondService @Inject constructor(
       } else {
         event
       }
-      if (updatedSpondEvent.matchInfo?.teamScore != null &&
+      @Suppress("ComplexCondition")
+      if (syncResults && updatedSpondEvent.matchInfo?.teamScore != null &&
         (freshEvent.matchInfo?.teamScore != updatedSpondEvent.matchInfo?.teamScore ||
           freshEvent.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
       ) {
