@@ -132,9 +132,7 @@ class EventBuilderService @Inject constructor(
     appendLine()
     appendLine("${PREFIX_EVENT_ID}$id")
     appendLine("${PREFIX_LAST_UPDATED}$lastUpdated")
-    if (descriptionByline != null) {
-      appendLine(descriptionByline)
-    }
+    appendLine(descriptionByline)
   }
 
   private suspend fun SourceEvent.location(): Location? {
