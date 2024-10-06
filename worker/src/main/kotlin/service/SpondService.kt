@@ -100,6 +100,8 @@ class SpondService @Inject constructor(
     if (!eventBuilderService.modified(event, updatedSpondEvent) && !resultsModified && !forceUpdate) {
       log.i("Skipping the update... Updated spond event is the same as previous event ${event.identity}")
       return event
+    } else {
+      log.i("Updating spond event with new data ${event.identity}")
     }
 
     return try {
