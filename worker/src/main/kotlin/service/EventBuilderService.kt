@@ -20,6 +20,7 @@ import worker.WorkerConfig
 import worker.data.SourceEvent
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.seconds
 
 class EventBuilderService @Inject constructor(
   private val locationService: LocationService,
@@ -41,7 +42,7 @@ class EventBuilderService @Inject constructor(
       description = description(),
       matchInfo = matchInfo(subGroup),
       location = location(),
-      start = start,
+      start = start(),
       end = end,
       inviteTime = inviteTime(),
       rsvpDate = rsvpDate(),
@@ -69,7 +70,7 @@ class EventBuilderService @Inject constructor(
         ),
         groupMembers = subGroupMembers,
       ),
-      start = start,
+      start = start(),
       end = end,
       inviteTime = inviteTime(),
       rsvpDate = rsvpDate(),
@@ -98,6 +99,12 @@ class EventBuilderService @Inject constructor(
       sameInviteTime &&
       old.rsvpDate == new.rsvpDate
     return !same
+  }
+
+  private fun SourceEvent.start(): Instant = when {
+    homeMatch && id.endsWith("c") -> start + 1.seconds
+    !homeMatch && !id.endsWith("a") -> start + 1.seconds
+    else -> start
   }
 
   private fun SourceEvent.inviteTime(): Instant? {
