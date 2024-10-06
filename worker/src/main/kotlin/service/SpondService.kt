@@ -25,6 +25,7 @@ class SpondService @Inject constructor(
   private val log = baseLogger.withTag("SpondService")
   private val descriptionByline = config.descriptionByline
   private val syncResults: Boolean = config.syncResults
+  private val forceUpdate = config.forceUpdate
 
   /**
    * Finds a group by name.
@@ -91,22 +92,23 @@ class SpondService @Inject constructor(
     }
     log.d("Prepared merged spond event data for source event ${sourceEvent.identity}")
 
-    if (!eventBuilderService.modified(event, updatedSpondEvent)) {
+    @Suppress("ComplexCondition")
+    val resultsModified = syncResults && updatedSpondEvent.matchInfo?.teamScore != null &&
+      (event.matchInfo?.teamScore != updatedSpondEvent.matchInfo?.teamScore ||
+        event.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
+
+    if (!eventBuilderService.modified(event, updatedSpondEvent) && !resultsModified && !forceUpdate) {
       log.i("Skipping the update... Updated spond event is the same as previous event ${event.identity}")
       return event
     }
 
     return try {
-      val freshEvent = if (updatedSpondEvent.start > timeService.now() + 1.hours) {
+      val freshEvent = if (updatedSpondEvent.start > timeService.now() + 1.hours || resultsModified || forceUpdate) {
         client.updateEvent(updatedSpondEvent)
       } else {
         event
       }
-      @Suppress("ComplexCondition")
-      if (syncResults && updatedSpondEvent.matchInfo?.teamScore != null &&
-        (freshEvent.matchInfo?.teamScore != updatedSpondEvent.matchInfo?.teamScore ||
-          freshEvent.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
-      ) {
+      if (resultsModified) {
         val matchInfo = checkNotNull(updatedSpondEvent.matchInfo)
         client.updateMatchScore(
           id = updatedSpondEvent.id,

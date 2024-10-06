@@ -39,6 +39,7 @@ data class WorkerConfig(
    * @property maxAccepted a number of players to allow accepting the invite.
    * @property descriptionByline an optional byline to insert at the bottom of description to identify managed events.
    * @property syncResults whether to also update match results for managed events.
+   * @property forceUpdate whether to update the events that have not changed.
    */
   @Serializable
   data class Spond(
@@ -51,7 +52,8 @@ data class WorkerConfig(
     val rsvpDeadlineBeforeStart: UInt = 2u,
     val maxAccepted: UInt = 10u,
     val descriptionByline: String = "Managed event.",
-    val syncResults: Boolean = false,
+    val syncResults: Boolean = true,
+    val forceUpdate: Boolean = false,
   )
 
   @Serializable

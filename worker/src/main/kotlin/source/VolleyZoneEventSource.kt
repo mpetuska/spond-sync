@@ -66,13 +66,14 @@ class VolleyZoneEventSource @Inject constructor(
     }
   }
 
+  @Suppress("LongMethod")
   private suspend fun parseLeagueTriangles(url: String): Map<String, Triangle> {
     val document = http.get(url).bodyAsText().let(Ksoup::parse)
     val fixturesTable = document.getElementById("fixtures_league")
     if (fixturesTable == null) {
       log.exit("Unable to find fixtures at $url")
     }
-    val vzEvents = fixturesTable.getElementsByClass("table-body").map { row ->
+    val vzFixtures = fixturesTable.getElementsByClass("table-body").map { row ->
       val venue = row.attr("data-venue").trim()
       VolleyZoneEvent(
         id = row.attr("data-comment").trim(),
@@ -80,17 +81,61 @@ class VolleyZoneEventSource @Inject constructor(
         time = row.attr("data-time").trim(),
         homeTeam = row.attr("data-hometeam").trim(),
         awayTeam = row.attr("data-awayteam").trim(),
-        homeScore = row.attr("data-homescore").takeIf(String::isNotBlank)?.toUInt(),
-        awayScore = row.attr("data-awayscore").takeIf(String::isNotBlank)?.toUInt(),
         venue = venue,
         venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
-          ?.takeIf { it.startsWith(venue, ignoreCase = true) }
+          ?.takeIf { it.startsWith(venue, ignoreCase = true) },
+        homeSets = null,
+        awaySets = null,
+        homeScores = null,
+        awayScores = null,
       )
     }
-    vzEvents.sortedBy(VolleyZoneEvent::id).groupBy(VolleyZoneEvent::triangleId)
+    val resultsTable = document.getElementById("results_league")
+
+    if (resultsTable == null) {
+      log.exit("Unable to find results at $url")
+    }
+    val vzResults = resultsTable.getElementsByTag("ul").windowed(2).mapNotNull { (row, scores) ->
+      if (!row.hasClass("table-body") || !scores.hasClass("list-centered_bottom_league")) {
+        return@mapNotNull null
+      }
+      val id = row.attr("data-comment").trim()
+      val venue = row.attr("data-venue").trim()
+      val homeSets = row.attr("data-homescore").trim().takeIf(String::isNotBlank)?.toUInt()
+      val awaySets = row.attr("data-awayscore").trim().takeIf(String::isNotBlank)?.toUInt()
+      val results = scores.getElementsByTag("li").mapNotNull { li ->
+        li.getElementsByTag("span").mapNotNull { it.text().trim().toUIntOrNull() }.takeIf { it.isNotEmpty() }
+      }
+      val totalSets = (homeSets ?: 0u) + (awaySets ?: 0u)
+      val (homeScores, awayScores) = if (results.size != totalSets.toInt()) {
+        log.w(
+          "Invalid set count for event $id. Sets from final results were $totalSets, " +
+            "however sets from scores were ${results.size}"
+        )
+        null to null
+      } else {
+        results.map { it.first() } to results.map { it.last() }
+      }
+      VolleyZoneEvent(
+        id = id,
+        date = row.attr("data-date").trim(),
+        time = row.attr("data-time").trim(),
+        homeTeam = row.attr("data-hometeam").trim(),
+        awayTeam = row.attr("data-awayteam").trim(),
+        venue = venue,
+        venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
+          ?.takeIf { it.startsWith(venue, ignoreCase = true) },
+        homeSets = homeSets,
+        awaySets = awaySets,
+        homeScores = homeScores,
+        awayScores = awayScores,
+      )
+    }
+
+    val vzEvents = vzFixtures + vzResults
 
     val processedTriangles: List<Pair<Triangle?, List<VolleyZoneEvent>?>> =
-      vzEvents.groupBy(VolleyZoneEvent::triangleId)
+      vzEvents.sortedBy(VolleyZoneEvent::id).groupBy(VolleyZoneEvent::triangleId)
         .values
         .map { events ->
           if (events.size != 3) {
@@ -168,7 +213,7 @@ class VolleyZoneEventSource @Inject constructor(
         source = triangle.url,
         triangleId = triangle.id,
         id = event.id,
-        name = "${event.homeTeam} - ${event.awayTeam}",
+        name = "${event.id}: ${event.homeTeam} - ${event.awayTeam}",
         start = timeService.reset(triangle.start),
         end = timeService.reset(triangle.end),
         teamA = event.homeTeam,
@@ -196,12 +241,11 @@ class VolleyZoneEventSource @Inject constructor(
   }
 
   private fun buildResult(event: VolleyZoneEvent, homeTeamId: UInt, awayTeamId: UInt): SourceEvent.Result? {
-    return if (event.homeScore == null || event.awayScore == null) {
+    return if (event.homeSets == null || event.awaySets == null) {
       null
     } else {
-      // TODO Can we parse scores??
-      val teamAResult = TeamResult(id = homeTeamId, sets = event.homeScore, scores = null)
-      val teamBResult = TeamResult(id = awayTeamId, sets = event.awayScore, scores = null)
+      val teamAResult = TeamResult(id = homeTeamId, sets = event.homeSets, scores = event.homeScores)
+      val teamBResult = TeamResult(id = awayTeamId, sets = event.awaySets, scores = event.awayScores)
 
       val (winner, loser) = if (teamAResult.sets > teamBResult.sets) {
         teamAResult to teamBResult
@@ -210,9 +254,9 @@ class VolleyZoneEventSource @Inject constructor(
       }
 
       SourceEvent.Result(
-        winnerId = if (teamAResult.sets > teamBResult.sets) homeTeamId else awayTeamId,
-        loserId = if (teamAResult.sets < teamBResult.sets) homeTeamId else awayTeamId,
-        sets = teamAResult.sets + teamBResult.sets,
+        winnerId = winner.id,
+        loserId = loser.id,
+        sets = winner.sets + loser.sets,
         winnerSets = winner.sets,
         loserSets = loser.sets,
         winnerScores = winner.scores,
@@ -255,8 +299,10 @@ class VolleyZoneEventSource @Inject constructor(
     val venueExtra: String?,
     val homeTeam: String,
     val awayTeam: String,
-    val homeScore: UInt?,
-    val awayScore: UInt?,
+    val homeSets: UInt?,
+    val awaySets: UInt?,
+    val homeScores: List<UInt>?,
+    val awayScores: List<UInt>?,
   ) : Identifiable {
     val triangleId: String = id.take(4)
     override val identity: String =

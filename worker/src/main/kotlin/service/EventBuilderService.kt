@@ -23,6 +23,7 @@ import kotlin.time.Duration.Companion.days
 
 class EventBuilderService @Inject constructor(
   private val locationService: LocationService,
+  private val timeService: TimeService,
   config: WorkerConfig,
   baseLogger: Logger,
 ) {
@@ -99,12 +100,12 @@ class EventBuilderService @Inject constructor(
     return !same
   }
 
-  private fun SourceEvent.inviteTime(): Instant {
-    return (start - invitationDayBeforeStart.toInt().days).atNoon()
+  private fun SourceEvent.inviteTime(): Instant? {
+    return (start - invitationDayBeforeStart.toInt().days).atNoon().takeIf { it > timeService.now() }
   }
 
-  private fun SourceEvent.rsvpDate(): Instant {
-    return (start - rsvpDeadlineBeforeStart.toInt().days).atNoon()
+  private fun SourceEvent.rsvpDate(): Instant? {
+    return (start - rsvpDeadlineBeforeStart.toInt().days).atNoon().takeIf { it > timeService.now() }
   }
 
   private fun Instant.atNoon(): Instant = toLocalDateTime(TimeZone.UTC).date
