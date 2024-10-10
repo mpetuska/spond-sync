@@ -21,7 +21,7 @@ data class SourceEvent(
   val result: Result?,
   val lastUpdated: Instant,
 ) : Identifiable {
-  override val identity: String = "SourceEvent(provider=$provider, name=$name)"
+  override val identity: String = "SourceEvent(provider=$provider, id=$id, name=$name)"
 
   data class Result(
     val winnerId: UInt,

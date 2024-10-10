@@ -184,8 +184,16 @@ class VolleyZoneEventSource @Inject constructor(
     events: Collection<VolleyZoneEvent>
   ): Triangle {
     val sortedEvents = events.sortedBy(VolleyZoneEvent::id)
-    val host = sortedEvents.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value.first()
+    val hostEvents =
+      sortedEvents.groupBy { it.homeTeam }.maxBy { (_, v) -> v.size }.value
+    val host = hostEvents.first()
     val triangleId = host.id.dropLast(1)
+    if (sortedEvents.any { host.venue != it.venue || host.venueExtra != it.venueExtra }) {
+      val venues = sortedEvents.joinToString("\n\t") {
+        "${it.id}: ${it.homeTeam} - ${it.awayTeam} @ ${it.venueExtra ?: it.venue}"
+      }
+      log.w("Broken triangle $triangleId! Venues do not match:\n\t$venues")
+    }
     if (sortedEvents.map { "${it.date}${it.time}" }.toSet().size != 1) {
       val eventsStr = sortedEvents.joinToString("\n\t", prefix = "\n\t", transform = VolleyZoneEvent::shortIdentity)
       log.w("Invalid triangle times for triangle $triangleId! Events:$eventsStr")

@@ -69,28 +69,28 @@ class SpondService @Inject constructor(
     )
       .filter(::eventFilter)
       .collect {
-        log.d { "Canceling event ${it.identity}" }
+        log.d("Canceling event ${it.identity}")
         try {
           client.cancelEvent(it.id, quiet = true)
         } catch (e: ClientRequestException) {
           log.w("Failed to delete event ${it.identity}", e)
         }
-        log.i { "Cancelled event ${it.identity}" }
+        log.i("Cancelled event ${it.identity}")
       }
   }
 
   @Suppress("ReturnCount")
   suspend fun updateEvent(team: SubGroup, event: Event, sourceEvent: SourceEvent): Event? {
-    log.v("Preparing merged spond event data for source event ${sourceEvent.identity}")
+    log.v("${sourceEvent.id}: Preparing merged spond event data for source event ${sourceEvent.identity}")
     val updatedSpondEvent = runCatching {
       with(eventBuilderService) {
         sourceEvent.toEvent(event, team)
       }
     }.getOrElse {
-      log.e("Failed to prepare merged spond event data for source event ${sourceEvent.identity}", it)
+      log.e("${sourceEvent.id}: Failed to prepare merged spond event data for source event ${sourceEvent.identity}", it)
       return null
     }
-    log.d("Prepared merged spond event data for source event ${sourceEvent.identity}")
+    log.d("${sourceEvent.id}: Prepared merged spond event data for source event ${sourceEvent.identity}")
 
     @Suppress("ComplexCondition")
     val resultsModified = syncResults && updatedSpondEvent.matchInfo?.teamScore != null &&
@@ -98,10 +98,12 @@ class SpondService @Inject constructor(
         event.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
 
     if (!eventBuilderService.modified(event, updatedSpondEvent) && !resultsModified && !forceUpdate) {
-      log.i("Skipping the update... Updated spond event is the same as previous event ${event.identity}")
+      log.i(
+        "${sourceEvent.id}: Skipping the update... Updated spond event is the same as previous event ${event.identity}"
+      )
       return event
     } else {
-      log.i("Updating spond event with new data ${event.identity}")
+      log.i("${sourceEvent.id}: Updating spond event with new data ${event.identity}")
     }
 
     return try {
@@ -125,27 +127,27 @@ class SpondService @Inject constructor(
         freshEvent
       }
     } catch (e: ClientRequestException) {
-      log.e("Failed to persist spond event update ${updatedSpondEvent.identity}", e)
+      log.e("${sourceEvent.id}: Failed to persist spond event update ${updatedSpondEvent.identity}", e)
       null
     }
   }
 
   suspend fun createEvent(group: Group, team: SubGroup, teamMembers: List<MemberId>, sourceEvent: SourceEvent): Event? {
-    log.v("Preparing spond event data for source event ${sourceEvent.identity}")
+    log.v("${sourceEvent.id}: Preparing spond event data for source event ${sourceEvent.identity}")
     val spondEvent = runCatching {
       with(eventBuilderService) {
         sourceEvent.toNewEvent(group, team, teamMembers)
       }
     }.getOrElse {
-      log.e("Failed to prepare spond event data for source event ${sourceEvent.identity}", it)
+      log.e("${sourceEvent.id}: Failed to prepare spond event data for source event ${sourceEvent.identity}", it)
       null
     } ?: return null
-    log.d("Prepared spond event data for source event ${sourceEvent.identity}")
+    log.d("${sourceEvent.id}: Prepared spond event data for source event ${sourceEvent.identity}")
 
     return try {
       client.createEvent(spondEvent)
     } catch (e: ClientRequestException) {
-      log.e("Failed to persist new spond event creation ${spondEvent.identity}", e)
+      log.e("${sourceEvent.id}: Failed to persist new spond event creation ${spondEvent.identity}", e)
       null
     }
   }

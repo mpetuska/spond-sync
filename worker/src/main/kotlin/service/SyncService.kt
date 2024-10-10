@@ -55,7 +55,7 @@ class SyncService @Inject constructor(
       val spondLocalId = extractSourceEventId(spondEvent)
       val sourceEvent = spondLocalId?.let(eventQueue::get)
       if (sourceEvent != null) {
-        log.d("Matched spond event ${spondEvent.identity} to source event ${sourceEvent.identity}")
+        log.d("${sourceEvent.id}: Matched spond event ${spondEvent.identity} to source event ${sourceEvent.identity}")
         eventQueue.remove(sourceEvent.id)
       } else {
         log.e("Unable to match spond event ${spondEvent.identity} to source event")
@@ -63,12 +63,12 @@ class SyncService @Inject constructor(
         return@collect
       }
 
-      log.d("Updating spond event ${spondEvent.identity}")
+      log.d("${sourceEvent.id}: Updating spond event ${spondEvent.identity}")
       val updated = spond.updateEvent(team, spondEvent, sourceEvent)
       if (updated != null) {
-        log.i("Updated spond event ${updated.identity}")
+        log.i("${sourceEvent.id}: Updated spond event ${updated.identity}")
       } else {
-        log.w("Failed to update spond event ${spondEvent.identity}")
+        log.w("${sourceEvent.id}: Failed to update spond event ${spondEvent.identity}")
       }
     }
 
@@ -78,17 +78,17 @@ class SyncService @Inject constructor(
       val today = timeService.offsetNow()
       for (sourceEvent in eventQueue.values) {
         if (sourceEvent.start > today) {
-          log.i("Processing new source event ${sourceEvent.identity}")
+          log.i("${sourceEvent.id}: Processing new source event ${sourceEvent.identity}")
         } else {
-          log.i("Skipping new source event ${sourceEvent.identity} as it has already passed")
+          log.i("${sourceEvent.id}: Skipping new source event ${sourceEvent.identity} as it has already passed")
           continue
         }
-        log.v("Creating a new spond event for source event ${sourceEvent.identity}")
+        log.v("${sourceEvent.id}: Creating a new spond event for source event ${sourceEvent.identity}")
         val created = spond.createEvent(group, team, subGroupMembers, sourceEvent)
         if (created != null) {
-          log.i("Created a new spond event ${created.identity}")
+          log.i("${sourceEvent.id}: Created a new spond event ${created.identity}")
         } else {
-          log.w("Failed to create a spond event for source event ${sourceEvent.identity}")
+          log.w("${sourceEvent.id}: Failed to create a spond event for source event ${sourceEvent.identity}")
         }
       }
     }
