@@ -2,6 +2,7 @@ package worker.source
 
 import co.touchlab.kermit.Logger
 import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -66,71 +67,22 @@ class VolleyZoneEventSource @Inject constructor(
     }
   }
 
-  @Suppress("LongMethod")
   private suspend fun parseLeagueTriangles(url: String): Map<String, Triangle> {
     val document = http.get(url).bodyAsText().let(Ksoup::parse)
     val fixturesTable = document.getElementById("fixtures_league")
     if (fixturesTable == null) {
       log.exit("Unable to find fixtures at $url")
     }
-    val vzFixtures = fixturesTable.getElementsByClass("table-body").map { row ->
-      val venue = row.attr("data-venue").trim()
-      VolleyZoneEvent(
-        id = row.attr("data-comment").trim(),
-        date = row.attr("data-date").trim(),
-        time = row.attr("data-time").trim(),
-        homeTeam = row.attr("data-hometeam").trim(),
-        awayTeam = row.attr("data-awayteam").trim(),
-        venue = venue,
-        venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
-          ?.takeIf { it.startsWith(venue, ignoreCase = true) },
-        homeSets = null,
-        awaySets = null,
-        homeScores = null,
-        awayScores = null,
-      )
-    }
-    val resultsTable = document.getElementById("results_league")
+    val vzFixtures = fixturesTable.getElementsByClass("table-body").mapNotNull(::parseEvent)
 
+    val resultsTable = document.getElementById("results_league")
     if (resultsTable == null) {
       log.exit("Unable to find results at $url")
     }
-    val vzResults = resultsTable.getElementsByTag("ul").windowed(2).mapNotNull { (row, scores) ->
-      if (!row.hasClass("table-body") || !scores.hasClass("list-centered_bottom_league")) {
-        return@mapNotNull null
-      }
-      val id = row.attr("data-comment").trim()
-      val venue = row.attr("data-venue").trim()
-      val homeSets = row.attr("data-homescore").trim().takeIf(String::isNotBlank)?.toUInt()
-      val awaySets = row.attr("data-awayscore").trim().takeIf(String::isNotBlank)?.toUInt()
-      val results = scores.getElementsByTag("li").mapNotNull { li ->
-        li.getElementsByTag("span").mapNotNull { it.text().trim().toUIntOrNull() }.takeIf { it.isNotEmpty() }
-      }
-      val totalSets = (homeSets ?: 0u) + (awaySets ?: 0u)
-      val (homeScores, awayScores) = if (results.size != totalSets.toInt()) {
-        log.w(
-          "Invalid set count for event $id. Sets from final results were $totalSets, " +
-            "however sets from scores were ${results.size}"
-        )
-        null to null
-      } else {
-        results.map { it.first() } to results.map { it.last() }
-      }
-      VolleyZoneEvent(
-        id = id,
-        date = row.attr("data-date").trim(),
-        time = row.attr("data-time").trim(),
-        homeTeam = row.attr("data-hometeam").trim(),
-        awayTeam = row.attr("data-awayteam").trim(),
-        venue = venue,
-        venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
-          ?.takeIf { it.startsWith(venue, ignoreCase = true) },
-        homeSets = homeSets,
-        awaySets = awaySets,
-        homeScores = homeScores,
-        awayScores = awayScores,
-      )
-    }
+    val vzResults = resultsTable.getElementsByTag("ul").toList()
+      .filter { !it.hasClass("table-header") }
+      .windowed(size = 2, step = 2)
+      .mapNotNull { (row, scores) -> parseResult(row, scores) }
 
     val vzEvents = vzFixtures + vzResults
 
@@ -164,6 +116,65 @@ class VolleyZoneEventSource @Inject constructor(
     }
 
     return triangles.associateBy(Triangle::id)
+  }
+
+  private fun parseEvent(row: Element): VolleyZoneEvent? {
+    val homeTeam = row.attr("data-hometeam").trim()
+    val awayTeam = row.attr("data-awayteam").trim()
+    val date = row.attr("data-date").trim()
+    val venue = row.attr("data-venue").trim()
+    val venueExtra = row.getElementsByTag("li").getOrNull(5)?.getElementsByClass("data")?.firstOrNull()?.text()
+      ?.takeIf { it.startsWith(venue, ignoreCase = true) }
+    val id = row.attr("data-comment").trim().let { comment ->
+      ID_REGEX.find(comment)?.value ?: run {
+        log.w(
+          "Cannot find event ID: date=$date, homeTeam=$homeTeam, awayTeam=$awayTeam, " +
+            "venue=$venue, venueExtra=$venueExtra, comment=$comment"
+        )
+        return null
+      }
+    }
+    return VolleyZoneEvent(
+      id = id,
+      date = date,
+      time = row.attr("data-time").trim(),
+      homeTeam = homeTeam,
+      awayTeam = awayTeam,
+      venue = venue,
+      venueExtra = venueExtra,
+      homeSets = null,
+      awaySets = null,
+      homeScores = null,
+      awayScores = null,
+    )
+  }
+
+  private fun parseResult(row: Element, scores: Element): VolleyZoneEvent? {
+    val event = parseEvent(row)
+    if (event == null || !row.hasClass("table-body") || !scores.hasClass("list-centered_bottom_league")) {
+      return null
+    }
+    val homeSets = row.attr("data-homescore").trim().takeIf(String::isNotBlank)?.toUInt()
+    val awaySets = row.attr("data-awayscore").trim().takeIf(String::isNotBlank)?.toUInt()
+    val results = scores.getElementsByTag("li").mapNotNull { li ->
+      li.getElementsByTag("span").mapNotNull { it.text().trim().toUIntOrNull() }.takeIf { it.isNotEmpty() }
+    }
+    val totalSets = (homeSets ?: 0u) + (awaySets ?: 0u)
+    val (homeScores, awayScores) = if (results.size != totalSets.toInt()) {
+      log.w(
+        "Invalid set count for event ${event.id}. Sets from final results were $totalSets, " +
+          "however sets from scores were ${results.size}"
+      )
+      null to null
+    } else {
+      results.map { it.first() } to results.map { it.last() }
+    }
+    return event.copy(
+      homeSets = homeSets,
+      awaySets = awaySets,
+      homeScores = homeScores,
+      awayScores = awayScores,
+    )
   }
 
   private fun correctFuckedTriangles(url: String, events: List<VolleyZoneEvent>): List<Triangle> {
@@ -277,6 +288,7 @@ class VolleyZoneEventSource @Inject constructor(
     val GMT = TimeZone.of("GMT")
     val BST = TimeZone.of("GMT+1")
     val TRIANGLE_DURATION = 4.hours
+    val ID_REGEX = Regex("[A-Z]\\d{3}[a-z]")
 
     fun parseTime(event: VolleyZoneEvent): Instant {
       val dateLocal = LocalDate.parse(

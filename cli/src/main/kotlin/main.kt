@@ -14,7 +14,7 @@ suspend fun main(vararg args: String) {
   val config: WorkerConfig = File(configFile).inputStream().use(Json::decodeFromStream)
   val logSeverity = System.getenv("LOG_LEVEL")?.takeIf { it.isNotBlank() }?.let { level ->
     Severity.entries.firstOrNull { it.name.startsWith(level, ignoreCase = true) }
-  } ?: Severity.Info
+  } ?: Severity.Warn
   val component = DaggerCliComponent.builder()
     .config(config)
     .logSeverity(logSeverity)

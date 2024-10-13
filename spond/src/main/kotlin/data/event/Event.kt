@@ -34,7 +34,7 @@ data class Event(
   val json: JsonObject,
 ) : Identifiable, WithId {
   override val identity: String
-    get() = "Event(id=$id, name=$name)"
+    get() = "Event(id=$id, start=$start, name=$name)"
 
   internal object Serializer : PreservingJsonSerializer<Event>(generatedSerializer())
 }

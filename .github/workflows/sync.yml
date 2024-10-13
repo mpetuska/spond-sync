@@ -6,7 +6,7 @@ on:
       logLevel:
         description: 'Log level'
         required: false
-        default: INFO
+        default: WARN
   schedule:
     # Every 6 hours
     - cron: 0 */6 * * *
