@@ -201,6 +201,7 @@ class EventBuilderService @Inject constructor(
         ?.split("\n")
         ?.first { it.startsWith(PREFIX_EVENT_ID) }
         ?.removePrefix(PREFIX_EVENT_ID)
+        ?.take(5)
     }
   }
 }
