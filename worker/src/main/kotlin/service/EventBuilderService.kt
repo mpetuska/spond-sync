@@ -1,17 +1,9 @@
 package worker.service
 
 import co.touchlab.kermit.Logger
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atTime
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import kotlinx.serialization.json.JsonObject
-import spond.data.event.Event
-import spond.data.event.MatchInfo
-import spond.data.event.MatchType
-import spond.data.event.NewEvent
-import spond.data.event.Recipients
+import spond.data.event.*
 import spond.data.group.Group
 import spond.data.group.MemberId
 import spond.data.group.SubGroup
@@ -44,8 +36,8 @@ class EventBuilderService @Inject constructor(
       location = location(),
       start = start(),
       end = end,
-      inviteTime = inviteTime(),
-      rsvpDate = rsvpDate(),
+      inviteTime = inviteTime() ?: base.inviteTime,
+      rsvpDate = rsvpDate() ?: base.rsvpDate,
       maxAccepted = maxAccepted,
       json = base.json.toMutableMap().apply {
         remove("responses")
