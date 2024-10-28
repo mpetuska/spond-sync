@@ -8,8 +8,8 @@ on:
         required: false
         default: WARN
   schedule:
-    # Every 6 hours
-    - cron: 0 */6 * * *
+    # Every 3 hours
+    - cron: 0 */3 * * *
 
 env:
   LOG_LEVEL: ${{ github.event.inputs.logLevel }}

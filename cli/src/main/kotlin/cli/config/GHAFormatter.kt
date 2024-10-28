@@ -16,8 +16,9 @@ class GHAFormatter(
     val params = stackTrace?.let {
       val filePathChunks = it.className.split(".").dropLast(1)
       val module = filePathChunks.first()
-      val path = "$module/src/main/kotlin/${filePathChunks.joinToString("/")}/${it.fileName}"
-      " file=$path,line=${stackTrace.lineNumber}"
+      val path = "./$module/src/main/kotlin/${filePathChunks.joinToString("/")}/${it.fileName}"
+//      " file=$path,line=${stackTrace.lineNumber}"
+      " file=$path"
     } ?: ""
     val level = when (severity) {
       Severity.Verbose -> "debug"
