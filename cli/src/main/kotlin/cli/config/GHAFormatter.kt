@@ -13,7 +13,12 @@ class GHAFormatter(
     val stackTrace = Throwable(
       "STACK"
     ).stackTrace.firstOrNull { !it.className.startsWith("co.touchlab") && !it.className.startsWith("cli.config") }
-    val params = stackTrace?.let { " file=${stackTrace.fileName},line=${stackTrace.lineNumber}" } ?: ""
+    val params = stackTrace?.let {
+      val filePathChunks = it.className.split(".").dropLast(1)
+      val module = filePathChunks.first()
+      val path = "$module/src/main/kotlin/${filePathChunks.joinToString("/")}/${it.fileName}"
+      " file=$path,line=${stackTrace.lineNumber}"
+    } ?: ""
     val level = when (severity) {
       Severity.Verbose -> "debug"
       Severity.Debug -> "debug"
