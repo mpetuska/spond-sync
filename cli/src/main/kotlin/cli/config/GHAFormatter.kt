@@ -10,14 +10,15 @@ class GHAFormatter(
 ) : MessageStringFormatter by colourLogFormatter {
 
   override fun formatSeverity(severity: Severity): String {
-    val stackTrace = Throwable(
-      "STACK"
-    ).stackTrace.firstOrNull { !it.className.startsWith("co.touchlab") && !it.className.startsWith("cli.config") }
+    val stackTrace = Throwable("STACK").stackTrace
+      .firstOrNull {
+        !it.className.startsWith("co.touchlab") &&
+          !it.className.startsWith("cli.config")
+      }
     val params = stackTrace?.let {
       val filePathChunks = it.className.split(".").dropLast(1)
       val module = filePathChunks.first()
       val path = "./$module/src/main/kotlin/${filePathChunks.joinToString("/")}/${it.fileName}"
-//      " file=$path,line=${stackTrace.lineNumber}"
       " file=$path"
     } ?: ""
     val level = when (severity) {
