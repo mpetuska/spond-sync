@@ -26,6 +26,9 @@ suspend fun main(vararg args: String) {
     .build()
 
   val worker = component.worker()
-//  worker.cleanGroup()
-  worker.syncGroup()
+  if ("--clean" in args) {
+    worker.cleanGroup()
+  } else if ("--nosync" in args) {
+    worker.syncGroup()
+  }
 }
