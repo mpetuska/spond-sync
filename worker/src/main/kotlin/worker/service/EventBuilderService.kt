@@ -112,7 +112,7 @@ class EventBuilderService @Inject constructor(
     .toInstant(TimeZone.UTC)
 
   private fun SourceEvent.description() = buildString {
-    appendLine("$teamA vs $teamB")
+    appendLine("$id: $teamA vs $teamB")
     appendLine()
     appendLine("Triangle ID: $triangleId")
     appendLine("Host: $host")
