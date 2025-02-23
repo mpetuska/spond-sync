@@ -3,6 +3,8 @@ package worker.service
 import co.touchlab.kermit.Logger
 import kotlinx.datetime.*
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import spond.data.event.*
 import spond.data.group.Group
 import spond.data.group.MemberId
@@ -38,12 +40,19 @@ class EventBuilderService @Inject constructor(
       end = end,
       inviteTime = inviteTime() ?: base.inviteTime,
       rsvpDate = rsvpDate() ?: base.rsvpDate,
-      maxAccepted = maxOf(maxAccepted, base.maxAccepted ?: 0u),
+      maxAccepted = maxOf(maxAccepted, base.acceptedCount),
       json = base.json.toMutableMap().apply {
         remove("responses")
       }.let(::JsonObject)
     )
   }
+
+  private val Event.acceptedCount: UInt
+    get() = try {
+      json["responses"]?.jsonObject?.get("acceptedIds")?.jsonArray?.size?.toUInt() ?: 0u
+    } catch (_: Exception) {
+      0u
+    }
 
   suspend fun SourceEvent.toNewEvent(
     group: Group,

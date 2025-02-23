@@ -1,4 +1,4 @@
-name: Synchronize Job
+name: Sync Job
 
 on:
   workflow_call:
@@ -18,23 +18,15 @@ env:
 
 jobs:
   sync:
+    name: Sync
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
-
-      - name: Restore Gradle cache
-        id: cache
+      - name: Restore CLI
+        id: cache-cli
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          path: cli/build/install/cli/
+          key: ${{ runner.os }}-cli
 
       - uses: actions/setup-java@v4
         with:
@@ -47,7 +39,7 @@ jobs:
           SYNC_CONFIG: ${{ secrets.config }}
 
       - name: Sync Data
-        run: ./gradlew :cli:run --args='${{ github.workspace }}/.config'
+        run: ./cli/build/install/cli/bin/cli '${{ github.workspace }}/.config'
 
       - name: Cleanup config
         if: always()

@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   sync:
+    name: Sync
     uses: ./.github/workflows/sync-job.yml
     with:
       logLevel: ${{ inputs.logLevel }}
