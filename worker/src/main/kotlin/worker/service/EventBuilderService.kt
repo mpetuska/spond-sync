@@ -38,7 +38,7 @@ class EventBuilderService @Inject constructor(
       end = end,
       inviteTime = inviteTime() ?: base.inviteTime,
       rsvpDate = rsvpDate() ?: base.rsvpDate,
-      maxAccepted = maxAccepted,
+      maxAccepted = maxOf(maxAccepted, base.maxAccepted ?: 0u),
       json = base.json.toMutableMap().apply {
         remove("responses")
       }.let(::JsonObject)
