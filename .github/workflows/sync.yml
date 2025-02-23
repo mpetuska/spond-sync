@@ -11,46 +11,14 @@ on:
     # Every 3 hours
     - cron: 0 */3 * * *
 
-env:
-  LOG_LEVEL: ${{ github.event.inputs.logLevel }}
-
 concurrency:
   group: sync
   cancel-in-progress: true
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
-
-      - name: Restore Gradle cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'adopt'
-          java-version: 21
-
-      - name: Prepare Config
-        run: echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
-        env:
-          SYNC_CONFIG: ${{ secrets.SYNC_CONFIG }}
-
-      - name: Sync Data
-        run: ./gradlew :cli:run --args='${{ github.workspace }}/.config'
-
-      - name: Cleanup config
-        if: always()
-        run: rm -rf '${{ github.workspace }}/.config'
+    uses: ./.github/workflows/sync-job.yml
+    with:
+      logLevel: ${{ inputs.logLevel }}
+    secrets:
+      config: ${{ secrets.SYNC_CONFIG }}
