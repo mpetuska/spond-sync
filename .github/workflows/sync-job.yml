@@ -1,4 +1,4 @@
-name: Synchronize Spond
+name: Synchronize Job
 
 on:
   workflow_call:
