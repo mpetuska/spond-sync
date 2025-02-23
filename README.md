@@ -19,9 +19,21 @@ All configuration is defined in [WorkerConfig](./worker/src/main/kotlin/WorkerCo
     "username": "obfuscated",
     "password": "obfuscated",
     // Optional
-    "apiUrl": "https://api.spond.com/core/v1"
+    "apiUrl": "https://api.spond.com/core/v1",
+    // Optional
+    "opponentColourHex": "#FFFFFF",
+    // Optional
+    "invitationDayBeforeStart": 6,
+    // Optional
+    "rsvpDeadlineBeforeStart": 2,
+    // Optional
+    "maxAccepted": 10,
+    // Optional
+    "syncResults": true,
+    // Optional
+    "forceUpdate": false
   },
-  "source": "sportpress",
+  "source": "volleyzone",
   "sportpress": {
     "club": "My Club Name",
     "apiUrl": "https://<wp-host>/wp-json/sportspress/v2"
@@ -30,9 +42,15 @@ All configuration is defined in [WorkerConfig](./worker/src/main/kotlin/WorkerCo
     "leagues": {
       "League name": "https://competitions.volleyzone.co.uk/league/000000"
     },
+    // Optional
+    "addresses": {
+      "VZ Address": "Full Address, City, POSTCODE, Country"
+    },
+    // Optional
+    "attemptToFixBrokenTriangles": false,
   },
   "teams": {
-    "Source team": "Spond subgroup"
+    "Source team name": "Spond subgroup name"
   },
   // Optional
   "yearOffset": 0,

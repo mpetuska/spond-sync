@@ -48,7 +48,7 @@ data class WorkerConfig(
     val password: String,
     val apiUrl: String = "https://api.spond.com/core/v1",
     val opponentColourHex: String = "#FFFFFF",
-    val invitationDayBeforeStart: UInt = 7u,
+    val invitationDayBeforeStart: UInt = 6u,
     val rsvpDeadlineBeforeStart: UInt = 2u,
     val maxAccepted: UInt = 10u,
     val descriptionByline: String = "Managed event.",
