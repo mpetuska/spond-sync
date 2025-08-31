@@ -1,0 +1,17 @@
+product:
+  type: lib
+  platforms:
+    - jvm
+
+dependencies:
+  - $libs.dagger
+  - $libs.ktor.client.core
+
+settings:
+  kotlin:
+    optIns:
+      - kotlin.time.ExperimentalTime
+      - kotlinx.serialization.ExperimentalSerializationApi
+    serialization:
+      format: json
+      version: 1.9.0

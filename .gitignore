@@ -6,3 +6,4 @@ build/
 out/
 local.properties
 *.config.json
+amper.bat

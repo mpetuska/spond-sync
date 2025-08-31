@@ -1,0 +1,21 @@
+product:
+  type: jvm/app
+
+dependencies:
+  - ../worker
+  - ../spond
+  - ../sportpress
+  - ../utils
+  - $libs.ktor.client.cio
+  - $libs.kermit
+  - $libs.dagger
+  - $libs.logback: runtime-only
+
+settings:
+  kotlin:
+    ksp:
+      processors:
+        - $libs.dagger.compiler
+    serialization:
+      format: json
+      version: 1.9.0

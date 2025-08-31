@@ -25,7 +25,7 @@ jobs:
         id: cache-cli
         uses: actions/cache@v4
         with:
-          path: cli/build/install/cli/
+          path: build/tasks/_cli_executableJarJvm/
           key: ${{ runner.os }}-cli
 
       - name: Setup Java
@@ -40,7 +40,7 @@ jobs:
           SYNC_CONFIG: ${{ secrets.config }}
 
       - name: Sync Data
-        run: ./cli/build/install/cli/bin/cli '${{ github.workspace }}/.config'
+        run: java --jar ./build/tasks/_cli_executableJarJvm/cli-jvm-executable.jar -- '${{ github.workspace }}/.config'
 
       - name: Cleanup config
         if: always()

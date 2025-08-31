@@ -1,10 +1,10 @@
 [versions]
-dagger = "2.52"
-kermit = "2.0.4"
-kotlinx-coroutines = "1.9.0"
-kotlinx-datetime = "0.6.1"
-kotlinx-serialization = "1.7.3"
-ktor = "3.0.0"
+dagger = "2.57.1"
+kermit = "2.0.8"
+kotlinx-coroutines = "1.10.2"
+kotlinx-datetime = "0.7.1"
+kotlinx-serialization = "1.9.0"
+ktor = "3.2.3"
 
 [libraries]
 dagger = { module = "com.google.dagger:dagger", version.ref = "dagger" }
@@ -13,11 +13,11 @@ kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-ksoup = "com.fleeksoft.ksoup:ksoup:0.1.9"
+ksoup = "com.fleeksoft.ksoup:ksoup:0.2.5"
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-logback = "ch.qos.logback:logback-classic:1.5.12"
+logback = "ch.qos.logback:logback-classic:1.5.18"

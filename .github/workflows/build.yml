@@ -31,7 +31,7 @@ jobs:
         id: cache-cli
         uses: actions/cache@v4
         with:
-          path: cli/build/install/cli/
+          path: build/tasks/_cli_executableJarJvm/
           key: ${{ runner.os }}-cli
 
       - name: Setup Java
@@ -45,4 +45,4 @@ jobs:
             **/gradle-wrapper.properties
 
       - name: Build
-        run: ./gradlew :cli:installDist
+        run: ./amper package -m cli

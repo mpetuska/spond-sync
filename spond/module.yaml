@@ -1,0 +1,20 @@
+product:
+  type: lib
+  platforms:
+    - jvm
+
+dependencies:
+  - ../utils
+  - $libs.ktor.client.auth
+  - $libs.ktor.client.content.negotiation
+  - $libs.ktor.serialization.kotlinx.json
+  - $libs.kermit
+  - $libs.dagger
+
+settings:
+  kotlin:
+    optIns:
+      - kotlin.time.ExperimentalTime
+    serialization:
+      format: json
+      version: 1.9.0

@@ -1,1 +1,7 @@
-build-conventions/.editorconfig
+root = true
+
+[*]
+indent_size = 2
+continuation_indent_size = 2
+disabled_rules = no-wildcard-imports
+insert_final_newline = true
