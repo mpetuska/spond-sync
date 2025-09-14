@@ -8,13 +8,12 @@ import co.touchlab.kermit.platformLogWriter
 import org.junit.jupiter.api.Test
 
 class LoggerTest {
-  private val target = Logger(
-    config = loggerConfigInit(
-      platformLogWriter(ColourLogFormatter()),
-      minSeverity = Severity.Verbose,
-    ),
-    tag = "Test"
-  )
+  private val target =
+    Logger(
+      config =
+        loggerConfigInit(platformLogWriter(ColourLogFormatter()), minSeverity = Severity.Verbose),
+      tag = "Test",
+    )
 
   @Test
   fun test() {

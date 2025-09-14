@@ -7,11 +7,11 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.buildJsonObject
 
 /**
- * Deserializes json and preserves all original data including uknown keys in `@SerialName("#json")` property.
+ * Deserializes json and preserves all original data including uknown keys in `@SerialName("#json")`
+ * property.
  */
-abstract class PreservingJsonSerializer<T : Any>(
-  serializer: KSerializer<T>,
-) : JsonTransformingSerializer<T>(serializer) {
+abstract class PreservingJsonSerializer<T : Any>(serializer: KSerializer<T>) :
+  JsonTransformingSerializer<T>(serializer) {
   override fun transformDeserialize(element: JsonElement): JsonElement {
     require(element is JsonObject)
     val transformed = buildJsonObject {

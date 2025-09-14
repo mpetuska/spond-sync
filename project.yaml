@@ -3,4 +3,6 @@ modules:
   - sportpress
   - spond
   - worker
-  - cli
+  - cli/cli-core
+  - cli/cli-linux
+  - cli/cli-jvm

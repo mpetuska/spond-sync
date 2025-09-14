@@ -35,15 +35,16 @@ class ColourLogFormatter : MessageStringFormatter {
   }
 
   companion object {
-    private fun ansiColour(severity: Severity?) = when (severity) {
-      Severity.Verbose -> ANSI_WHITE
-      Severity.Debug -> ANSI_RESET
-      Severity.Info -> ANSI_CYAN
-      Severity.Warn -> ANSI_YELLOW
-      Severity.Error -> ANSI_RED
-      Severity.Assert -> ANSI_PURPLE
-      null -> ANSI_RESET
-    }
+    private fun ansiColour(severity: Severity?) =
+      when (severity) {
+        Severity.Verbose -> ANSI_WHITE
+        Severity.Debug -> ANSI_RESET
+        Severity.Info -> ANSI_CYAN
+        Severity.Warn -> ANSI_YELLOW
+        Severity.Error -> ANSI_RED
+        Severity.Assert -> ANSI_PURPLE
+        null -> ANSI_RESET
+      }
 
     private const val ANSI_RESET = "\u001B[0m"
     private const val ANSI_RED = "\u001B[31m"

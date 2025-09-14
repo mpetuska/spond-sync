@@ -11,14 +11,13 @@ internal fun buildHttpClient(
   baseClient: HttpClient,
   credentials: SportpressCredentials,
   json: Json,
-): HttpClient = baseClient.config {
-  val url = credentials.apiUrl.removeSuffix("/")
-  expectSuccess = true
-  install(DefaultRequest) {
-    contentType(ContentType.Application.Json)
-    url("$url/")
+): HttpClient =
+  baseClient.config {
+    val url = credentials.apiUrl.removeSuffix("/")
+    expectSuccess = true
+    install(DefaultRequest) {
+      contentType(ContentType.Application.Json)
+      url("$url/")
+    }
+    install(ContentNegotiation) { json(json) }
   }
-  install(ContentNegotiation) {
-    json(json)
-  }
-}

@@ -7,10 +7,8 @@ import utils.Identifiable
 
 @Serializable
 data class AutocompleteLocation(
-  @SerialName("placeId")
-  override val id: LocationId,
-  @SerialName("featureName")
-  val name: String,
+  @SerialName("placeId") override val id: LocationId,
+  @SerialName("featureName") val name: String,
   val addressLine: String,
 ) : Identifiable, WithId {
   override val identity: String

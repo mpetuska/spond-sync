@@ -18,6 +18,5 @@ object RenderedSerializer : KSerializer<String> {
     delegate.serialize(encoder, Rendered(value))
   }
 
-  @Serializable
-  private class Rendered(val rendered: String)
+  @Serializable private class Rendered(val rendered: String)
 }

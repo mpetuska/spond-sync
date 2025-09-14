@@ -31,7 +31,10 @@ jobs:
         id: cache-cli
         uses: actions/cache@v4
         with:
-          path: build/tasks/_cli_executableJarJvm/
+          path: |
+            build/tasks/_cli-jvm_executableJarJvm
+            build/tasks/_cli-linux_linkLinuxX64Release
+            kexe
           key: ${{ runner.os }}-cli
 
       - name: Setup Java
@@ -45,4 +48,9 @@ jobs:
             **/gradle-wrapper.properties
 
       - name: Build
-        run: ./amper package -m cli
+        run: |
+          ./amper build -v release -m cli-jvm -m cli-linux
+          ./amper package -v release -m cli-jvm
+          mkdir -p kexe/{jvm,native}
+          cp build/tasks/_cli-jvm_executableJarJvm/cli-jvm-jvm-executable.jar kexe/jvm/spond-sync.jar
+          cp build/tasks/_cli-linux_linkLinuxX64Release/cli-linux.kexe kexe/native/spond-sync

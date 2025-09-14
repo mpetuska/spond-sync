@@ -1,15 +1,19 @@
 package worker
 
 import co.touchlab.kermit.Logger
+import kotlin.time.Clock
 import kotlinx.datetime.*
+import me.tatarka.inject.annotations.Inject
+import software.amazon.lastmile.kotlin.inject.anvil.AppScope
+import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import worker.service.SpondService
 import worker.service.SyncService
 import worker.service.TimeService
 import worker.util.exit
-import javax.inject.Inject
-import kotlin.time.Clock
 
-class SyncWorker @Inject constructor(
+@Inject
+@SingleIn(AppScope::class)
+class SyncWorker(
   private val spondService: SpondService,
   private val syncService: SyncService,
   private val timeService: TimeService,
@@ -37,9 +41,7 @@ class SyncWorker @Inject constructor(
     }
   }
 
-  /**
-   * Syncs sportpress events to spond.
-   */
+  /** Syncs sportpress events to spond. */
   suspend fun syncGroup() {
     log.d("Looking for spond group by name $groupName")
     val group = spondService.findGroup(groupName)
@@ -54,29 +56,29 @@ class SyncWorker @Inject constructor(
     log.i("Assuming season start at $seasonStartDate")
 
     val seasonStartInstant = seasonStartDate.toInstant(TimeZone.UTC)
-    val teams = teamsSourceToSpond.mapNotNull { (team, spondTeam) ->
-      val subGroup = group.subGroups.firstOrNull { subGroup -> subGroup.name == spondTeam }
-      if (subGroup == null) {
-        log.w("Unable to find spond subGroup $spondTeam linked to source team $team")
-        null
-      } else {
-        team to subGroup
-      }
-    }.toMap()
-    syncService.sync(
-      seasonStartInstant,
-      group,
-      teams,
-    )
+    val teams =
+      teamsSourceToSpond
+        .mapNotNull { (team, spondTeam) ->
+          val subGroup = group.subGroups.firstOrNull { subGroup -> subGroup.name == spondTeam }
+          if (subGroup == null) {
+            log.w("Unable to find spond subGroup $spondTeam linked to source team $team")
+            null
+          } else {
+            team to subGroup
+          }
+        }
+        .toMap()
+    syncService.sync(seasonStartInstant, group, teams)
   }
 
   private fun determineSeasonStart(): LocalDateTime {
     val now = Clock.System.now().toLocalDateTime(TimeZone.UTC)
-    val year = if (now.month >= Month.AUGUST) {
-      now.year
-    } else {
-      now.year - 1
-    }
+    val year =
+      if (now.month >= Month.AUGUST) {
+        now.year
+      } else {
+        now.year - 1
+      }
     val month = "${Month.SEPTEMBER.ordinal}".padStart(2, '0')
     val start = LocalDateTime.parse("$year-$month-01T00:00:00")
     return timeService.offset(start)

@@ -3,6 +3,11 @@ name: Sync Job
 on:
   workflow_call:
     inputs:
+      useJvm:
+        type: boolean
+        default: false
+        required: false
+        description: "Should JVM executable be used instead of native"
       logLevel:
         type: string
         description: 'Log level'
@@ -21,14 +26,27 @@ jobs:
     name: Sync
     runs-on: ubuntu-latest
     steps:
-      - name: Restore CLI
+      - name: Restore CLI [NATIVE]
         id: cache-cli
+        if: "!inputs.useJvm"
         uses: actions/cache@v4
         with:
-          path: build/tasks/_cli_executableJarJvm/
-          key: ${{ runner.os }}-cli
+          fail-on-cache-miss: true
+          path: kexe/native
+          restore-keys: ${{ runner.os }}-cli
+          key: ${{ runner.os }}-cli-native
+      - name: Restore CLI [JVM]
+        id: cache-cli
+        if: "inputs.useJvm"
+        uses: actions/cache@v4
+        with:
+          fail-on-cache-miss: true
+          path: kexe/jvm
+          restore-keys: ${{ runner.os }}-cli
+          key: ${{ runner.os }}-cli-jvm
 
       - name: Setup Java
+        if: "inputs.useJvm"
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
@@ -39,8 +57,12 @@ jobs:
         env:
           SYNC_CONFIG: ${{ secrets.config }}
 
-      - name: Sync Data
-        run: java --jar ./build/tasks/_cli_executableJarJvm/cli-jvm-executable.jar -- '${{ github.workspace }}/.config'
+      - name: Sync Data [JVM]
+        if: "inputs.useJvm"
+        run: java --jar ./kexe/jvm/spond-sync.jar -- '${{ github.workspace }}/.config'
+      - name: Sync Data [NATIVE]
+        if: "!inputs.useJvm"
+        run: ./kexe/native/spond-sync.jar -- '${{ github.workspace }}/.config'
 
       - name: Cleanup config
         if: always()

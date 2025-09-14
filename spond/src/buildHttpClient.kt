@@ -22,70 +22,55 @@ internal fun buildHttpClient(
   json: Json,
   log: Logger,
   tokenHandler: TokenHandler,
-) = baseClient.config {
-  val url = credentials.apiUrl.removeSuffix("/")
-  expectSuccess = true
-  install(DefaultRequest) {
-    contentType(ContentType.Application.Json)
-    url("$url/")
-  }
-  install(ContentNegotiation) {
-    json(json)
-  }
-  install(Auth) {
-    bearer {
-      loadTokens {
-        log.d("Loading tokens")
-        tokenHandler.onLoadTokens()
-          ?.let {
-            BearerTokens(
-              accessToken = it.accessToken,
-              refreshToken = it.refreshToken
-            )
-          }
-          .also {
-            if (it == null) {
-              log.i("Failed to load tokens")
-            } else {
-              log.i("Successfully loaded tokens")
+) =
+  baseClient.config {
+    val url = credentials.apiUrl.removeSuffix("/")
+    expectSuccess = true
+    install(DefaultRequest) {
+      contentType(ContentType.Application.Json)
+      url("$url/")
+    }
+    install(ContentNegotiation) { json(json) }
+    install(Auth) {
+      bearer {
+        loadTokens {
+          log.d("Loading tokens")
+          tokenHandler
+            .onLoadTokens()
+            ?.let { BearerTokens(accessToken = it.accessToken, refreshToken = it.refreshToken) }
+            .also {
+              if (it == null) {
+                log.i("Failed to load tokens")
+              } else {
+                log.i("Successfully loaded tokens")
+              }
             }
+        }
+        refreshTokens {
+          log.d("Refreshing tokens")
+          val resp =
+            client
+              .preparePost("$url/login") {
+                expectSuccess = true
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("email" to credentials.username, "password" to credentials.password))
+              }
+              .execute()
+          val tokens: SpondTokens = resp.body()
+          log.i("Refreshed tokens: $resp")
+          BearerTokens(accessToken = tokens.accessToken, refreshToken = tokens.refreshToken).also {
+            log.i("Storing refreshed tokens")
+            tokenHandler.onRefreshTokens(
+              SerializableBearerTokens(accessToken = it.accessToken, refreshToken = it.refreshToken)
+            )
           }
-      }
-      refreshTokens {
-        log.d("Refreshing tokens")
-        val resp = client.preparePost("$url/login") {
-          expectSuccess = true
-          contentType(ContentType.Application.Json)
-          setBody(
-            mapOf(
-              "email" to credentials.username,
-              "password" to credentials.password,
-            )
-          )
-        }.execute()
-        val tokens: SpondTokens = resp.body()
-        log.i("Refreshed tokens: $resp")
-        BearerTokens(
-          accessToken = tokens.accessToken,
-          refreshToken = tokens.refreshToken
-        ).also {
-          log.i("Storing refreshed tokens")
-          tokenHandler.onRefreshTokens(
-            SerializableBearerTokens(
-              accessToken = it.accessToken,
-              refreshToken = it.refreshToken
-            )
-          )
         }
       }
     }
   }
-}
 
 @Serializable
 private data class SpondTokens(
-  @SerialName("loginToken")
-  val accessToken: String,
-  @SerialName("passwordToken")
-  val refreshToken: String,
+  @SerialName("loginToken") val accessToken: String,
+  @SerialName("passwordToken") val refreshToken: String,
 )

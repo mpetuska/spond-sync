@@ -1,16 +1,20 @@
 package worker.service
 
 import co.touchlab.kermit.Logger
+import kotlin.time.Instant
+import me.tatarka.inject.annotations.Inject
+import software.amazon.lastmile.kotlin.inject.anvil.AppScope
+import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import spond.data.event.Event
 import spond.data.group.Group
 import spond.data.group.SubGroup
 import worker.data.SourceEvent
 import worker.service.EventBuilderService.Companion.extractSourceEventId
 import worker.source.EventSource
-import javax.inject.Inject
-import kotlin.time.Instant
 
-class SyncService @Inject constructor(
+@Inject
+@SingleIn(AppScope::class)
+class SyncService(
   private val source: EventSource,
   private val spond: SpondService,
   private val timeService: TimeService,
@@ -18,18 +22,13 @@ class SyncService @Inject constructor(
 ) {
   private val log = baseLogger.withTag("SyncService")
 
-  suspend fun sync(
-    seasonStart: Instant,
-    group: Group,
-    teams: Map<String, SubGroup>,
-  ) {
+  suspend fun sync(seasonStart: Instant, group: Group, teams: Map<String, SubGroup>) {
     log.d("Fetching source events from ${source.name}")
-    val sourceEvents = source.provideEvents(
-      club = group.name,
-      teams = teams.keys,
-      start = seasonStart,
+    val sourceEvents =
+      source.provideEvents(club = group.name, teams = teams.keys, start = seasonStart)
+    log.i(
+      "Fetched ${sourceEvents.size} source events from ${source.name} for ${sourceEvents.size} teams"
     )
-    log.i("Fetched ${sourceEvents.size} source events from ${source.name} for ${sourceEvents.size} teams")
     val spondSeasonStart = timeService.reset(seasonStart)
     for ((team, events) in sourceEvents) {
       syncTeam(spondSeasonStart, group, teams.getValue(team), events)
@@ -46,16 +45,14 @@ class SyncService @Inject constructor(
     val unmatchedSpondEvents = mutableListOf<Event>()
     log.i("Processing spond events for team ${team.identity}")
 
-    spond.listMatches(
-      group = group,
-      team = team,
-      seasonStart = seasonStart,
-    ).collect { spondEvent ->
+    spond.listMatches(group = group, team = team, seasonStart = seasonStart).collect { spondEvent ->
       log.i("Processing existing spond event ${spondEvent.identity}")
       val spondLocalId = extractSourceEventId(spondEvent)
       val sourceEvent = spondLocalId?.let(eventQueue::get)
       if (sourceEvent != null) {
-        log.d("${sourceEvent.id}: Matched spond event ${spondEvent.identity} to source event ${sourceEvent.identity}")
+        log.d(
+          "${sourceEvent.id}: Matched spond event ${spondEvent.identity} to source event ${sourceEvent.identity}"
+        )
         eventQueue.remove(sourceEvent.id)
       } else {
         log.e("Unable to match spond event ${spondEvent.identity} to source event")
@@ -80,15 +77,21 @@ class SyncService @Inject constructor(
         if (sourceEvent.start > today) {
           log.i("${sourceEvent.id}: Processing new source event ${sourceEvent.identity}")
         } else {
-          log.i("${sourceEvent.id}: Skipping new source event ${sourceEvent.identity} as it has already passed")
+          log.i(
+            "${sourceEvent.id}: Skipping new source event ${sourceEvent.identity} as it has already passed"
+          )
           continue
         }
-        log.v("${sourceEvent.id}: Creating a new spond event for source event ${sourceEvent.identity}")
+        log.v(
+          "${sourceEvent.id}: Creating a new spond event for source event ${sourceEvent.identity}"
+        )
         val created = spond.createEvent(group, team, subGroupMembers, sourceEvent)
         if (created != null) {
           log.i("${sourceEvent.id}: Created a new spond event ${created.identity}")
         } else {
-          log.w("${sourceEvent.id}: Failed to create a spond event for source event ${sourceEvent.identity}")
+          log.w(
+            "${sourceEvent.id}: Failed to create a spond event for source event ${sourceEvent.identity}"
+          )
         }
       }
     }

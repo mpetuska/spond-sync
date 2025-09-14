@@ -22,11 +22,8 @@ data class WorkerConfig(
   val yearOffset: Int = 0,
   val debug: Boolean = false,
 ) {
-  /**
-   * An inverse of [teams] which maps Spond subGroup to source team name.
-   */
-  @Transient
-  val subGroups = teams.map { (k, v) -> v to k }.toMap()
+  /** An inverse of [teams] which maps Spond subGroup to source team name. */
+  @Transient val subGroups = teams.map { (k, v) -> v to k }.toMap()
 
   /**
    * @property group spond group name
@@ -34,10 +31,13 @@ data class WorkerConfig(
    * @property password spond password
    * @property apiUrl spond api url
    * @property opponentColourHex a hexadecimal colour value to use for opponent teams.
-   * @property invitationDayBeforeStart a number of days before the match start time to send an invitation at.
-   * @property rsvpDeadlineBeforeStart a number of days before the match start time to set as RSVP deadline.
+   * @property invitationDayBeforeStart a number of days before the match start time to send an
+   *   invitation at.
+   * @property rsvpDeadlineBeforeStart a number of days before the match start time to set as RSVP
+   *   deadline.
    * @property maxAccepted a number of players to allow accepting the invite.
-   * @property descriptionByline an optional byline to insert at the bottom of description to identify managed events.
+   * @property descriptionByline an optional byline to insert at the bottom of description to
+   *   identify managed events.
    * @property syncResults whether to also update match results for managed events.
    * @property forceUpdate whether to update the events that have not changed.
    */
@@ -56,17 +56,13 @@ data class WorkerConfig(
     val forceUpdate: Boolean = false,
   )
 
-  @Serializable
-  data class Sportpress(
-    val club: String,
-    val apiUrl: String,
-  )
+  @Serializable data class Sportpress(val club: String, val apiUrl: String)
 
   /**
    * @property leagues a map of named urls to VolleyZone leagues to scrape for events.
    * @property addresses a mapping between VolleyZone event venue address and full address.
-   * @property attemptToFixBrokenTriangles try to fix broken triangles
-   *   (where more than 3 events refer to the same triangle ID), by building triangles via `date + time + venue` keys.
+   * @property attemptToFixBrokenTriangles try to fix broken triangles (where more than 3 events
+   *   refer to the same triangle ID), by building triangles via `date + time + venue` keys.
    */
   @Serializable
   data class Volleyzone(
