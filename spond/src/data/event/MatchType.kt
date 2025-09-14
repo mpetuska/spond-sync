@@ -5,9 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class MatchType {
-  @SerialName("HOME")
-  Home,
-
-  @SerialName("AWAY")
-  Away
+  @SerialName("HOME") Home,
+  @SerialName("AWAY") Away,
 }

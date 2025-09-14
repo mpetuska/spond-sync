@@ -1,0 +1,36 @@
+product:
+  type: lib
+  platforms:
+    - jvm
+    - linuxX64
+
+dependencies:
+  - $libs.ktor.client.core
+  - $libs.kermit
+  - $libs.kotlin.inject.runtime
+  - $libs.kotlin.inject.anvil.runtime
+  - $libs.kotlin.inject.anvil.runtime.optional
+  - $libs.kotlinx.datetime
+  - ../utils
+
+test-dependencies:
+  - ../test-resources
+  - $libs.kotlinx.coroutines.test
+  - $libs.assertk
+
+test-dependencies@jvm:
+  - $libs.logback: runtime-only
+
+settings:
+  kotlin:
+    optIns:
+      - kotlin.time.ExperimentalTime
+      - kotlin.uuid.ExperimentalUuidApi
+    ksp:
+      processors:
+        - $libs.kotlin.inject.compiler
+        - $libs.kotlin.inject.anvil.compiler
+    serialization:
+      enabled: true
+      version: 1.9.0
+    freeCompilerArgs: [ -Xannotation-default-target=param-property ]

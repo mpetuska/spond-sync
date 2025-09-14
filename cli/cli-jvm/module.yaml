@@ -1,0 +1,9 @@
+product:
+  type: jvm/app
+  platforms:
+    - jvm
+
+dependencies:
+  - ../cli-core
+  - $libs.clikt
+  - $libs.logback: runtime-only

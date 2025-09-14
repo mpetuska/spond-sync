@@ -7,10 +7,8 @@ import utils.Identifiable
 typealias MemberId = String
 
 @Serializable
-data class Member(
-  override val id: MemberId,
-  val subGroups: List<SubGroupId>
-) : Identifiable, WithId {
+data class Member(override val id: MemberId, val subGroups: List<SubGroupId>) :
+  Identifiable, WithId {
   override val identity: String
     get() = "Member(id=$id)"
 }

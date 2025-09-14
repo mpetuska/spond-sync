@@ -1,25 +1,28 @@
 package utils.serialization
 
-import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.Json.Default.encodeToString
-import kotlinx.serialization.json.JsonObject
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KeepGeneratedSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 
 class PreservingJsonSerializerTest {
-  private val format = Json {
-    ignoreUnknownKeys = true
-  }
+  private val format = Json { ignoreUnknownKeys = true }
 
   @Test
   fun test() {
-    val jsonString = """
-      {
-      "id": 69,
-      "unknown": "Some unknown key"
-      }
-    """.trimIndent()
+    // language=json
+    val jsonString =
+      """
+        {
+        "id": 69,
+        "unknown": "Some unknown key"
+        }
+      """
+        .trimIndent()
     val json = format.decodeFromString<JsonObject>(jsonString)
     val data = format.decodeFromString<TestObject>(jsonString)
 
@@ -29,11 +32,7 @@ class PreservingJsonSerializerTest {
   @OptIn(ExperimentalSerializationApi::class)
   @Serializable(TestObject.Serializer::class)
   @KeepGeneratedSerializer
-  data class TestObject(
-    val id: Int,
-    @SerialName("#json")
-    val json: JsonObject
-  ) {
+  data class TestObject(val id: Int, @SerialName("#json") val json: JsonObject) {
     object Serializer : PreservingJsonSerializer<TestObject>(generatedSerializer())
   }
 }

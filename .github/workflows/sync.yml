@@ -3,8 +3,14 @@ name: Sync
 on:
   workflow_dispatch:
     inputs:
+      useJvm:
+        type: boolean
+        default: false
+        required: false
+        description: "Should JVM executable be used instead of native"
       logLevel:
         description: 'Log level'
+        type: string
         required: false
         default: WARN
   schedule:
@@ -20,6 +26,7 @@ jobs:
     name: Sync
     uses: ./.github/workflows/sync-job.yml
     with:
+      useJvm: ${{ inputs.useJvm == true }}
       logLevel: ${{ inputs.logLevel }}
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}

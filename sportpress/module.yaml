@@ -2,13 +2,15 @@ product:
   type: lib
   platforms:
     - jvm
+    - linuxX64
 
 dependencies:
   - ../utils
   - $libs.ktor.client.content.negotiation
   - $libs.ktor.serialization.kotlinx.json
   - $libs.kotlinx.datetime
-  - $libs.dagger
+  - $libs.kotlin.inject.runtime
+  - $libs.kotlin.inject.anvil.runtime.optional
 
 settings:
   kotlin:

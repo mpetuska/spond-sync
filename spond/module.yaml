@@ -2,6 +2,7 @@ product:
   type: lib
   platforms:
     - jvm
+    - linuxX64
 
 dependencies:
   - ../utils
@@ -9,7 +10,8 @@ dependencies:
   - $libs.ktor.client.content.negotiation
   - $libs.ktor.serialization.kotlinx.json
   - $libs.kermit
-  - $libs.dagger
+  - $libs.kotlin.inject.runtime
+  - $libs.kotlin.inject.anvil.runtime.optional
 
 settings:
   kotlin:

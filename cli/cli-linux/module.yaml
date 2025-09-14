@@ -1,0 +1,8 @@
+product:
+  type: linux/app
+  platforms:
+    - linuxX64
+
+dependencies:
+  - ../cli-core
+  - $libs.clikt

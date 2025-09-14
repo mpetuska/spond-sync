@@ -4,7 +4,4 @@ import kotlinx.serialization.Serializable
 
 typealias CalendarId = UInt
 
-@Serializable
-data class Calendar(
-  val id: CalendarId,
-)
+@Serializable data class Calendar(val id: CalendarId)

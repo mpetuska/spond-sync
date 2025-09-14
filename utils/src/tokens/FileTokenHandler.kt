@@ -1,25 +1,27 @@
 package utils.tokens
 
+import io.ktor.utils.io.readText
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.io.buffered
+import kotlinx.io.files.FileSystem
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.files.SystemTemporaryDirectory
+import kotlinx.io.writeString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
-import java.io.File
-import javax.inject.Inject
-import kotlin.io.path.*
 
-@OptIn(ExperimentalSerializationApi::class)
-class FileTokenHandler @Inject constructor(private val json: Json, key: String) : TokenHandler {
-  private val file = File(
-    System.getProperty("java.io.tmpdir") + "/" + "sportpress-to-spond-token".hashCode().toString(),
-    key
-  )
+class FileTokenHandler(
+  private val json: Json,
+  key: String,
+  private val fileSystem: FileSystem = SystemFileSystem,
+) : TokenHandler {
+  private val file = Path(SystemTemporaryDirectory, "${key.hashCode()}.tmp")
 
   override suspend fun onLoadTokens(): SerializableBearerTokens? {
-    return if (file.exists()) {
-      file.inputStream().use(json::decodeFromStream)
+    return if (fileSystem.exists(file)) {
+      fileSystem.source(file).buffered().use { it.readText() }.let(json::decodeFromString)
     } else {
       null
     }
@@ -27,10 +29,8 @@ class FileTokenHandler @Inject constructor(private val json: Json, key: String) 
 
   override suspend fun onRefreshTokens(tokens: SerializableBearerTokens) {
     withContext(Dispatchers.IO) {
-      file.parentFile.mkdirs()
-      file.outputStream().use { stream ->
-        json.encodeToStream(tokens, stream)
-      }
+      file.parent?.let(fileSystem::createDirectories)
+      fileSystem.sink(file).buffered().use { json.encodeToString(tokens).let(it::writeString) }
     }
   }
 }

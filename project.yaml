@@ -1,6 +1,11 @@
 modules:
   - utils
+  - core
   - sportpress
   - spond
-  - worker
-  - cli
+  - cli/cli-core
+  - cli/cli-linux
+  - cli/cli-jvm
+  - spond-sink
+  - test-resources
+  - volleyzone-source

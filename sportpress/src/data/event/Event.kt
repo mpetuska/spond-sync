@@ -21,36 +21,33 @@ typealias EventId = UInt
 @Suppress("ConstructorParameterNaming")
 data class Event(
   val id: EventId,
-  @SerialName("title")
-  @Serializable(RenderedSerializer::class)
-  val name: String,
+  @SerialName("title") @Serializable(RenderedSerializer::class) val name: String,
   val teams: List<TeamId>,
   val day: String,
   val link: String,
   val date: LocalDateTime,
-  @SerialName("date_gmt")
-  val dateGmt: LocalDateTime,
+  @SerialName("date_gmt") val dateGmt: LocalDateTime,
   val modified: LocalDateTime,
-  @SerialName("modified_gmt")
-  val modifiedGmt: LocalDateTime,
-  @SerialName("results")
-  val results: Map<UInt, Result>
+  @SerialName("modified_gmt") val modifiedGmt: LocalDateTime,
+  @SerialName("results") val results: Map<UInt, Result>,
 ) : Identifiable {
   override val identity: String
     get() = "Event(id=$id, name=$name)"
 
   @Serializable
   data class Result(
-    @SerialName("one")
-    private val _one: String,
-    @SerialName("two")
-    private val _two: String,
-    @SerialName("three")
-    private val _three: String? = null,
+    @SerialName("one") private val _one: String,
+    @SerialName("two") private val _two: String,
+    @SerialName("three") private val _three: String? = null,
   ) {
-    val one: UInt get() = _one.toUInt()
-    val two: UInt get() = _two.toUInt()
-    val three: UInt? get() = _three?.toUIntOrNull()
+    val one: UInt
+      get() = _one.toUInt()
+
+    val two: UInt
+      get() = _two.toUInt()
+
+    val three: UInt?
+      get() = _three?.toUIntOrNull()
   }
 
   internal object Serializer : JsonTransformingSerializer<Event>(generatedSerializer()) {

@@ -2,9 +2,11 @@ product:
   type: lib
   platforms:
     - jvm
+    - linuxX64
 
 dependencies:
-  - $libs.dagger
+  - $libs.kotlinx.io.core
+  - $libs.kotlin.inject.runtime
   - $libs.ktor.client.core
 
 settings:

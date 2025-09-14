@@ -1,4 +1,5 @@
-.idea/
+.idea/**/*
+!.idea/ktfmt.xml
 .fleet/
 .gradle/
 .kotlin/
@@ -7,3 +8,4 @@ out/
 local.properties
 *.config.json
 amper.bat
+*.tmp

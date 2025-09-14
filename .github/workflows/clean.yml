@@ -1,0 +1,77 @@
+name: Clean
+
+on:
+  workflow_dispatch:
+    inputs:
+      areYouSure:
+        type: boolean
+        default: false
+        required: true
+        description: "ARE YOU SURE? This will delete all spond events managed by this tool."
+      useJvm:
+        type: boolean
+        default: false
+        required: false
+        description: "Should JVM executable be used instead of native"
+      logLevel:
+        description: 'Log level'
+        type: string
+        required: false
+        default: WARN
+
+concurrency:
+  group: clean
+  cancel-in-progress: true
+
+env:
+  LOG_LEVEL: ${{ inputs.logLevel }}
+
+jobs:
+  sync:
+    name: Clean
+    if: "inputs.areYouSure"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore CLI [NATIVE]
+        id: cache-cli-native
+        if: "!inputs.useJvm"
+        uses: actions/cache/restore@v4
+        with:
+          fail-on-cache-miss: true
+          path: kexe/spond-sync
+          key: ${{ runner.os }}-spond-sync-cli-native
+          restore-keys: |
+            ${{ runner.os }}-spond-sync-cli-native-
+      - name: Restore CLI [JVM]
+        id: cache-cli-jvm
+        if: "inputs.useJvm"
+        uses: actions/cache/restore@v4
+        with:
+          fail-on-cache-miss: true
+          path: kexe/spond-sync.jar
+          key: ${{ runner.os }}-spond-sync-cli-jvm
+          restore-keys: |
+            ${{ runner.os }}-spond-sync-cli-jvm-
+
+      - name: Setup Java
+        if: "inputs.useJvm"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: 21
+
+      - name: Prepare Config
+        run: echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
+        env:
+          SYNC_CONFIG: ${{ secrets.SYNC_CONFIG }}
+
+      - name: Clean Events [JVM]
+        if: "inputs.useJvm"
+        run: java --jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' --nosync --clean --yes
+      - name: Clean Events [NATIVE]
+        if: "!inputs.useJvm"
+        run: ./kexe/spond-sync '${{ github.workspace }}/.config' --nosync --clean --yes
+
+      - name: Cleanup config
+        if: always()
+        run: rm -rf '${{ github.workspace }}/.config'

@@ -5,57 +5,48 @@ to [Spond](https://spond.com).
 
 Implemented sources:
 
-- [Sportpress](https://wordpress.org/plugins/sportspress)
+- [SportPress](https://wordpress.org/plugins/sportspress)
 - [VolleyZone](https://competitions.volleyzone.co.uk)
 
 ## Configuration
 
-All configuration is defined in [WorkerConfig](./worker/src/main/kotlin/WorkerConfig.kt)
+All configuration is defined in [SyncConfig](./cli/cli-core/src/SyncConfig.kt)
 
 ```json5
 {
-  "spond": {
-    "group": "My Group Name",
-    "username": "obfuscated",
-    "password": "obfuscated",
-    // Optional
-    "apiUrl": "https://api.spond.com/core/v1",
-    // Optional
-    "opponentColourHex": "#FFFFFF",
-    // Optional
-    "invitationDayBeforeStart": 6,
-    // Optional
-    "rsvpDeadlineBeforeStart": 2,
-    // Optional
-    "maxAccepted": 10,
-    // Optional
-    "syncResults": true,
-    // Optional
-    "forceUpdate": false
-  },
-  "source": "volleyzone",
-  "sportpress": {
-    "club": "My Club Name",
-    "apiUrl": "https://<wp-host>/wp-json/sportspress/v2"
-  },
   "volleyzone": {
     "leagues": {
-      "League name": "https://competitions.volleyzone.co.uk/league/000000"
+      "League name": "https://competitions.volleyzone.co.uk/league/000000",
     },
     // Optional
     "addresses": {
-      "VZ Address": "Full Address, City, POSTCODE, Country"
+      "VZ Address": "Full Address, City, POSTCODE, Country",
+    }
+  },
+  "spond": {
+    "group": "My Group Name",
+    "subGroups": {
+      "Spond subgroup name": "Source team name",
     },
     // Optional
-    "attemptToFixBrokenTriangles": false,
-  },
-  "teams": {
-    "Source team name": "Spond subgroup name"
-  },
-  // Optional
-  "yearOffset": 0,
-  // Optional
-  "debug": false,
+    "syncResults": true,
+    // Optional
+    "forceUpdate": false,
+    "api": {
+      "username": "obfuscated",
+      "password": "obfuscated",
+      // Optional
+      "apiUrl": "https://api.spond.com/core/v1",
+    },
+    // Optional
+    "events": {
+      "opponentColourHex": "#FFFFFF",
+      "invitationDayBeforeStart": 6,
+      "rsvpDeadlineBeforeStart": 2,
+      "maxAccepted": 10,
+      "descriptionByline": "Generated event."
+    },
+  }
 }
 ```
 

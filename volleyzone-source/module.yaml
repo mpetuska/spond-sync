@@ -1,0 +1,39 @@
+product:
+  type: lib
+  platforms:
+    - jvm
+    - linuxX64
+
+dependencies:
+  - ../utils
+  - ../core
+  - $libs.kermit
+  - $libs.kotlin.inject.anvil.runtime
+  - $libs.kotlin.inject.anvil.runtime.optional
+  - $libs.kotlin.inject.runtime
+  - $libs.kotlinx.datetime
+  - $libs.kotlinx.coroutines.core
+  - $libs.ktor.client.core
+  - $libs.ksoup
+
+test-dependencies:
+  - ../test-resources
+  - $libs.kotlinx.coroutines.test
+  - $libs.assertk
+  - $libs.ktor.client.mock
+  - $libs.kotlin.inject.anvil.runtime
+
+test-dependencies@jvm:
+  - $libs.logback: runtime-only
+
+settings:
+  kotlin:
+    optIns:
+      - kotlin.time.ExperimentalTime
+    ksp:
+      processors:
+        - $libs.kotlin.inject.compiler
+        - $libs.kotlin.inject.anvil.compiler
+    serialization:
+      enabled: true
+      version: 1.9.0

@@ -1,0 +1,40 @@
+product:
+  type: lib
+  platforms:
+    - jvm
+    - linuxX64
+
+dependencies:
+  - ../../utils
+  - ../../core
+  - ../../spond
+  - ../../volleyzone-source
+  - ../../spond-sink
+  - $libs.clikt
+  - $libs.kotlinx.io.core
+  - $libs.kotlinx.coroutines.core
+  - $libs.kotlinx.datetime
+  - $libs.kermit
+  - $libs.kotlin.inject.runtime
+  - $libs.kotlin.inject.anvil.runtime
+  - $libs.kotlin.inject.anvil.runtime.optional
+  - $libs.ktor.client.core
+  - $libs.ktor.client.logging
+
+dependencies@jvm:
+  - $libs.ktor.client.cio
+
+dependencies@native:
+  - $libs.ktor.client.curl
+
+settings:
+  kotlin:
+    ksp:
+      processors:
+        - $libs.kotlin.inject.compiler
+        - $libs.kotlin.inject.anvil.compiler
+    serialization:
+      format: json
+      version: 1.9.0
+    optIns: [ kotlin.time.ExperimentalTime, kotlinx.serialization.ExperimentalSerializationApi ]
+    freeCompilerArgs: [ -Xannotation-default-target=param-property ]

@@ -27,22 +27,50 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Cache CLI
-        id: cache-cli
+      - name: Cache Kotlin/Native and Amper
         uses: actions/cache@v4
         with:
-          path: build/tasks/_cli_executableJarJvm/
-          key: ${{ runner.os }}-cli
+          path: |
+            ~/.konan
+            ~/.cache/Amper
+            ~/.cache/JetBrains/Amper
+          key: ${{ runner.os }}-kotlin-native-${{ hashFiles('**/module.yaml', 'amper', '**/*libs.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-kotlin-native-
+
+      - name: Cache CLI [NATIVE]
+        id: cache-cli-native
+        uses: actions/cache@v4
+        with:
+          path: |
+            kexe/spond-sync
+          key: ${{ runner.os }}-spond-sync-cli-native-${{ hashFiles('**/module.yaml', 'amper', '**/*libs.toml', '**/*.kt') }}
+          restore-keys: |
+            ${{ runner.os }}-spond-sync-cli-native-
+      - name: Cache CLI [JVM]
+        id: cache-cli-jvm
+        uses: actions/cache@v4
+        with:
+          path: |
+            kexe/spond-sync.jar
+          key: ${{ runner.os }}-spond-sync-cli-jvm-${{ hashFiles('**/module.yaml', 'amper', '**/*libs.toml', '**/*.kt') }}
+          restore-keys: |
+            ${{ runner.os }}-spond-sync-cli-jvm-
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: 21
-          cache: 'gradle'
-          cache-dependency-path: |
-            **/*.gradle*
-            **/gradle-wrapper.properties
+
+      - name: Test
+        run: ./amper test
 
       - name: Build
-        run: ./amper package -m cli
+        run: |
+          ./amper build -v release -m cli-linux -m cli-jvm
+          ./amper package -v release -m cli-jvm
+          rm -rf kexe/
+          mkdir -p kexe/
+          ln build/tasks/_cli-jvm_executableJarJvm/cli-jvm-jvm-executable.jar kexe/spond-sync.jar || exit 1
+          ln build/tasks/_cli-linux_linkLinuxX64Release/cli-linux.kexe kexe/spond-sync || exit 1
