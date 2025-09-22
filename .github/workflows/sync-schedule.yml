@@ -1,0 +1,20 @@
+name: Sync Schedule
+
+on:
+  schedule:
+    # Every 3 hours
+    - cron: 0 */3 * * *
+
+concurrency:
+  group: sync-schedule
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Sync
+    uses: ./.github/workflows/sync-template.yml
+    with:
+      useJvm: false
+      logLevel: WARN
+    secrets:
+      config: ${{ secrets.SYNC_CONFIG }}

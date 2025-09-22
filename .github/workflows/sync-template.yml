@@ -1,4 +1,4 @@
-name: Sync Job
+name: Sync Template
 
 on:
   workflow_call:

@@ -1,30 +1,34 @@
-name: Sync
+name: Sync Manual
 
 on:
   workflow_dispatch:
     inputs:
+      logLevel:
+        description: 'Log level'
+        type: choice
+        options:
+          - Verbose
+          - Debug
+          - Info
+          - Warning
+          - Error
+          - Assert
+        required: false
+        default: Info
       useJvm:
         type: boolean
         default: false
         required: false
         description: "Should JVM executable be used instead of native"
-      logLevel:
-        description: 'Log level'
-        type: string
-        required: false
-        default: WARN
-  schedule:
-    # Every 3 hours
-    - cron: 0 */3 * * *
 
 concurrency:
-  group: sync
+  group: sync-manual
   cancel-in-progress: true
 
 jobs:
   sync:
     name: Sync
-    uses: ./.github/workflows/sync-job.yml
+    uses: ./.github/workflows/sync-template.yml
     with:
       useJvm: ${{ inputs.useJvm == true }}
       logLevel: ${{ inputs.logLevel }}
