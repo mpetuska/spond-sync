@@ -64,6 +64,7 @@ jobs:
           java-version: 21
 
       - name: Test
+        if: github.event_name != 'schedule'
         run: ./amper test
 
       - name: Build
