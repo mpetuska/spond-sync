@@ -31,6 +31,9 @@ jobs:
     name: Sync
     timeout-minutes: ${{ inputs.timeoutMinutes }}
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+      GITHUB_RUN_ATTEMPT: ${{ env.GITHUB_RUN_ATTEMPT }}
     steps:
       - name: Restore CLI [NATIVE]
         id: cache-cli-native

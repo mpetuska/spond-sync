@@ -14,8 +14,6 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import io.ktor.utils.io.core.writeText
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Source
 import kotlinx.io.buffered
@@ -24,6 +22,8 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readString
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 
 class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
   CliktCommand("spond-sync") {
@@ -98,7 +98,14 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
   }
 
   override fun run() = runBlocking {
-    val logSeverity = if (actionsStepDebug) Severity.Debug else logLevel
+    val logSeverity =
+      when {
+        actionsStepDebug -> Severity.Verbose
+        (githubRunAttempt ?: 0) > 0 -> {
+          Severity.Debug
+        }
+        else -> logLevel
+      }
     val syncConfig: SyncConfig =
       fileSystem.source(config).buffered().use(Source::readString).let(json::decodeFromString)
     val app =
