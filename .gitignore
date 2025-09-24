@@ -7,5 +7,6 @@ build/
 out/
 local.properties
 *.config.json
+*.config.json5
 amper.bat
 *.tmp

@@ -102,6 +102,8 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
     encodeDefaults = true
     prettyPrint = true
     prettyPrintIndent = "  "
+    allowTrailingComma = true
+    allowComments = true
   }
 
   override fun run() = runBlocking {
