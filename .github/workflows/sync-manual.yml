@@ -20,6 +20,11 @@ on:
         default: false
         required: false
         description: "Should JVM executable be used instead of native"
+      timeoutMinutes:
+        type: number
+        description: Sync timeout in minutes.
+        required: false
+        default: 10
 
 concurrency:
   group: sync-manual
@@ -32,5 +37,6 @@ jobs:
     with:
       useJvm: ${{ inputs.useJvm == true }}
       logLevel: ${{ inputs.logLevel }}
+      timeoutMinutes: ${{ inputs.timeoutMinutes }}
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}

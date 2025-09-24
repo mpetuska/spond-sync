@@ -13,6 +13,11 @@ on:
         description: 'Log level'
         required: false
         default: WARN
+      timeoutMinutes:
+        type: number
+        description: Sync timeout in minutes.
+        required: false
+        default: 10
     secrets:
       config:
         description: Config json
@@ -24,6 +29,7 @@ env:
 jobs:
   sync:
     name: Sync
+    timeout-minutes: ${{ inputs.timeoutMinutes }}
     runs-on: ubuntu-latest
     steps:
       - name: Restore CLI [NATIVE]

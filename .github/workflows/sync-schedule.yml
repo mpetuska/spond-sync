@@ -16,5 +16,6 @@ jobs:
     with:
       useJvm: false
       logLevel: WARN
+      timeoutMinutes: 10
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}

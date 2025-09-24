@@ -17,6 +17,11 @@ on:
         type: string
         required: false
         default: WARN
+      timeoutMinutes:
+        type: number
+        description: Sync timeout in minutes.
+        required: false
+        default: 10
 
 concurrency:
   group: clean
@@ -30,6 +35,7 @@ jobs:
     name: Clean
     if: "inputs.areYouSure"
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeoutMinutes }}
     steps:
       - name: Restore CLI [NATIVE]
         id: cache-cli-native
