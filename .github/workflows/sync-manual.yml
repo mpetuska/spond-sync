@@ -37,6 +37,6 @@ jobs:
     with:
       useJvm: ${{ inputs.useJvm == true }}
       logLevel: ${{ inputs.logLevel }}
-      timeoutMinutes: ${{ inputs.timeoutMinutes }}
+      timeoutMinutes: "${{ inputs.timeoutMinutes }}"
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}
