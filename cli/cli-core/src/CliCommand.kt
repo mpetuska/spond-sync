@@ -101,7 +101,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
     val logSeverity =
       when {
         actionsStepDebug -> Severity.Verbose
-        (githubRunAttempt ?: 0) > 0 -> {
+        (githubRunAttempt ?: 0) > 1 -> {
           Severity.Debug
         }
         else -> logLevel
