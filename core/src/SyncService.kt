@@ -11,12 +11,12 @@ import core.model.Time
 import core.model.Triangle
 import core.model.TriangleId
 import core.util.toTriple
-import kotlin.time.Instant
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.toList
 import me.tatarka.inject.annotations.Inject
 import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import utils.Identifiable
+import kotlin.time.Instant
 
 @Inject
 @SingleIn(ClubScope::class)

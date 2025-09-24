@@ -84,6 +84,13 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       )
       .flag("--noupdate-config")
 
+  private val dry by
+    option(
+        names = arrayOf("--dry"),
+        help = "Should spond changes should only be logged and not pushed.",
+      )
+      .flag("--nodry")
+
   private val config by
     argument(help = "Sync config json file").convert {
       val path = Path(it)
@@ -104,6 +111,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
         (githubRunAttempt ?: 0) > 1 -> {
           Severity.Debug
         }
+        dry -> minOf(logLevel, Severity.Info)
         else -> logLevel
       }
     val syncConfig: SyncConfig =
@@ -116,6 +124,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
         severity = logSeverity,
         gitHubCi = ci && githubRunAttempt != null,
         json = json,
+        dry = dry,
       )
     val club = app.club(syncConfig.spond)
     val worker = club.syncWorker

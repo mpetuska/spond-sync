@@ -11,8 +11,6 @@ import core.model.TeamId
 import core.model.Time
 import core.model.Triangle
 import io.ktor.client.plugins.ClientRequestException
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -30,6 +28,9 @@ import spond.data.event.MatchScore
 import spond.data.group.Group
 import spond.data.group.SubGroup
 import spond.data.group.SubGroupName
+import utils.Named
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.time.Duration.Companion.hours
 
 @Inject
 @SingleIn(ClubScope::class)
@@ -39,6 +40,7 @@ class SpondSink(
   private val timeSource: TimeSource,
   private val eventBuilderService: EventBuilderService,
   private val subGroups: Map<TeamId, SubGroupName>,
+  @Named("dry") private val dry: Boolean,
   logger: Logger,
 ) : DataSink<Event> {
   private val log = logger.withTag("SpondSink")
@@ -128,7 +130,13 @@ class SpondSink(
           resultsModified ||
           config.forceUpdate
       ) {
-        client.updateEvent(updatedSpondEvent)
+        if (dry) {
+          log.i(
+            "[DRY] Updating spond event ${existing.identity} for ${match.identity} to $updatedSpondEvent"
+          )
+        } else {
+          client.updateEvent(updatedSpondEvent)
+        }
       }
       if (resultsModified) {
         updateMatchResults(updatedSpondEvent)
@@ -161,7 +169,12 @@ class SpondSink(
     log.d("[${match.id}] Prepared spond event data.")
     val event =
       try {
-        client.createEvent(spondEvent)
+        if (dry) {
+          log.i("[DRY] Creating new spond event for ${match.identity}: $spondEvent")
+          return
+        } else {
+          client.createEvent(spondEvent)
+        }
       } catch (e: ClientRequestException) {
         log.e("[${match.id}] Failed to persist new spond event creation ${spondEvent.identity}", e)
         return
@@ -190,16 +203,18 @@ class SpondSink(
   private suspend fun updateMatchResults(event: Event) {
     val matchInfo = event.matchInfo
     if (matchInfo != null) {
-      client.updateMatchScore(
-        id = event.id,
-        score =
-          MatchScore(
-            teamScore = matchInfo.teamScore,
-            opponentScore = matchInfo.opponentScore,
-            scoresPublic = matchInfo.scoresPublic,
-            scoresFinal = matchInfo.scoresFinal,
-          ),
-      )
+      val score =
+        MatchScore(
+          teamScore = matchInfo.teamScore,
+          opponentScore = matchInfo.opponentScore,
+          scoresPublic = matchInfo.scoresPublic,
+          scoresFinal = matchInfo.scoresFinal,
+        )
+      if (dry) {
+        log.i("[DRY] Updating spond event ${event.identity} results to $score")
+      } else {
+        client.updateMatchScore(id = event.id, score = score)
+      }
     }
   }
 

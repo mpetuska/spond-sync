@@ -23,6 +23,7 @@ expect fun KClass<DiApp>.build(
   severity: Severity = Severity.Warn,
   gitHubCi: Boolean = false,
   json: Json = Json,
+  dry: Boolean = false,
 ): DiApp
 
 @MergeComponent(AppScope::class)
@@ -34,6 +35,7 @@ abstract class DiApp(
   @get:Provides val severity: Severity,
   @get:Provides @get:Named("gitHubCi") val gitHubCi: Boolean,
   @get:Provides @get:SingleIn(AppScope::class) val json: Json,
+  @get:Provides @get:Named("dry") val dry: Boolean,
 ) : ClubComponent.Factory {
   abstract val logger: Logger
 }

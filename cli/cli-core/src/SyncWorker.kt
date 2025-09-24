@@ -16,6 +16,7 @@ import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import spond.Spond
 import spond.data.group.Group
 import spond.sink.SpondSinkConfig
+import utils.Named
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
@@ -25,6 +26,7 @@ class SyncWorker(
   private val syncService: SyncService,
   private val spond: Spond,
   private val config: SpondSinkConfig,
+  @Named("dry") private val dry: Boolean,
   logger: Logger,
 ) {
   val log = logger.withTag("SyncWorker")
@@ -41,7 +43,7 @@ class SyncWorker(
     val group = spond.listGroups().firstOrNull { it.name == config.group }
     if (group != null) {
       log.i("[${group.identity}] Found spond group.")
-      if (!implicitYes) {
+      if (!implicitYes && !dry) {
         log.a("[${group.identity}] Are you sure you want to clear spond group? [y/n]: ")
         val yes = readln()
         if (yes != "y") {
@@ -81,7 +83,11 @@ class SyncWorker(
       .collect {
         log.v("[${it.identity}] Canceling event.")
         try {
-          spond.cancelEvent(it.id, quiet = true)
+          if (dry) {
+            log.i("[DRY] Cancelling spond event $it")
+          } else {
+            spond.cancelEvent(it.id, quiet = true)
+          }
         } catch (e: ClientRequestException) {
           log.w("[${it.identity}] Failed to delete event.", e)
         }
