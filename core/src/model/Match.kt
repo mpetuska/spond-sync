@@ -21,6 +21,10 @@ data class Match(
   data class Result(val sets: UInt, val teamA: TeamResult, val teamB: TeamResult)
 
   data class TeamResult(val sets: UInt, val scores: List<UInt>?)
+
+  operator fun contains(team: TeamId) = teamA.id == team || teamB.id == team
+
+  operator fun contains(team: Team) = contains(team.id)
 }
 
 operator fun OpenEndRange<Time>.contains(match: Match): Boolean =

@@ -90,6 +90,10 @@ class SyncService(
         updates.remove(team.id to match.id)
         sink.createMatch(triangle = triangle, match = match, team = team)
       }
+
+      for ((team, match) in noLongerPresentSinkMatches.sortedBy { it.first.value }) {
+        log.w("[${team.value}] Match ${match.identity} no longer exists on source.")
+      }
     }
 
     for (match in updates.values.map { it.second }) {
@@ -98,26 +102,15 @@ class SyncService(
   }
 
   private fun buildTriangle(id: TriangleId, matches: List<Match>): Triangle? {
-    if (matches.size != 3) {
-      log.e("[$id] Triangle has ${matches.size} != 3 matches.")
-      return null
-    }
-    val mostATeam = matches.groupBy { it.teamA }.maxBy { it.value.size }
-    if (mostATeam.value.size != 2) {
-      log.e(
-        "[$id] Expected most frequent A team to be A team for 2 matches, was ${mostATeam.value.size}."
-      )
-      return null
-    }
-    val host = mostATeam.key
-    val aVenues = mostATeam.value.map { it.venue }
+    val host = findHost(id, matches) ?: return null
+    val aVenues = matches.filter { host in it }.map { it.venue }
     if (aVenues.distinct().size != 1) {
       log.e("[$id] Detected different venues for host ${host.identity}: $aVenues")
       return null
     }
     return Triangle(
-      id = mostATeam.value.first().triangle,
-      venue = aVenues.first(),
+      id = id,
+      venue = aVenues.single(),
       start = matches.minOf(Match::start),
       end = matches.maxOf(Match::start),
       host = host,
@@ -125,5 +118,37 @@ class SyncService(
         matches.flatMap { setOf(it.teamA, it.teamB) }.distinct().sortedBy(Team::name).toTriple(),
       matches = matches.toTriple(),
     )
+  }
+
+  private fun findHost(id: TriangleId, matches: List<Match>): Team? {
+    val mostATeam = matches.groupBy { it.teamA }.maxBy { it.value.size }
+    if (mostATeam.value.size != 2) {
+      log.e(
+        "[$id] Expected most frequent A team to be A team for 2 matches, was ${mostATeam.value.size}."
+      )
+      return null
+    }
+    val firstMatch =
+      matches.singleOrNull { it.id.endsWith('a') }
+        ?: run {
+          log.w { "[$id] No match id ending with `a`." }
+          return mostATeam.key
+        }
+    val secondMatch =
+      matches.singleOrNull { it.id.endsWith('b') }
+        ?: run {
+          log.w { "[$id] No match id ending with `b`." }
+          return mostATeam.key
+        }
+    return if (secondMatch.teamA !in firstMatch) {
+      secondMatch.teamA
+    } else if (secondMatch.teamB !in firstMatch) {
+      secondMatch.teamB
+    } else {
+      log.w {
+        "[$id] Both teams from second match ${secondMatch.identity} also appear in first match ${firstMatch.identity}."
+      }
+      mostATeam.key
+    }
   }
 }
