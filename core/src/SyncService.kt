@@ -11,12 +11,12 @@ import core.model.Time
 import core.model.Triangle
 import core.model.TriangleId
 import core.util.toTriple
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.toList
 import me.tatarka.inject.annotations.Inject
 import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import utils.Identifiable
-import kotlin.time.Instant
 
 @Inject
 @SingleIn(ClubScope::class)
@@ -103,8 +103,8 @@ class SyncService(
 
   private fun buildTriangle(id: TriangleId, matches: List<Match>): Triangle? {
     val host = findHost(id, matches) ?: return null
-    val aVenues = matches.filter { host in it }.map { it.venue }
-    if (aVenues.distinct().size != 1) {
+    val aVenues = matches.filter { host in it }.map { it.venue }.distinct()
+    if (aVenues.size != 1) {
       log.e("[$id] Detected different venues for host ${host.identity}: $aVenues")
       return null
     }
