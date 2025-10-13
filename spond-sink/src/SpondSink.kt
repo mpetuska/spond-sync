@@ -11,6 +11,8 @@ import core.model.TeamId
 import core.model.Time
 import core.model.Triangle
 import io.ktor.client.plugins.ClientRequestException
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -29,8 +31,6 @@ import spond.data.group.Group
 import spond.data.group.SubGroup
 import spond.data.group.SubGroupName
 import utils.Named
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.time.Duration.Companion.hours
 
 @Inject
 @SingleIn(ClubScope::class)

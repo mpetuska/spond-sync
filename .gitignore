@@ -10,3 +10,4 @@ local.properties
 *.config.json5
 amper.bat
 *.tmp
+*.log

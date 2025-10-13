@@ -95,6 +95,7 @@ class EventBuilderService(
         old.location?.feature == new.location?.feature
     val sameResult =
       old.matchInfo?.type == new.matchInfo?.type &&
+        old.matchInfo?.scoresFinal == new.matchInfo?.scoresFinal &&
         old.matchInfo?.opponentScore == new.matchInfo?.opponentScore &&
         old.matchInfo?.teamScore == new.matchInfo?.teamScore &&
         old.matchInfo?.teamColour == new.matchInfo?.teamColour
