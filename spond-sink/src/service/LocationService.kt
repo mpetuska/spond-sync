@@ -1,4 +1,4 @@
-package service
+package spond.sink.service
 
 import co.touchlab.kermit.Logger
 import core.di.ClubScope

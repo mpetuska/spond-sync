@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.Flow
 interface DataSink<out M> {
   fun listExistingMatches(team: TeamId, from: Time, until: Time): Flow<Pair<MatchId, M>>
 
+  suspend fun cancelMatch(team: TeamId, existing: @UnsafeVariance M)
+
   suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: @UnsafeVariance M)
 
   suspend fun createMatch(triangle: Triangle, match: Match, team: Team)

@@ -25,6 +25,10 @@ class LogSink(logger: Logger) : DataSink<Unit> {
     until: Time,
   ): Flow<Pair<MatchId, Unit>> = emptyFlow()
 
+  override suspend fun cancelMatch(team: TeamId, existing: Unit) {
+    log.i("Received match cancellation ${team.value}.")
+  }
+
   override suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: Unit) {
     log.i("Received match update ${team.identity}.")
     log.d("Full match update: triangle=$triangle, match=$match, team=$team, existing=$existing")

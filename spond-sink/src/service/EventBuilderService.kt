@@ -1,4 +1,4 @@
-package service
+package spond.sink.service
 
 import co.touchlab.kermit.Logger
 import core.TimeSource
@@ -88,29 +88,47 @@ class EventBuilderService(
     )
   }
 
+  /** Returns `true` if [prop] is different between [old] and [new]. */
+  private fun diff(path: String, old: Event, new: Event, prop: Event.() -> Any?): Boolean {
+    val oldValue = old.prop()
+    val newValue = new.prop()
+    val same = oldValue == newValue
+    if (same) {
+      log.v { "[${old.identity}] Event property at $path matches: old=$oldValue, new=$newValue." }
+    } else {
+      log.d { "[${old.identity}] Event property at $path differs: old=$oldValue, new=$newValue." }
+    }
+    return !same
+  }
+
   /** Compares the two events and returns two if [new] has been updated. */
   fun isModified(old: Event, new: Event): Boolean {
-    val sameLocation =
-      old.location?.address == new.location?.address &&
-        old.location?.feature == new.location?.feature
-    val sameResult =
-      old.matchInfo?.type == new.matchInfo?.type &&
-        old.matchInfo?.scoresFinal == new.matchInfo?.scoresFinal &&
-        old.matchInfo?.opponentScore == new.matchInfo?.opponentScore &&
-        old.matchInfo?.teamScore == new.matchInfo?.teamScore &&
-        old.matchInfo?.teamColour == new.matchInfo?.teamColour
-    val sameInviteTime = old.inviteTime == null || old.inviteTime == new.inviteTime
-    val same =
-      old.start == new.start &&
-        old.end == new.end &&
-        old.description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } ==
-          new.description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) } &&
-        sameLocation &&
-        sameResult &&
-        old.maxAccepted == new.maxAccepted &&
-        sameInviteTime &&
-        old.rsvpDate == new.rsvpDate
-    return !same
+    val diffLocation =
+      diff("location.address", old, new) { location?.address } ||
+        diff("location.feature", old, new) { location?.feature }
+    val diffInviteTime = old.inviteTime != null && diff("inviteTime", old, new) { inviteTime }
+    return areResultsModified(old, new) ||
+      diffLocation ||
+      diffInviteTime ||
+      diff("start", old, new) { start } ||
+      diff("end", old, new) { end } ||
+      diff("maxAccepted", old, new) { maxAccepted } ||
+      diff("rsvpDate", old, new) { rsvpDate } ||
+      diff("lastUpdated", old, new) {
+        description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) }
+      }
+  }
+
+  fun areResultsModified(old: Event, new: Event): Boolean {
+    if (new.matchInfo?.teamScore == null) {
+      log.v { "[${old.identity}] New event has no matchInfo. Assuming no result diff..." }
+      return false
+    }
+    return diff("matchInfo.type", old, new) { matchInfo?.type } ||
+      diff("matchInfo.scoresFinal", old, new) { matchInfo?.scoresFinal } ||
+      diff("matchInfo.opponentScore", old, new) { matchInfo?.opponentScore } ||
+      diff("matchInfo.teamScore", old, new) { matchInfo?.teamScore } ||
+      diff("matchInfo.teamColour", old, new) { matchInfo?.teamColour }
   }
 
   fun extractMatchId(event: Event): String? {

@@ -19,7 +19,9 @@ class FakeSink<M>(
   private val onUpdateMatch: (triangle: Triangle, match: Match, team: Team, existing: M) -> Unit =
     { _, _, _, _ ->
     },
-  private val onCreateMatch: (triangle: Triangle, match: Match, team: Team) -> Unit = { _, _, _ -> },
+  private val onCreateMatch: (triangle: Triangle, match: Match, team: Team) -> Unit = { _, _, _ ->
+  },
+  private val onCancelMatch: (team: TeamId, existing: M) -> Unit = { _, _ -> },
 ) : DataSink<M> {
   constructor(
     logger: Logger
@@ -38,6 +40,10 @@ class FakeSink<M>(
 
   override fun listExistingMatches(team: TeamId, from: Time, until: Time): Flow<Pair<MatchId, M>> =
     onListExistingMatches(team, from, until)
+
+  override suspend fun cancelMatch(team: TeamId, existing: M) {
+    onCancelMatch(team, existing)
+  }
 
   override suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: M) {
     onUpdateMatch(triangle, match, team, existing)

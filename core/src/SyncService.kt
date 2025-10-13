@@ -5,6 +5,7 @@ package core
 import co.touchlab.kermit.Logger
 import core.di.ClubScope
 import core.model.Match
+import core.model.MatchId
 import core.model.Team
 import core.model.TeamId
 import core.model.Time
@@ -26,6 +27,7 @@ class SyncService(
   private val sink: DataSink<Identifiable>,
   private val teams: Set<TeamId>,
   logger: Logger = Logger,
+  private val cancelMissing: Boolean = false,
 ) {
   private val log = logger.withTag("SyncService")
 
@@ -51,7 +53,7 @@ class SyncService(
     from: Time,
     until: Time,
   ) {
-    val updates =
+    val updates: MutableMap<Pair<TeamId, MatchId>, Triple<Triangle, Match, Team>> =
       triangles
         .flatMap { triangle ->
           triangle.matches.toList().flatMap { match ->
@@ -69,8 +71,11 @@ class SyncService(
       sink.listExistingMatches(teamId, from, until).buffer().collect { (matchId, it) ->
         val update = updates.remove(teamId to matchId)
         if (update == null) {
-          log.w("[$teamId] Sink match ${it.identity} was not found on source.")
-          noLongerPresentSinkMatches += teamId to it
+          // TODO: Clear no longer present matches from noLongerPresentSinkMatches
+          log.w("[$teamId] Sink match $matchId ${it.identity} was not found on source.")
+          if (cancelMissing) {
+            sink.cancelMatch(teamId, it)
+          }
           return@collect
         }
         log.v("[$teamId] Updating existing sink match ${it.identity}.")
@@ -81,7 +86,6 @@ class SyncService(
           existing = it,
         )
       }
-      // TODO: Clear no longer present matches from noLongerPresentSinkMatches
 
       log.v("[$teamId] Creating new matches.")
       val teamMatches = updates.filterKeys { (id, _) -> id == teamId }.values

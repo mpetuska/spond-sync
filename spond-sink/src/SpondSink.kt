@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import me.tatarka.inject.annotations.Inject
-import service.EventBuilderService
 import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import spond.Spond
 import spond.data.event.Event
@@ -30,6 +29,7 @@ import spond.data.event.MatchScore
 import spond.data.group.Group
 import spond.data.group.SubGroup
 import spond.data.group.SubGroupName
+import spond.sink.service.EventBuilderService
 import utils.Named
 
 @Inject
@@ -97,6 +97,11 @@ class SpondSink(
     return event.matchInfo != null && description?.contains(config.events.descriptionByline) == true
   }
 
+  override suspend fun cancelMatch(team: TeamId, existing: Event) {
+    log.w { "[$team] Cancelling match ${existing.identity}." }
+    client.cancelEvent(existing.id, quiet = true)
+  }
+
   override suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: Event) {
     val subGroup = getSubGroup(team.id)
     log.v("[${match.id}] Preparing merged spond event data for source event ${existing.identity}.")
@@ -109,19 +114,24 @@ class SpondSink(
         }
     log.d("[${match.id}] Merged ${existing.identity} with new data.")
 
-    val resultsModified = areResultsModified(updatedSpondEvent, existing)
-
-    if (
-      !eventBuilderService.isModified(existing, updatedSpondEvent) &&
-        !resultsModified &&
-        !config.forceUpdate
-    ) {
+    val isModified = eventBuilderService.isModified(existing, updatedSpondEvent)
+    val resultsModified = areResultsModified(existing, updatedSpondEvent)
+    if (!isModified && !resultsModified && !config.forceUpdate) {
       log.i(
-        "[${match.id}] Skipping the update... Updated spond event is the same as previous event ${existing.identity}."
+        "[${match.id}] Skipping the update..." +
+          " Updated spond event is the same as previous event ${existing.identity}." +
+          " isModified=$isModified," +
+          " resultsModified=$resultsModified," +
+          " config.forceUpdate=${config.forceUpdate}"
       )
       return
     } else {
-      log.i("[${match.id}] Updating spond event with new data ${existing.identity}.")
+      log.i(
+        "[${match.id}] Updating spond event with new data ${existing.identity}." +
+          " isModified=$isModified," +
+          " resultsModified=$resultsModified," +
+          " config.forceUpdate=${config.forceUpdate}"
+      )
     }
 
     try {
@@ -140,6 +150,11 @@ class SpondSink(
       }
       if (resultsModified) {
         updateMatchResults(updatedSpondEvent)
+      } else {
+        log.i {
+          "[${match.id}] Skipping the results update..." +
+            " Updated spond event results are the same as previous event ${existing.identity}."
+        }
       }
     } catch (e: ClientRequestException) {
       log.e("[${match.id}] Failed to persist spond event update ${updatedSpondEvent.identity}", e)
@@ -186,18 +201,17 @@ class SpondSink(
         }
         .getOrNull() ?: return
 
-    if (areResultsModified(updatedEvent, event)) {
+    if (areResultsModified(event, updatedEvent)) {
       updateMatchResults(updatedEvent)
     }
   }
 
-  private fun areResultsModified(updatedSpondEvent: Event, existing: Event): Boolean {
-    val resultsModified =
-      config.syncResults &&
-        updatedSpondEvent.matchInfo?.teamScore != null &&
-        (existing.matchInfo?.teamScore != updatedSpondEvent.matchInfo?.teamScore ||
-          existing.matchInfo?.opponentScore != updatedSpondEvent.matchInfo?.opponentScore)
-    return resultsModified
+  private fun areResultsModified(old: Event, new: Event): Boolean {
+    return config.syncResults &&
+      run {
+        log.v { "[${old.identity}] Diffing the results." }
+        eventBuilderService.areResultsModified(old, new)
+      }
   }
 
   private suspend fun updateMatchResults(event: Event) {
