@@ -259,7 +259,7 @@ class VolleyZoneSource(
       copy(venue = venue.copy(address = mapped))
     } else {
       val fallbackVenue = venue.alternativeAddress ?: "$venue, England, United Kingdom"
-      log.i(
+      log.d(
         "[${identity}] Unable to map address $venue. Falling back to source venue $fallbackVenue"
       )
       copy(venue = venue.copy(address = fallbackVenue, alternativeAddress = venue.address))

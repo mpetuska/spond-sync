@@ -117,7 +117,7 @@ class SpondSink(
     val isModified = eventBuilderService.isModified(existing, updatedSpondEvent)
     val resultsModified = areResultsModified(existing, updatedSpondEvent)
     if (!isModified && !resultsModified && !config.forceUpdate) {
-      log.i(
+      log.d(
         "[${match.id}] Skipping the update..." +
           " Updated spond event is the same as previous event ${existing.identity}." +
           " isModified=$isModified," +
@@ -151,7 +151,7 @@ class SpondSink(
       if (resultsModified) {
         updateMatchResults(updatedSpondEvent)
       } else {
-        log.i {
+        log.d {
           "[${match.id}] Skipping the results update..." +
             " Updated spond event results are the same as previous event ${existing.identity}."
         }

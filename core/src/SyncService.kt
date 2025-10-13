@@ -27,7 +27,6 @@ class SyncService(
   private val sink: DataSink<Identifiable>,
   private val teams: Set<TeamId>,
   logger: Logger = Logger,
-  private val cancelMissing: Boolean = false,
 ) {
   private val log = logger.withTag("SyncService")
 
@@ -65,17 +64,14 @@ class SyncService(
         }
         .associateBy { (_, match, team) -> team.id to match.id }
         .toMutableMap()
-    val noLongerPresentSinkMatches = mutableSetOf<Pair<TeamId, Identifiable>>()
     for (teamId in teams) {
       log.v("[$teamId] Updating existing matches.")
       sink.listExistingMatches(teamId, from, until).buffer().collect { (matchId, it) ->
         val update = updates.remove(teamId to matchId)
         if (update == null) {
-          // TODO: Clear no longer present matches from noLongerPresentSinkMatches
           log.w("[$teamId] Sink match $matchId ${it.identity} was not found on source.")
-          if (cancelMissing) {
-            sink.cancelMatch(teamId, it)
-          }
+          // TODO: Clear no longer present matches from noLongerPresentSinkMatches
+          //  sink.cancelMatch(teamId, it)
           return@collect
         }
         log.v("[$teamId] Updating existing sink match ${it.identity}.")
@@ -93,10 +89,6 @@ class SyncService(
         log.v("[$teamId] Creating new sink match ${match.identity}.")
         updates.remove(team.id to match.id)
         sink.createMatch(triangle = triangle, match = match, team = team)
-      }
-
-      for ((team, match) in noLongerPresentSinkMatches.sortedBy { it.first.value }) {
-        log.w("[${team.value}] Match ${match.identity} no longer exists on source.")
       }
     }
 
