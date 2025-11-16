@@ -98,6 +98,10 @@ class SyncService(
   }
 
   private fun buildTriangle(id: TriangleId, matches: List<Match>): Triangle? {
+    if(matches.size != 3) {
+      log.e("[$id] Triangle must have exactly 3 matches. Instead had $matches.")
+      return null
+    }
     val host = findHost(id, matches) ?: return null
     val aVenues = matches.filter { host in it }.map { it.venue }.distinct()
     if (aVenues.size != 1) {
