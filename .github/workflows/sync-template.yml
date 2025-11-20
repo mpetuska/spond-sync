@@ -69,7 +69,7 @@ jobs:
 
       - name: Sync Data [JVM]
         if: "inputs.useJvm"
-        run: java --jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config'
+        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config'
       - name: Sync Data [NATIVE]
         if: "!inputs.useJvm"
         run: ./kexe/spond-sync '${{ github.workspace }}/.config'

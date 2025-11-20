@@ -74,7 +74,7 @@ jobs:
 
       - name: Clean Events [JVM]
         if: "inputs.useJvm"
-        run: java --jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' --nosync --clean --yes
+        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' --nosync --clean --yes
       - name: Clean Events [NATIVE]
         if: "!inputs.useJvm"
         run: ./kexe/spond-sync '${{ github.workspace }}/.config' --nosync --clean --yes
