@@ -14,11 +14,11 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import utils.tokens.SerializableBearerTokens
 import utils.tokens.TokenHandler
+import kotlin.time.Instant
 
 internal fun buildHttpClient(
   baseClient: HttpClient,
@@ -37,6 +37,11 @@ internal fun buildHttpClient(
     install(ContentNegotiation) { json(json) }
     install(Auth) {
       bearer {
+        sendWithoutRequest { request ->
+          log.w { "sendWithoutRequest(${request.url} in $url)" }
+          request.url.host in url
+        }
+
         loadTokens {
           log.d("Loading tokens")
           tokenHandler
@@ -48,26 +53,34 @@ internal fun buildHttpClient(
               } else {
                 log.i("Successfully loaded tokens")
               }
-            }
+            } ?: BearerTokens("REFRESH", "REFRESH")
         }
         refreshTokens {
           log.d("Refreshing tokens")
           val resp =
             client
-              .preparePost("$url/login") {
+              .preparePost("$url/auth2/login") {
                 expectSuccess = true
                 contentType(ContentType.Application.Json)
                 setBody(mapOf("email" to credentials.username, "password" to credentials.password))
+                markAsRefreshTokenRequest()
               }
               .execute()
           val tokens: SpondTokens = resp.body()
           log.i("Refreshed tokens: $resp")
-          BearerTokens(accessToken = tokens.accessToken, refreshToken = tokens.refreshToken).also {
-            log.i("Storing refreshed tokens")
-            tokenHandler.onRefreshTokens(
-              SerializableBearerTokens(accessToken = it.accessToken, refreshToken = it.refreshToken)
+          BearerTokens(
+              accessToken = tokens.accessToken.token,
+              refreshToken = tokens.refreshToken.token,
             )
-          }
+            .also {
+              log.i("Storing refreshed tokens")
+              tokenHandler.onRefreshTokens(
+                SerializableBearerTokens(
+                  accessToken = it.accessToken,
+                  refreshToken = it.refreshToken,
+                )
+              )
+            }
         }
       }
     }
@@ -75,6 +88,9 @@ internal fun buildHttpClient(
 
 @Serializable
 private data class SpondTokens(
-  @SerialName("loginToken") val accessToken: String,
-  @SerialName("passwordToken") val refreshToken: String,
+  val accessToken: SpondToken,
+  val refreshToken: SpondToken,
+  val passwordToken: SpondToken,
 )
+
+@Serializable private data class SpondToken(val token: String, val expiration: Instant)

@@ -11,7 +11,7 @@ import spond.SpondCredentials
 import spond.data.group.SubGroupName
 import utils.Identifiable
 import utils.Named
-import utils.tokens.FileTokenHandler
+import utils.tokens.MemoryTokenHandler
 import utils.tokens.TokenHandler
 
 @SingleIn(ClubScope::class)
@@ -43,6 +43,8 @@ interface SpondSinkComponent {
   @Provides
   @SingleIn(ClubScope::class)
   @Named("spond")
-  fun tokenHandler(json: Json, config: SpondSinkConfig): TokenHandler =
-    FileTokenHandler(json, config.api.toString())
+  fun tokenHandler(json: Json, config: SpondSinkConfig): TokenHandler {
+    //    return FileTokenHandler(json, config.api.toString())
+    return MemoryTokenHandler
+  }
 }

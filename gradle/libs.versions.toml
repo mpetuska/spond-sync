@@ -4,9 +4,9 @@ kotlin-inject = "0.8.0"
 kotlin-inject-anvil = "0.1.6"
 kotlinx-coroutines = "1.10.2"
 kotlinx-datetime = "0.7.1-0.6.x-compat"
-kotlinx-io = "0.8.0"
+kotlinx-io = "0.8.1"
 ktor = "3.3.2"
-metro = "0.7.5"
+metro = "0.7.7"
 
 [libraries]
 assertk = "com.willowtreeapps.assertk:assertk:0.28.1"
