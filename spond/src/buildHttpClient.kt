@@ -37,11 +37,6 @@ internal fun buildHttpClient(
     install(ContentNegotiation) { json(json) }
     install(Auth) {
       bearer {
-        sendWithoutRequest { request ->
-          log.w { "sendWithoutRequest(${request.url} in $url)" }
-          request.url.host in url
-        }
-
         loadTokens {
           log.d("Loading tokens")
           tokenHandler
