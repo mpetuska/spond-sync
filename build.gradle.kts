@@ -1,6 +1,6 @@
 import nl.littlerobots.vcu.plugin.resolver.VersionSelectors
 
-plugins { id("nl.littlerobots.version-catalog-update") version "1.0.0" }
+plugins { alias(libs.plugins.version.catalog.update) }
 
 /**
  * Unattended update:

@@ -1,0 +1,18 @@
+product:
+  type: kmp/lib
+  platforms: [ jvm, linuxX64 ]
+
+apply: [ //templates/metro.module-template.yaml ]
+
+dependencies:
+  - //lib/utils
+  - $libs.ktor.client.auth
+  - $libs.ktor.client.content.negotiation
+  - $libs.ktor.serialization.kotlinx.json
+  - $libs.kermit
+
+settings:
+  kotlin:
+    optIns:
+      - kotlin.time.ExperimentalTime
+    serialization: json

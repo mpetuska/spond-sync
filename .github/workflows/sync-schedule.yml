@@ -21,3 +21,4 @@ jobs:
       timeoutMinutes: 10
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}
+      credentialsConfig: ${{ secrets.CRED_CONFIG }}

@@ -1,0 +1,13 @@
+product:
+  type: kmp/lib
+  platforms: [ jvm, linuxX64 ]
+
+apply: [ //templates/base.module-template.yaml ]
+
+dependencies:
+  - $libs.kotlinx.io.core
+  - $libs.kermit.core
+
+settings:
+  kotlin:
+    optIns: [ kotlin.uuid.ExperimentalUuidApi ]

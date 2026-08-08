@@ -1,0 +1,14 @@
+apply: [ //templates/base.module-template.yaml ]
+
+test-dependencies:
+  - $libs.metro.runtime
+
+test-settings:
+  kotlin:
+    compilerPlugins:
+      - id: dev.zacsweers.metro.compiler
+        dependency: $libs.metro.compiler
+        options:
+          enabled: true
+          generate-contribution-hints: true
+          generate-contribution-hints-in-fir: true

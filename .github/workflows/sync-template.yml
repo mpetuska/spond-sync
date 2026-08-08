@@ -22,6 +22,9 @@ on:
       config:
         description: Config json
         required: true
+      credentialsConfig:
+        description: Secondary Config json to store credentials separately from main config. Values in this config will override original config values.
+        required: false
 
 env:
   LOG_LEVEL: ${{ inputs.logLevel }}
@@ -63,17 +66,23 @@ jobs:
           java-version: 21
 
       - name: Prepare Config
-        run: echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
+        run: |
+          echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
+          if [ -n "$CRED_CONFIG" ]; then
+            echo $CRED_CONFIG > '${{ github.workspace }}/.cred.config'
+          fi
         env:
           SYNC_CONFIG: ${{ secrets.config }}
+          CRED_CONFIG: ${{ secrets.credentialsConfig }}
 
       - name: Sync Data [JVM]
         if: "inputs.useJvm"
-        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config'
+        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config'
+
       - name: Sync Data [NATIVE]
         if: "!inputs.useJvm"
-        run: ./kexe/spond-sync '${{ github.workspace }}/.config'
+        run: ./kexe/spond-sync '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config'
 
       - name: Cleanup config
         if: always()
-        run: rm -rf '${{ github.workspace }}/.config'
+        run: rm -rf '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config'

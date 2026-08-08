@@ -1,27 +1,23 @@
 [versions]
-kermit = "2.0.8"
-kotlin-inject = "0.8.0"
-kotlin-inject-anvil = "0.1.6"
-kotlinx-coroutines = "1.10.2"
-kotlinx-datetime = "0.7.1-0.6.x-compat"
-kotlinx-io = "0.8.1"
-ktor = "3.3.2"
-metro = "0.7.7"
+kermit = "2.1.0"
+kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.8.0"
+kotlinx-io = "0.9.1"
+kotlinx-serialization = "1.11.0"
+ktor = "3.5.2"
+metro = "1.4.1"
+test-balloon = "1.0.1-K2.4.0"
 
 [libraries]
-assertk = "com.willowtreeapps.assertk:assertk:0.28.1"
-clikt = "com.github.ajalt.clikt:clikt:5.0.3"
+clikt = "com.github.ajalt.clikt:clikt:5.1.0"
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
-kotlin-inject-anvil-compiler = { module = "software.amazon.lastmile.kotlin.inject.anvil:compiler", version.ref = "kotlin-inject-anvil" }
-kotlin-inject-anvil-runtime = { module = "software.amazon.lastmile.kotlin.inject.anvil:runtime", version.ref = "kotlin-inject-anvil" }
-kotlin-inject-anvil-runtime-optional = { module = "software.amazon.lastmile.kotlin.inject.anvil:runtime-optional", version.ref = "kotlin-inject-anvil" }
-kotlin-inject-compiler = { module = "me.tatarka.inject:kotlin-inject-compiler-ksp", version.ref = "kotlin-inject" }
-kotlin-inject-runtime = { module = "me.tatarka.inject:kotlin-inject-runtime-kmp", version.ref = "kotlin-inject" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
-ksoup = "com.fleeksoft.ksoup:ksoup:0.2.5"
+kotlinx-serialization-json-io = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-io", version.ref = "kotlinx-serialization" }
+ksoup = "com.fleeksoft.ksoup:ksoup:0.2.6"
+ktfmt = "com.facebook:ktfmt:0.64"
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
@@ -30,13 +26,12 @@ ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-logback = "ch.qos.logback:logback-classic:1.5.21"
+logback = "ch.qos.logback:logback-classic:1.6.1"
 metro-compiler = { module = "dev.zacsweers.metro:compiler", version.ref = "metro" }
 metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
+test-balloon-compiler = { module = "de.infix.testBalloon:testBalloon-compiler-plugin", version.ref = "test-balloon" }
+test-balloon-runtime = { module = "de.infix.testBalloon:testBalloon-framework-core", version.ref = "test-balloon" }
+javac = "com.google.errorprone:javac:9+181-r4173-1"
 
-[bundles]
-di = [
-    "kotlin-inject-anvil-runtime",
-    "kotlin-inject-anvil-runtime-optional",
-    "kotlin-inject-runtime",
-]
+[plugins]
+version-catalog-update = "nl.littlerobots.version-catalog-update:1.1.1"

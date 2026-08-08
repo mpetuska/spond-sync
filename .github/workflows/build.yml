@@ -27,14 +27,14 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Cache Kotlin/Native and Amper
+      - name: Cache Kotlin/Native and Kotlin Toolchain
         uses: actions/cache@v4
         with:
           path: |
             ~/.konan
-            ~/.cache/Amper
-            ~/.cache/JetBrains/Amper
-          key: ${{ runner.os }}-kotlin-native-${{ hashFiles('**/module.yaml', 'amper', '**/*libs.toml') }}
+            ~/.cache/Kotlin
+            ~/.cache/JetBrains/Kotlin
+          key: ${{ runner.os }}-kotlin-native-${{ hashFiles('**/module.yaml', 'kotlin', '**/*libs.toml') }}
           restore-keys: |
             ${{ runner.os }}-kotlin-native-
 
@@ -44,7 +44,7 @@ jobs:
         with:
           path: |
             kexe/spond-sync
-          key: ${{ runner.os }}-spond-sync-cli-native-${{ hashFiles('**/module.yaml', 'amper', '**/*libs.toml', '**/*.kt') }}
+          key: ${{ runner.os }}-spond-sync-cli-native-${{ hashFiles('**/module.yaml', 'kotlin', '**/*libs.toml', '**/*.kt') }}
           restore-keys: |
             ${{ runner.os }}-spond-sync-cli-native-
       - name: Cache CLI [JVM]
@@ -53,7 +53,7 @@ jobs:
         with:
           path: |
             kexe/spond-sync.jar
-          key: ${{ runner.os }}-spond-sync-cli-jvm-${{ hashFiles('**/module.yaml', 'amper', '**/*libs.toml', '**/*.kt') }}
+          key: ${{ runner.os }}-spond-sync-cli-jvm-${{ hashFiles('**/module.yaml', 'kotlin', '**/*libs.toml', '**/*.kt') }}
           restore-keys: |
             ${{ runner.os }}-spond-sync-cli-jvm-
 
@@ -65,12 +65,12 @@ jobs:
 
       - name: Test
         if: github.event_name != 'schedule'
-        run: ./amper test
+        run: ./kotlin test
 
       - name: Build
         run: |
-          ./amper build -v release -m cli-linux -m cli-jvm
-          ./amper package -v release -m cli-jvm
+          ./kotlin build -v release -m cli-linux -m cli-jvm
+          ./kotlin package -v release -m cli-jvm
           rm -rf kexe/
           mkdir -p kexe/
           ln build/tasks/_cli-jvm_executableJarJvm/cli-jvm-jvm-executable.jar kexe/spond-sync.jar || exit 1

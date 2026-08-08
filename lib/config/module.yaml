@@ -1,0 +1,16 @@
+product:
+  type: kmp/lib
+  platforms: [jvm, linuxX64]
+
+apply: [ //templates/metro.module-template.yaml ]
+
+dependencies:
+  - //lib/volleyzone-source
+  - //lib/spond-sink
+  - $libs.kotlinx.io.core
+  - $libs.kotlinx.serialization.json.io
+
+settings:
+  kotlin:
+    serialization: json
+    optIns: [ kotlinx.serialization.ExperimentalSerializationApi ]

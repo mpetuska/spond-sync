@@ -1,35 +1,43 @@
 package cli
 
-import cli.config.DiApp
-import cli.config.build
+import cli.config.AppGraph
 import co.touchlab.kermit.Severity
-import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.output.MordantHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
-import io.ktor.utils.io.core.writeText
-import kotlinx.coroutines.runBlocking
-import kotlinx.io.Source
+import com.github.ajalt.mordant.terminal.warning
+import dev.petuska.spond.sync.config.ConfigLoader
+import dev.zacsweers.metro.createGraphFactory
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlinx.io.buffered
 import kotlinx.io.files.FileSystem
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
-import kotlinx.io.readString
 import kotlinx.serialization.json.Json
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
+import kotlinx.serialization.json.io.encodeToSink
 
 class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
-  CliktCommand("spond-sync") {
+  SuspendingCliktCommand("spond-sync") {
   init {
     context {
-      helpFormatter = { MordantHelpFormatter(it, showDefaultValues = true, showRequiredTag = true) }
+      helpFormatter = {
+        MordantHelpFormatter(
+          it,
+          requiredOptionMarker = "*",
+          showDefaultValues = true,
+          showRequiredTag = true,
+        )
+      }
     }
   }
 
@@ -39,6 +47,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
   private val actionsStepDebug by option(hidden = true, envvar = "ACTIONS_STEP_DEBUG").flag()
   private val logLevel by
     option(
+        names = arrayOf("--log-level", "-l"),
         envvar = "LOG_LEVEL",
         help = "Console log level [ Verbose, Debug, Info, Warn, Error, Assert ]",
       )
@@ -48,7 +57,10 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       }
       .default(Severity.Warn)
   private val clean by
-    option(help = "Should the group be cleaned of old managed events before updating")
+    option(
+        names = arrayOf("--clean", "-c"),
+        help = "Should the group be cleaned of old managed events before updating",
+      )
       .flag("--noclean", defaultForHelp = "disabled")
 
   private val yes by
@@ -56,7 +68,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       .flag("--no", defaultForHelp = "disabled")
 
   private val sync by
-    option(help = "Should event sync be performed.")
+    option(names = arrayOf("--sync", "-s"), help = "Should event sync be performed.")
       .flag("--nosync", default = true, defaultForHelp = "enabled")
 
   private val sourceOffset by
@@ -77,12 +89,13 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       .convert { it.days }
       .default(Duration.ZERO)
 
-  private val updateConfig by
+  private val writeConfig by
     option(
-        names = arrayOf("--update-config"),
-        help = "Should config file be updated with expanded default values.",
+        names = arrayOf("--write-config"),
+        help =
+          "Should config file be written at the end of the run with merged configs and expanded default values.",
       )
-      .flag("--noupdate-config")
+      .convert { Path(it) }
 
   private val dry by
     option(
@@ -91,11 +104,10 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       )
       .flag("--nodry")
 
-  private val config by
-    argument(help = "Sync config json file").convert {
-      val path = Path(it)
-      if (fileSystem.exists(path)) path else fail("Specified config file $it does not exist!")
-    }
+  private val configs by
+    argument(help = "Sync config json files. The files are merged in order specified.")
+      .convert { Path(it) }
+      .multiple()
 
   private val json = Json {
     ignoreUnknownKeys = true
@@ -106,7 +118,16 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
     allowComments = true
   }
 
-  override fun run() = runBlocking {
+  override suspend fun run() {
+    val configs = configs.filter {
+      if (fileSystem.exists(it)) {
+        true
+      } else {
+        terminal.warning("Specified config file $it does not exist!")
+        false
+      }
+    }
+    check(configs.isNotEmpty()) { "None of the supplied config files exist! ${this.configs}" }
     val logSeverity =
       when {
         actionsStepDebug -> Severity.Verbose
@@ -116,23 +137,25 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
         dry -> minOf(logLevel, Severity.Info)
         else -> logLevel
       }
-    val syncConfig: SyncConfig =
-      fileSystem.source(config).buffered().use(Source::readString).let(json::decodeFromString)
+    val syncConfig = ConfigLoader(json).load(configs)
     val app =
-      DiApp::class.build(
-        volleyZoneConfig = syncConfig.volleyzone,
-        sourceOffset = core.util.Duration(sourceOffset),
-        sinkOffset = core.util.Duration(sinkOffset),
-        severity = logSeverity,
-        gitHubCi = ci && githubRunAttempt != null,
-        json = json,
-        dry = dry,
-      )
+      createGraphFactory<AppGraph.Factory>()
+        .create(
+          volleyZoneConfig = syncConfig.volleyzone,
+          sourceOffset = core.util.Duration(sourceOffset),
+          sinkOffset = core.util.Duration(sinkOffset),
+          severity = logSeverity,
+          gitHubCi = ci && githubRunAttempt != null,
+          json = json,
+          dry = dry,
+        )
+    app.logger.d { "Config: $syncConfig" }
     val club = app.club(syncConfig.spond)
     val worker = club.syncWorker
     if (clean) worker.cleanGroup(yes)
     if (sync) worker.syncGroup()
-    if (updateConfig)
-      fileSystem.sink(config).buffered().use { it.writeText(json.encodeToString(syncConfig)) }
+    val writeConfig = writeConfig
+    if (writeConfig != null)
+      fileSystem.sink(writeConfig).buffered().use { json.encodeToSink(syncConfig, it) }
   }
 }

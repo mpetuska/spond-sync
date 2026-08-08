@@ -3,7 +3,11 @@ package cli
 import co.touchlab.kermit.Logger
 import core.SyncService
 import core.di.ClubScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.plugins.ClientRequestException
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.LocalDateTime
@@ -11,14 +15,10 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import me.tatarka.inject.annotations.Inject
-import software.amazon.lastmile.kotlin.inject.anvil.SingleIn
 import spond.Spond
 import spond.data.group.Group
 import spond.sink.SpondSinkConfig
 import utils.Named
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
 
 @Inject
 @SingleIn(ClubScope::class)

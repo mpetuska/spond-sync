@@ -1,9 +1,11 @@
 product:
   type: jvm/app
-  platforms:
-    - jvm
+  platforms: [ jvm ]
+
+apply: [ //templates/base.module-template.yaml ]
 
 dependencies:
-  - ../cli-core
+  - //cli/cli-core
   - $libs.clikt
+  - $libs.kotlinx.coroutines.core
   - $libs.logback: runtime-only

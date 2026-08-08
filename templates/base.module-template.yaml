@@ -1,0 +1,36 @@
+plugins:
+  ktfmt: enabled
+
+settings:
+  jvm:
+    jdk:
+      version: 25
+  kotlin:
+    version: 2.4.0
+    freeCompilerArgs:
+      - "-Xexpect-actual-classes"
+
+test-dependencies:
+  - $libs.test.balloon.runtime
+  - $kotlin.test
+
+test-dependencies@jvm:
+  - $libs.logback: runtime-only
+
+test-settings:
+  jvm:
+    test:
+      extraEnvironment:
+        - TESTBALLOON_INCLUDE_PATTERNS: '*'
+  kotlin:
+    powerAssert:
+      enabled: true
+      functions:
+        - kotlin.test.assertEquals
+        - kotlin.test.assertTrue
+        - kotlin.test.assertFalse
+        - kotlin.test.assertNull
+        - kotlin.test.assertNotNull
+    compilerPlugins:
+      - id: de.infix.testBalloon
+        dependency: $libs.test.balloon.compiler

@@ -68,17 +68,23 @@ jobs:
           java-version: 21
 
       - name: Prepare Config
-        run: echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
+        run: |
+          echo $SYNC_CONFIG > '${{ github.workspace }}/.config'
+          if [ -n "$CRED_CONFIG" ]; then
+            echo $CRED_CONFIG > '${{ github.workspace }}/.cred.config'
+          fi
         env:
           SYNC_CONFIG: ${{ secrets.SYNC_CONFIG }}
+          CRED_CONFIG: ${{ secrets.credentialsConfig }}
 
       - name: Clean Events [JVM]
         if: "inputs.useJvm"
-        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' --nosync --clean --yes
+        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config' --nosync --clean --yes
+
       - name: Clean Events [NATIVE]
         if: "!inputs.useJvm"
-        run: ./kexe/spond-sync '${{ github.workspace }}/.config' --nosync --clean --yes
+        run: ./kexe/spond-sync '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config' --nosync --clean --yes
 
       - name: Cleanup config
         if: always()
-        run: rm -rf '${{ github.workspace }}/.config'
+        run: rm -rf '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config'

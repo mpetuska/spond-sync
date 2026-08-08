@@ -1,25 +1,24 @@
 product:
-  type: lib
-  platforms:
-    - jvm
-    - linuxX64
+  type: kmp/lib
+  platforms: [ jvm, linuxX64 ]
+
+apply: [ //templates/metro.module-template.yaml ]
 
 dependencies:
-  - ../../utils
-  - ../../core
-  - ../../spond
-  - ../../volleyzone-source
-  - ../../spond-sink
+  - //lib//utils
+  - //lib//core
+  - //lib//spond
+  - //lib//volleyzone-source
+  - //lib//spond-sink
   - $libs.clikt
   - $libs.kotlinx.io.core
   - $libs.kotlinx.coroutines.core
   - $libs.kotlinx.datetime
   - $libs.kermit
-  - $libs.kotlin.inject.runtime
-  - $libs.kotlin.inject.anvil.runtime
-  - $libs.kotlin.inject.anvil.runtime.optional
   - $libs.ktor.client.core
   - $libs.ktor.client.logging
+  - $libs.kotlinx.serialization.json.io
+  - //lib/config
 
 dependencies@jvm:
   - $libs.ktor.client.cio
@@ -29,12 +28,5 @@ dependencies@native:
 
 settings:
   kotlin:
-    ksp:
-      processors:
-        - $libs.kotlin.inject.compiler
-        - $libs.kotlin.inject.anvil.compiler
-    serialization:
-      format: json
-      version: 1.9.0
+    serialization: json
     optIns: [ kotlin.time.ExperimentalTime, kotlinx.serialization.ExperimentalSerializationApi ]
-    freeCompilerArgs: [ -Xannotation-default-target=param-property ]

@@ -1,8 +1,10 @@
 product:
   type: linux/app
-  platforms:
-    - linuxX64
+  platforms: [ linuxX64 ]
+
+apply: [ //templates/base.module-template.yaml ]
 
 dependencies:
-  - ../cli-core
+  - //cli/cli-core
   - $libs.clikt
+  - $libs.kotlinx.coroutines.core

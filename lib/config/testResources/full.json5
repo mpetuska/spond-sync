@@ -1,0 +1,42 @@
+{
+  "volleyzone": {
+    "leagues": {
+      "Mens Div 1": "https://competitions.volleyzone.co.uk/league/69",
+      "Mens Div 2": "https://competitions.volleyzone.co.uk/league/96",
+      "Womens Div 1": "https://competitions.volleyzone.co.uk/league/99",
+      "Womens Div 2": "https://competitions.volleyzone.co.uk/league/66",
+      "Mixed Div 1": "https://competitions.volleyzone.co.uk/league/6699",
+      "Mixed Div 2": "https://competitions.volleyzone.co.uk/league/9966"
+    },
+    "addresses": {
+      "Address 1": "Address 1, Some Road, City, Region, POST CODE, Country",
+      "Address 2": "Address 2, Some Road, City, Region, POST CODE, Country",
+    }
+  },
+  "spond": {
+    "group": "Test Group",
+    "api": {
+      "username": "email@test.com",
+      "password": "SuperSecurePassword123",
+      "apiUrl": "https://api.spond.com/core/v1"
+    },
+    "subGroups": {
+      "Spond Subgroup Women's 1": "VZ Team Women 1",
+      "Spond Subgroup Women's 2": "VZ Team Women 2",
+      "Spond Subgroup Men's 1": "VZ Team Mens 1",
+      "Spond Subgroup Men's 2": "VZ Team Mens 2",
+      "Spond Subgroup Mixed 1": "VZ Team Mixed 1",
+      "Spond Subgroup Mixed 2": "VZ Team Mixed 2",
+      "Spond Subgroup Mixed 3": "VZ Team Mixed 3"
+    },
+    "syncResults": true,
+    "forceUpdate": false,
+    "events": {
+      "opponentColourHex": "#FFFFFF",
+      "invitationDayBeforeStart": 14,
+      "rsvpDeadlineBeforeStart": 2,
+      "maxAccepted": 10,
+      "descriptionByline": "Managed by Spond butler."
+    }
+  }
+}

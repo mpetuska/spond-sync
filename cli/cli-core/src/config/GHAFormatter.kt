@@ -5,7 +5,7 @@ import co.touchlab.kermit.MessageStringFormatter
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.Tag
 import core.util.ColourLogFormatter
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 
 @Inject
 class GHAFormatter(private val colourLogFormatter: ColourLogFormatter) :
