@@ -1,3 +1,3 @@
-package sportpress.data.league
+package dev.petuska.spond.sync.sportpress.data.league
 
 typealias LeagueId = UInt

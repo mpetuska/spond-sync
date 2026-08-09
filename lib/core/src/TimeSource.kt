@@ -1,15 +1,13 @@
-@file:Suppress("TYPEALIAS_EXPANSION_DEPRECATION", "DEPRECATION")
+package dev.petuska.spond.sync.core
 
-package core
-
-import core.di.ClubScope
-import core.di.Sink
-import core.di.Source
-import core.model.Time
-import core.util.Duration
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.core.di.Sink
+import dev.petuska.spond.sync.core.di.Source
+import dev.petuska.spond.sync.core.model.Time
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
@@ -20,11 +18,9 @@ import kotlin.time.Instant
 @Inject
 @SingleIn(ClubScope::class)
 class TimeSource(
-  @Source sourceOffset: Duration = Duration.ZERO,
-  @Sink sinkOffset: Duration = Duration.ZERO,
+  @Source private val sourceOffset: Duration = Duration.ZERO,
+  @Sink private val sinkOffset: Duration = Duration.ZERO,
 ) {
-  private val sourceOffset = sourceOffset.value
-  private val sinkOffset = sinkOffset.value
 
   fun now(): Time = fromRuntime(Clock.System.now())
 

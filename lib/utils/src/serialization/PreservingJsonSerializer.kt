@@ -1,4 +1,4 @@
-package utils.serialization
+package dev.petuska.spond.sync.utils.serialization
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonElement

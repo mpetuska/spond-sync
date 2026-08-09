@@ -1,4 +1,4 @@
-package core.util
+package dev.petuska.spond.sync.core.util
 
 import co.touchlab.kermit.Message
 import co.touchlab.kermit.MessageStringFormatter

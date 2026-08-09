@@ -1,7 +1,7 @@
-package core.model
+package dev.petuska.spond.sync.core.model
 
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlin.jvm.JvmInline
-import utils.Identifiable
 
 @JvmInline
 value class TriangleId(val value: String) {

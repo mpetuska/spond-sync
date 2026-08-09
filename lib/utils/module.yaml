@@ -4,9 +4,6 @@ product:
 
 apply: [ //templates/metro.module-template.yaml ]
 
-plugins:
-  deps: enabled
-
 dependencies:
   - $libs.kotlinx.io.core
   - $libs.ktor.client.core

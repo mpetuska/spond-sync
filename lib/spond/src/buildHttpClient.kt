@@ -1,6 +1,8 @@
-package spond
+package dev.petuska.spond.sync.spond
 
 import co.touchlab.kermit.Logger
+import dev.petuska.spond.sync.utils.tokens.SerializableBearerTokens
+import dev.petuska.spond.sync.utils.tokens.TokenHandler
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.DefaultRequest
@@ -17,8 +19,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import utils.tokens.SerializableBearerTokens
-import utils.tokens.TokenHandler
 
 internal fun buildHttpClient(
   baseClient: HttpClient,

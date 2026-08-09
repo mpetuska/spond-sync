@@ -1,12 +1,12 @@
-package spond.data.event
+package dev.petuska.spond.sync.spond.data.event
 
+import dev.petuska.spond.sync.spond.data.group.Group
+import dev.petuska.spond.sync.spond.data.group.GroupId
+import dev.petuska.spond.sync.spond.data.group.Member
+import dev.petuska.spond.sync.spond.data.group.MemberId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import spond.data.group.Group
-import spond.data.group.GroupId
-import spond.data.group.Member
-import spond.data.group.MemberId
 
 @Serializable
 data class Recipients(

@@ -1,6 +1,5 @@
-package core
+package dev.petuska.spond.sync.core
 
-import core.util.Duration
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -14,7 +13,7 @@ private val sourceOffset = sourceTime - runtimeTime // 10.days
 private val sinkOffset = sinkTime - runtimeTime // 10.days
 
 val TimeSourceTest by testSuite {
-  val target = TimeSource(sourceOffset = Duration(sourceOffset), sinkOffset = Duration(sinkOffset))
+  val target = TimeSource(sourceOffset = sourceOffset, sinkOffset = sinkOffset)
 
   test("fromSource") {
     val time = target.fromSource(sourceTime)

@@ -1,4 +1,4 @@
-package utils.tokens
+package dev.petuska.spond.sync.utils.tokens
 
 interface TokenHandler {
   /** Cached [SerializableBearerTokens] provider. */

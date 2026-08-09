@@ -1,10 +1,10 @@
-package spond.data.event
+package dev.petuska.spond.sync.spond.data.event
 
+import dev.petuska.spond.sync.spond.data.location.Location
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import spond.data.location.Location
-import utils.Identifiable
 
 @Serializable
 data class NewEvent(

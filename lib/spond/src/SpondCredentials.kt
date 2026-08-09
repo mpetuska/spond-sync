@@ -1,4 +1,4 @@
-package spond
+package dev.petuska.spond.sync.spond
 
 import kotlinx.serialization.Serializable
 

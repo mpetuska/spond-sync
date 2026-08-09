@@ -1,0 +1,14 @@
+[
+  {
+    "id": "group1",
+    "name": "Test Group",
+    "subGroups": [
+      {
+        "id": "subgroup1",
+        "name": "Test Team",
+        "color": "#FF0000"
+      }
+    ],
+    "members": []
+  }
+]

@@ -1,4 +1,4 @@
-package core.di
+package dev.petuska.spond.sync.core.di
 
 import dev.zacsweers.metro.Qualifier
 

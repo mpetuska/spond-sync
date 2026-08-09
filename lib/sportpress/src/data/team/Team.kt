@@ -1,9 +1,9 @@
-package sportpress.data.team
+package dev.petuska.spond.sync.sportpress.data.team
 
+import dev.petuska.spond.sync.sportpress.data.RenderedSerializer
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import sportpress.data.RenderedSerializer
-import utils.Identifiable
 
 typealias TeamId = UInt
 

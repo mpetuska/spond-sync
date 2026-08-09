@@ -1,9 +1,9 @@
-package spond.data.location
+package dev.petuska.spond.sync.spond.data.location
 
+import dev.petuska.spond.sync.spond.data.WithId
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import spond.data.WithId
-import utils.Identifiable
 
 @Serializable
 data class AutocompleteLocation(

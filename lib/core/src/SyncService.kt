@@ -1,21 +1,21 @@
-package core
+package dev.petuska.spond.sync.core
 
 import co.touchlab.kermit.Logger
-import core.di.ClubScope
-import core.model.Match
-import core.model.MatchId
-import core.model.Team
-import core.model.TeamId
-import core.model.Time
-import core.model.Triangle
-import core.model.TriangleId
-import core.util.toTriple
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.MatchId
+import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.core.model.Time
+import dev.petuska.spond.sync.core.model.Triangle
+import dev.petuska.spond.sync.core.model.TriangleId
+import dev.petuska.spond.sync.core.util.toTriple
+import dev.petuska.spond.sync.utils.Identifiable
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.toList
-import utils.Identifiable
 
 @Inject
 @SingleIn(ClubScope::class)

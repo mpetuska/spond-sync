@@ -1,4 +1,4 @@
-package spond.data.event
+package dev.petuska.spond.sync.spond.data.event
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,4 +1,4 @@
-package sportpress.data
+package dev.petuska.spond.sync.sportpress.data
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

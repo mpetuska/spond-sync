@@ -1,4 +1,4 @@
-package sportpress.data.calendar
+package dev.petuska.spond.sync.sportpress.data.calendar
 
 import kotlinx.serialization.Serializable
 

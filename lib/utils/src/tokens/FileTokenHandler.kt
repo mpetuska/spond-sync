@@ -1,4 +1,4 @@
-package utils.tokens
+package dev.petuska.spond.sync.utils.tokens
 
 import io.ktor.utils.io.readText
 import kotlinx.coroutines.Dispatchers

@@ -1,11 +1,21 @@
-package spond.sink.service
+package dev.petuska.spond.sync.spond.sink.service
 
 import co.touchlab.kermit.Logger
-import core.TimeSource
-import core.di.ClubScope
-import core.model.Match
-import core.model.Team
-import core.model.Triangle
+import dev.petuska.spond.sync.core.TimeSource
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.Triangle
+import dev.petuska.spond.sync.spond.data.event.Event
+import dev.petuska.spond.sync.spond.data.event.MatchInfo
+import dev.petuska.spond.sync.spond.data.event.MatchType
+import dev.petuska.spond.sync.spond.data.event.NewEvent
+import dev.petuska.spond.sync.spond.data.event.Recipients
+import dev.petuska.spond.sync.spond.data.group.Group
+import dev.petuska.spond.sync.spond.data.group.MemberId
+import dev.petuska.spond.sync.spond.data.group.SubGroup
+import dev.petuska.spond.sync.spond.data.location.Location
+import dev.petuska.spond.sync.spond.sink.SpondSinkConfig.Events
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlin.time.Duration.Companion.days
@@ -18,16 +28,6 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import spond.data.event.Event
-import spond.data.event.MatchInfo
-import spond.data.event.MatchType
-import spond.data.event.NewEvent
-import spond.data.event.Recipients
-import spond.data.group.Group
-import spond.data.group.MemberId
-import spond.data.group.SubGroup
-import spond.data.location.Location
-import spond.sink.SpondSinkConfig.Events
 
 @Inject
 @SingleIn(ClubScope::class)

@@ -1,7 +1,6 @@
 # Spond Sync
 
-A cli utility to synchronise events from various sources
-to [Spond](https://spond.com).
+A cli utility to synchronise events from various sources to [Spond](https://spond.com).
 
 Implemented sources:
 
@@ -10,7 +9,10 @@ Implemented sources:
 
 ## Configuration
 
-All configuration is defined in [SyncConfig](./cli/cli-core/src/SyncConfig.kt)
+All configurations are defined in [Config](./lib/config/src/Config.kt).
+
+Configs can be split into multiple files and merged together using [ConfigMerger](./lib/config/src/ConfigMerger.kt).
+CLI app also accepts multiple config files for merging.
 
 ```json5
 {

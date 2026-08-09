@@ -1,18 +1,18 @@
-package spond.sink
+package dev.petuska.spond.sync.spond.sink
 
-import core.DataSink
-import core.di.ClubScope
-import core.model.TeamId
+import dev.petuska.spond.sync.core.DataSink
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.spond.SpondCredentials
+import dev.petuska.spond.sync.spond.data.group.SubGroupName
+import dev.petuska.spond.sync.utils.Identifiable
+import dev.petuska.spond.sync.utils.Named
+import dev.petuska.spond.sync.utils.tokens.MemoryTokenHandler
+import dev.petuska.spond.sync.utils.tokens.TokenHandler
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
-import spond.SpondCredentials
-import spond.data.group.SubGroupName
-import utils.Identifiable
-import utils.Named
-import utils.tokens.MemoryTokenHandler
-import utils.tokens.TokenHandler
 
 @SingleIn(ClubScope::class)
 @ContributesTo(ClubScope::class)

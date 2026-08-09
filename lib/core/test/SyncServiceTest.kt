@@ -1,16 +1,16 @@
-package core
+package dev.petuska.spond.sync.core
 
 import co.touchlab.kermit.Severity
-import core.di.TestGraph
-import core.model.Match
-import core.model.Team
-import core.model.TeamId
-import core.model.Time
-import core.model.Triangle
-import core.model.TriangleId
-import core.model.Venue
-import core.util.toTriple
 import de.infix.testBalloon.framework.core.testSuite
+import dev.petuska.spond.sync.core.di.TestGraph
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.core.model.Time
+import dev.petuska.spond.sync.core.model.Triangle
+import dev.petuska.spond.sync.core.model.TriangleId
+import dev.petuska.spond.sync.core.model.Venue
+import dev.petuska.spond.sync.core.util.toTriple
 import dev.zacsweers.metro.createGraphFactory
 import kotlin.test.assertEquals
 import kotlin.time.Clock

@@ -1,8 +1,12 @@
-package cli
+package dev.petuska.spond.sync.cli
 
 import co.touchlab.kermit.Logger
-import core.SyncService
-import core.di.ClubScope
+import dev.petuska.spond.sync.core.SyncService
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.spond.Spond
+import dev.petuska.spond.sync.spond.data.group.Group
+import dev.petuska.spond.sync.spond.sink.SpondSinkConfig
+import dev.petuska.spond.sync.utils.Named
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.ktor.client.plugins.ClientRequestException
@@ -15,10 +19,6 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import spond.Spond
-import spond.data.group.Group
-import spond.sink.SpondSinkConfig
-import utils.Named
 
 @Inject
 @SingleIn(ClubScope::class)

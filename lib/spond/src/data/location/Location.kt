@@ -1,12 +1,12 @@
-package spond.data.location
+package dev.petuska.spond.sync.spond.data.location
 
+import dev.petuska.spond.sync.utils.Identifiable
+import dev.petuska.spond.sync.utils.serialization.PreservingJsonSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import utils.Identifiable
-import utils.serialization.PreservingJsonSerializer
 
 typealias LocationId = String
 

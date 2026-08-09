@@ -1,19 +1,19 @@
-package core.di
+package dev.petuska.spond.sync.core.di
 
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.MessageStringFormatter
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.loggerConfigInit
 import co.touchlab.kermit.platformLogWriter
-import core.FakeSource
-import core.model.Match
-import core.util.ColourLogFormatter
-import core.util.Instant
+import dev.petuska.spond.sync.core.FakeSource
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.util.ColourLogFormatter
+import dev.petuska.spond.sync.testing.TestLogWriter
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
-import testing.TestLogWriter
+import kotlin.time.Instant
 
 @DependencyGraph(AppScope::class)
 interface TestGraph : ClubGraph.Factory {

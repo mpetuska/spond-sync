@@ -1,5 +1,13 @@
-package sportpress
+package dev.petuska.spond.sync.sportpress
 
+import dev.petuska.spond.sync.sportpress.data.event.Event
+import dev.petuska.spond.sync.sportpress.data.event.EventId
+import dev.petuska.spond.sync.sportpress.data.league.LeagueId
+import dev.petuska.spond.sync.sportpress.data.season.Season
+import dev.petuska.spond.sync.sportpress.data.season.SeasonId
+import dev.petuska.spond.sync.sportpress.data.team.Team
+import dev.petuska.spond.sync.utils.http.paginate
+import dev.petuska.spond.sync.utils.http.parameters
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -10,14 +18,6 @@ import io.ktor.client.request.url
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
-import sportpress.data.event.Event
-import sportpress.data.event.EventId
-import sportpress.data.league.LeagueId
-import sportpress.data.season.Season
-import sportpress.data.season.SeasonId
-import sportpress.data.team.Team
-import utils.http.paginate
-import utils.http.parameters
 
 @Inject
 @SingleIn(AppScope::class)

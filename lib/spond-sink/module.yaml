@@ -13,6 +13,11 @@ dependencies:
   - $libs.kotlinx.datetime
   - $libs.ktor.client.core
 
+test-dependencies:
+  - //lib/test-resources
+  - $libs.kotlinx.coroutines.test
+  - $libs.ktor.client.mock
+
 settings:
   kotlin:
     optIns:

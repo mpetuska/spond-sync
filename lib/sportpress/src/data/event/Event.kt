@@ -1,5 +1,8 @@
-package sportpress.data.event
+package dev.petuska.spond.sync.sportpress.data.event
 
+import dev.petuska.spond.sync.sportpress.data.RenderedSerializer
+import dev.petuska.spond.sync.sportpress.data.team.TeamId
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KeepGeneratedSerializer
@@ -9,9 +12,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.buildJsonObject
-import sportpress.data.RenderedSerializer
-import sportpress.data.team.TeamId
-import utils.Identifiable
 
 typealias EventId = UInt
 

@@ -1,12 +1,16 @@
 modules:
-  - cli/cli-core
-  - cli/cli-jvm
-  - cli/cli-linux
-  - lib/config
-  - lib/core
-  - lib/spond
-  - lib/spond-sink
-  - lib/sportpress
-  - lib/test-resources
-  - lib/utils
-  - lib/volleyzone-source
+  - //cli/cli-core
+  - //cli/cli-jvm
+  - //cli/cli-linux
+  - //lib/config
+  - //lib/core
+  - //lib/spond
+  - //lib/spond-sink
+  - //lib/sportpress
+  - //lib/test-resources
+  - //lib/utils
+  - //lib/volleyzone-source
+  - //plugins/ktfmt
+
+plugins:
+  - //plugins/ktfmt

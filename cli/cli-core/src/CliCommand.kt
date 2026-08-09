@@ -1,6 +1,5 @@
-package cli
+package dev.petuska.spond.sync.cli
 
-import cli.config.AppGraph
 import co.touchlab.kermit.Severity
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.context
@@ -15,6 +14,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.mordant.terminal.warning
+import dev.petuska.spond.sync.cli.config.AppGraph
 import dev.petuska.spond.sync.config.ConfigLoader
 import dev.zacsweers.metro.createGraphFactory
 import kotlin.time.Duration
@@ -142,8 +142,8 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       createGraphFactory<AppGraph.Factory>()
         .create(
           volleyZoneConfig = syncConfig.volleyzone,
-          sourceOffset = core.util.Duration(sourceOffset),
-          sinkOffset = core.util.Duration(sinkOffset),
+          sourceOffset = sourceOffset,
+          sinkOffset = sinkOffset,
           severity = logSeverity,
           gitHubCi = ci && githubRunAttempt != null,
           json = json,

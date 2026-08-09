@@ -1,7 +1,7 @@
-package sportpress.data.season
+package dev.petuska.spond.sync.sportpress.data.season
 
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlinx.serialization.Serializable
-import utils.Identifiable
 
 typealias SeasonId = UInt
 

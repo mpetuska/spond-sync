@@ -7,6 +7,7 @@ apply: [ //templates/base.module-template.yaml ]
 dependencies:
   - $libs.kotlinx.io.core
   - $libs.kermit.core
+  - io.ktor:ktor-io:3.5.2
 
 settings:
   kotlin:

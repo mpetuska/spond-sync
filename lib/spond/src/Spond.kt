@@ -1,6 +1,19 @@
-package spond
+package dev.petuska.spond.sync.spond
 
 import co.touchlab.kermit.Logger
+import dev.petuska.spond.sync.spond.data.WithId
+import dev.petuska.spond.sync.spond.data.event.Event
+import dev.petuska.spond.sync.spond.data.event.EventId
+import dev.petuska.spond.sync.spond.data.event.MatchScore
+import dev.petuska.spond.sync.spond.data.event.NewEvent
+import dev.petuska.spond.sync.spond.data.group.Group
+import dev.petuska.spond.sync.spond.data.group.GroupId
+import dev.petuska.spond.sync.spond.data.location.AutocompleteLocation
+import dev.petuska.spond.sync.spond.data.location.Location
+import dev.petuska.spond.sync.spond.data.location.LocationId
+import dev.petuska.spond.sync.utils.Named
+import dev.petuska.spond.sync.utils.http.paginate
+import dev.petuska.spond.sync.utils.tokens.TokenHandler
 import dev.zacsweers.metro.Inject
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -15,19 +28,6 @@ import io.ktor.client.request.url
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
-import spond.data.WithId
-import spond.data.event.Event
-import spond.data.event.EventId
-import spond.data.event.MatchScore
-import spond.data.event.NewEvent
-import spond.data.group.Group
-import spond.data.group.GroupId
-import spond.data.location.AutocompleteLocation
-import spond.data.location.Location
-import spond.data.location.LocationId
-import utils.Named
-import utils.http.paginate
-import utils.tokens.TokenHandler
 
 @Suppress("TooManyFunctions")
 @Inject

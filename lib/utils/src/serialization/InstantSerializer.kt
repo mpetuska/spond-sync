@@ -1,4 +1,4 @@
-package utils.serialization
+package dev.petuska.spond.sync.utils.serialization
 
 import kotlin.time.Instant
 import kotlinx.serialization.KSerializer

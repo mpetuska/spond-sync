@@ -1,7 +1,7 @@
-package core
+package dev.petuska.spond.sync.core
 
-import core.model.Match
-import core.model.Time
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.Time
 import kotlinx.coroutines.flow.Flow
 
 fun interface DataSource {

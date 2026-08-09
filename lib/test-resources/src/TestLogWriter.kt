@@ -1,4 +1,4 @@
-package testing
+package dev.petuska.spond.sync.testing
 
 import co.touchlab.kermit.LogWriter
 import co.touchlab.kermit.Severity

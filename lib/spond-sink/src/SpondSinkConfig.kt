@@ -1,9 +1,9 @@
-package spond.sink
+package dev.petuska.spond.sync.spond.sink
 
-import core.model.TeamId
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.spond.SpondCredentials
+import dev.petuska.spond.sync.spond.data.group.SubGroupName
 import kotlinx.serialization.Serializable
-import spond.SpondCredentials
-import spond.data.group.SubGroupName
 
 /**
  * @property group spond group name

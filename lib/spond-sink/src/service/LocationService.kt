@@ -1,12 +1,12 @@
-package spond.sink.service
+package dev.petuska.spond.sync.spond.sink.service
 
 import co.touchlab.kermit.Logger
-import core.di.ClubScope
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.spond.Spond
+import dev.petuska.spond.sync.spond.data.location.Location
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.firstOrNull
-import spond.Spond
-import spond.data.location.Location
 
 @Inject
 @SingleIn(ClubScope::class)

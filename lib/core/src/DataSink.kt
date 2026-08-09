@@ -1,11 +1,11 @@
-package core
+package dev.petuska.spond.sync.core
 
-import core.model.Match
-import core.model.MatchId
-import core.model.Team
-import core.model.TeamId
-import core.model.Time
-import core.model.Triangle
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.MatchId
+import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.core.model.Time
+import dev.petuska.spond.sync.core.model.Triangle
 import kotlinx.coroutines.flow.Flow
 
 interface DataSink<out M> {

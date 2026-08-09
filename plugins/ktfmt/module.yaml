@@ -1,0 +1,7 @@
+product: jvm/amper-plugin
+
+apply: [ //templates/base.module-template.yaml ]
+
+dependencies:
+  - $libs.ktfmt
+  - $libs.javac

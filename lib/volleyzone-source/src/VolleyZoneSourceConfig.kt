@@ -1,4 +1,4 @@
-package volleyzone.source
+package dev.petuska.spond.sync.volleyzone.source
 
 import io.ktor.http.Url
 import kotlinx.serialization.Serializable

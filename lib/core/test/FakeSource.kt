@@ -1,9 +1,9 @@
-package core
+package dev.petuska.spond.sync.core
 
 import co.touchlab.kermit.Logger
-import core.model.Match
-import core.model.Time
-import core.model.contains
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.Time
+import dev.petuska.spond.sync.core.model.contains
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

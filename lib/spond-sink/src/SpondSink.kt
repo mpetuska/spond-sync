@@ -1,15 +1,23 @@
-package spond.sink
+package dev.petuska.spond.sync.spond.sink
 
 import co.touchlab.kermit.Logger
-import core.DataSink
-import core.TimeSource
-import core.di.ClubScope
-import core.model.Match
-import core.model.MatchId
-import core.model.Team
-import core.model.TeamId
-import core.model.Time
-import core.model.Triangle
+import dev.petuska.spond.sync.core.DataSink
+import dev.petuska.spond.sync.core.TimeSource
+import dev.petuska.spond.sync.core.di.ClubScope
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.MatchId
+import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.core.model.Time
+import dev.petuska.spond.sync.core.model.Triangle
+import dev.petuska.spond.sync.spond.Spond
+import dev.petuska.spond.sync.spond.data.event.Event
+import dev.petuska.spond.sync.spond.data.event.MatchScore
+import dev.petuska.spond.sync.spond.data.group.Group
+import dev.petuska.spond.sync.spond.data.group.SubGroup
+import dev.petuska.spond.sync.spond.data.group.SubGroupName
+import dev.petuska.spond.sync.spond.sink.service.EventBuilderService
+import dev.petuska.spond.sync.utils.Named
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.ktor.client.plugins.ClientRequestException
@@ -23,14 +31,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
-import spond.Spond
-import spond.data.event.Event
-import spond.data.event.MatchScore
-import spond.data.group.Group
-import spond.data.group.SubGroup
-import spond.data.group.SubGroupName
-import spond.sink.service.EventBuilderService
-import utils.Named
 
 @Inject
 @SingleIn(ClubScope::class)

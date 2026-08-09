@@ -1,11 +1,12 @@
-package cli.config
+package dev.petuska.spond.sync.cli.config
 
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.MessageStringFormatter
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.loggerConfigInit
 import co.touchlab.kermit.platformLogWriter
-import core.util.ColourLogFormatter
+import dev.petuska.spond.sync.core.util.ColourLogFormatter
+import dev.petuska.spond.sync.utils.Named
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -16,7 +17,6 @@ import io.ktor.client.plugins.logging.Logging
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
-import utils.Named
 
 @ContributesTo(AppScope::class)
 interface AppModule {

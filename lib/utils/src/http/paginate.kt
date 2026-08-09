@@ -1,4 +1,4 @@
-package utils.http
+package dev.petuska.spond.sync.utils.http
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -11,10 +11,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> HttpClient.paginate(
   json: Json,
   crossinline setPage: HttpRequestBuilder.(lastValue: T?, page: UInt) -> Unit,

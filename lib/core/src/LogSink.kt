@@ -1,12 +1,12 @@
-package core
+package dev.petuska.spond.sync.core
 
 import co.touchlab.kermit.Logger
-import core.model.Match
-import core.model.MatchId
-import core.model.Team
-import core.model.TeamId
-import core.model.Time
-import core.model.Triangle
+import dev.petuska.spond.sync.core.model.Match
+import dev.petuska.spond.sync.core.model.MatchId
+import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.TeamId
+import dev.petuska.spond.sync.core.model.Time
+import dev.petuska.spond.sync.core.model.Triangle
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn

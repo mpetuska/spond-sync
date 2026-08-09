@@ -1,4 +1,4 @@
-package core.model
+package dev.petuska.spond.sync.core.model
 
 typealias MatchId = String
 

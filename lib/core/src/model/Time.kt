@@ -1,6 +1,4 @@
-@file:Suppress("TYPEALIAS_EXPANSION_DEPRECATION", "DEPRECATION")
-
-package core.model
+package dev.petuska.spond.sync.core.model
 
 import kotlin.time.Duration
 import kotlin.time.Instant

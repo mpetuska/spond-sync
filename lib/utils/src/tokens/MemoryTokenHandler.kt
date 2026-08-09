@@ -1,4 +1,4 @@
-package utils.tokens
+package dev.petuska.spond.sync.utils.tokens
 
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi

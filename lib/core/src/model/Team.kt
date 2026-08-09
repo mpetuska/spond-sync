@@ -1,8 +1,8 @@
-package core.model
+package dev.petuska.spond.sync.core.model
 
+import dev.petuska.spond.sync.utils.Identifiable
 import kotlin.jvm.JvmInline
 import kotlinx.serialization.Serializable
-import utils.Identifiable
 
 @JvmInline
 @Serializable

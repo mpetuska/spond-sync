@@ -1,4 +1,4 @@
-package utils.serialization
+package dev.petuska.spond.sync.utils.serialization
 
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals

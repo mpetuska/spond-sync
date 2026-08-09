@@ -1,4 +1,4 @@
-package sportpress
+package dev.petuska.spond.sync.sportpress
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.DefaultRequest

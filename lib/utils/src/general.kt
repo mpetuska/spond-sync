@@ -1,4 +1,4 @@
-package utils
+package dev.petuska.spond.sync.utils
 
 import dev.zacsweers.metro.Qualifier
 import kotlin.random.Random

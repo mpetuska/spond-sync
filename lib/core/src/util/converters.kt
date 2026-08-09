@@ -1,4 +1,4 @@
-package core.util
+package dev.petuska.spond.sync.core.util
 
 fun <T> Triple<T, T, T>.toList() = listOf(first, second, third)
 

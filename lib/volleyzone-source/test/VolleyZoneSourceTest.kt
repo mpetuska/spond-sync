@@ -1,7 +1,7 @@
 package volleyzone.source
 
-import core.util.Instant
 import de.infix.testBalloon.framework.core.testSuite
+import dev.petuska.spond.sync.testing.Resource
 import dev.zacsweers.metro.createGraphFactory
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -12,10 +12,10 @@ import io.ktor.utils.io.readText
 import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.io.files.Path
-import testing.Resource
 import volleyzone.source.di.TestGraph
 
 val VolleyZoneSourceTest by testSuite {
@@ -27,7 +27,7 @@ val VolleyZoneSourceTest by testSuite {
           httpClientEngine =
             MockEngine { request ->
               val path = Path("volleyzone/${request.url.fullPath.removeSuffix("/")}.html")
-              val content = Resource.read(path)?.use { it.readText() }
+              val content = Resource.readOrNull(path)?.use { it.readText() }
               if (content != null) {
                 respondOk(content)
               } else {

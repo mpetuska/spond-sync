@@ -1,0 +1,10 @@
+tasks:
+  ktfmt:
+    action: !dev.petuska.spond.sync.plugins.ktfmt.format
+      sources: ${module.kotlinJavaSources}
+
+commands:
+  - ktfmt
+
+checks:
+  - ktfmt
