@@ -21,13 +21,27 @@
       "apiUrl": "https://api.spond.com/core/v1"
     },
     "subGroups": {
-      "Spond Subgroup Women's 1": "VZ Team Women 1",
-      "Spond Subgroup Women's 2": "VZ Team Women 2",
-      "Spond Subgroup Men's 1": "VZ Team Mens 1",
-      "Spond Subgroup Men's 2": "VZ Team Mens 2",
-      "Spond Subgroup Mixed 1": "VZ Team Mixed 1",
-      "Spond Subgroup Mixed 2": "VZ Team Mixed 2",
-      "Spond Subgroup Mixed 3": "VZ Team Mixed 3"
+      "Spond Subgroup Women's 1": {
+        "team": "VZ Team Women 1"
+      },
+      "Spond Subgroup Women's 2": {
+        "team": "VZ Team Women 2"
+      },
+      "Spond Subgroup Men's 1": {
+        "team": "VZ Team Mens 1"
+      },
+      "Spond Subgroup Men's 2": {
+        "team": "VZ Team Mens 2"
+      },
+      "Spond Subgroup Mixed 1": {
+        "team": "VZ Team Mixed 1"
+      },
+      "Spond Subgroup Mixed 2": {
+        "team": "VZ Team Mixed 2"
+      },
+      "Spond Subgroup Mixed 3": {
+        "team": "VZ Team Mixed 3"
+      }
     },
     "syncResults": true,
     "forceUpdate": false,

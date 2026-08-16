@@ -6,21 +6,20 @@ import co.touchlab.kermit.Severity
 import co.touchlab.kermit.loggerConfigInit
 import co.touchlab.kermit.platformLogWriter
 import dev.petuska.spond.sync.core.di.Source
+import dev.petuska.spond.sync.core.model.TeamId
 import dev.petuska.spond.sync.core.util.ColourLogFormatter
 import dev.petuska.spond.sync.spond.SpondCredentials
 import dev.petuska.spond.sync.spond.sink.SpondSinkConfig
 import dev.petuska.spond.sync.testing.TestLogWriter
 import dev.petuska.spond.sync.utils.Named
-import dev.petuska.spond.sync.core.model.TeamId
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respondError
-import io.ktor.http.HttpStatusCode
+import io.ktor.client.*
+import io.ktor.client.engine.*
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
 import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 
@@ -35,7 +34,7 @@ interface TestGraph : ClubGraph.Factory {
     SpondSinkConfig(
       group = "Test Group",
       api = SpondCredentials("test", "test"),
-      subGroups = mapOf("Test Team" to TeamId("test-team")),
+      _subGroups = mapOf("Test Team" to SpondSinkConfig.SubGroupConfig(team = TeamId("test-team"))),
     )
 
   @Provides
@@ -47,7 +46,9 @@ interface TestGraph : ClubGraph.Factory {
       tag = "Test",
     )
 
-  @Provides @SingleIn(AppScope::class) fun json(): Json = Json {
+  @Provides
+  @SingleIn(AppScope::class)
+  fun json(): Json = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
   }
