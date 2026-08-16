@@ -9,7 +9,7 @@ data class Profile(
   val id: ProfileId,
   val contactMethod: String,
   val unableToReach: Boolean,
-  val firstName: String?=null,
-  val lastName: String?=null,
+  val firstName: String? = null,
+  val lastName: String? = null,
   val email: String? = null,
 )
