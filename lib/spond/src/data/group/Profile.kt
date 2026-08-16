@@ -7,9 +7,9 @@ typealias ProfileId = String
 @Serializable
 data class Profile(
   val id: ProfileId,
-  val firstName: String,
-  val lastName: String,
-  val email: String,
-  val contactMethod:String,
+  val contactMethod: String,
   val unableToReach: Boolean,
+  val firstName: String?=null,
+  val lastName: String?=null,
+  val email: String? = null,
 )

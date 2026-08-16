@@ -13,8 +13,8 @@ data class Member(
   val subGroups: List<SubGroupId>,
   val firstName: String,
   val lastName: String,
-  val email: String,
-  val profile: Profile,
+  val profile: Profile? = null,
+  val email: String? = null,
 ) : Identifiable, WithId {
   override val identity: String
     get() = "Member(id=$id)"

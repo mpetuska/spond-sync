@@ -74,8 +74,8 @@ class SpondSink(
 
   private suspend fun findMemberByEmail(email: String): Member? {
     return getGroup().members.singleOrNull {
-      email.equals(it.profile.email.trim(), ignoreCase = true) ||
-        email.equals(it.email.trim(), ignoreCase = true)
+      email.equals(it.profile?.email?.trim(), ignoreCase = true) ||
+        email.equals(it.email?.trim(), ignoreCase = true)
     }
   }
 
@@ -109,7 +109,11 @@ class SpondSink(
 
   private suspend fun findOwners(teamId: TeamId): List<ProfileId>? {
     val config = teams[teamId]
-    val owners = config?.hosts?.mapNotNull { findMemberByEmail(it)?.profile?.id }
+    val owners =
+      config?.hosts?.mapNotNull {
+        val member = findMemberByEmail(it)
+        member?.profile?.id ?: member?.id
+      }
     log.v { "Found owners for $teamId: config=$config, owners=$owners" }
     return owners
   }
