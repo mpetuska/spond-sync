@@ -17,7 +17,7 @@ jobs:
     uses: ./.github/workflows/sync-template.yml
     with:
       useJvm: false
-      logLevel: WARN
+      logLevel: Warn
       timeoutMinutes: 10
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}

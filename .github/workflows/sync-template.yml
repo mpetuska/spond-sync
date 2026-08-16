@@ -12,7 +12,7 @@ on:
         type: string
         description: 'Log level'
         required: false
-        default: WARN
+        default: Warn
       timeoutMinutes:
         type: number
         description: Sync timeout in minutes.

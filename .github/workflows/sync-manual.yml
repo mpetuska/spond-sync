@@ -10,7 +10,7 @@ on:
           - Verbose
           - Debug
           - Info
-          - Warning
+          - Warn
           - Error
           - Assert
         required: false
