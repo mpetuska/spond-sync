@@ -2,6 +2,7 @@ modules:
   - //cli/cli-core
   - //cli/cli-jvm
   - //cli/cli-linux
+  - //cli/cli-test
   - //lib/config
   - //lib/core
   - //lib/spond

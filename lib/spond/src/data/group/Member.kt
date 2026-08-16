@@ -7,8 +7,15 @@ import kotlinx.serialization.Serializable
 typealias MemberId = String
 
 @Serializable
-data class Member(override val id: MemberId, val subGroups: List<SubGroupId>) :
-  Identifiable, WithId {
+data class Member(
+  override val id: MemberId,
+  val clubMembershipId: String,
+  val subGroups: List<SubGroupId>,
+  val firstName: String,
+  val lastName: String,
+  val email: String,
+  val profile: Profile,
+) : Identifiable, WithId {
   override val identity: String
     get() = "Member(id=$id)"
 }

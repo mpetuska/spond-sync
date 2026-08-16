@@ -3,12 +3,13 @@ package dev.petuska.spond.sync.spond.sink
 import dev.petuska.spond.sync.core.model.TeamId
 import dev.petuska.spond.sync.spond.SpondCredentials
 import dev.petuska.spond.sync.spond.data.group.SubGroupName
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * @property group spond group name
- * @property subGroups a mapping of [spond.data.group.SubGroupName] to [core.model.TeamId] on
- *   source.
+ * @property subGroups a mapping of Spond SubGroups.
  * @property syncResults whether to also update match results for managed events.
  * @property forceUpdate whether to update the events that have not changed.
  * @property api credentials for Spond API.
@@ -17,11 +18,30 @@ import kotlinx.serialization.Serializable
 data class SpondSinkConfig(
   val group: String,
   val api: SpondCredentials,
-  val subGroups: Map<SubGroupName, TeamId>,
+  @SerialName("subGroups") private val _subGroups: Map<SubGroupName, SubGroupConfig>,
   val syncResults: Boolean = true,
   val forceUpdate: Boolean = false,
   val events: Events = Events(),
 ) {
+  @Transient
+  val subGroups: Map<SubGroupName, SubGroupConfig> = _subGroups.mapValues { (k, v) ->
+    v.copy(name = v.name.ifBlank { k })
+  }
+  @Transient val teams: Map<TeamId, SubGroupConfig> = subGroups.values.associateBy { it.team }
+
+  /**
+   * @property name a name of the subgroup on spond. This is injected as a map key if left
+   *   unspecified or blank.
+   * @property team a team id this subgroup represents on a source system.
+   * @property hosts a list of emails (matching their spond account emails) of the subgroup hosts to
+   *   be added as hosts to created events. If not specified, a service account will be used.
+   */
+  @Serializable
+  data class SubGroupConfig(
+    val name: SubGroupName = "",
+    val team: TeamId,
+    val hosts: List<String>? = null,
+  )
 
   /**
    * @property opponentColourHex a hexadecimal colour value to use for opponent teams.

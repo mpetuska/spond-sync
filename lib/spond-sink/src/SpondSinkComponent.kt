@@ -29,16 +29,16 @@ interface SpondSinkComponent {
 
   @Provides
   @SingleIn(ClubScope::class)
-  fun teamsToSubGroups(teamsToSubGroups: Map<SubGroupName, TeamId>): Map<TeamId, SubGroupName> =
-    teamsToSubGroups.entries.associate { (k, v) -> v to k }
+  fun subGroupIndex(config: SpondSinkConfig): Map<SubGroupName, SpondSinkConfig.SubGroupConfig> =
+    config.subGroups
 
   @Provides
   @SingleIn(ClubScope::class)
-  fun subGroupsToTeams(config: SpondSinkConfig): Map<SubGroupName, TeamId> = config.subGroups
+  fun teamIndex(config: SpondSinkConfig): Map<TeamId, SpondSinkConfig.SubGroupConfig> = config.teams
 
   @Provides
   @SingleIn(ClubScope::class)
-  fun teams(config: SpondSinkConfig): Set<TeamId> = config.subGroups.values.toSet()
+  fun teams(index: Map<TeamId, SpondSinkConfig.SubGroupConfig>): Set<TeamId> = index.keys
 
   @Provides
   @SingleIn(ClubScope::class)

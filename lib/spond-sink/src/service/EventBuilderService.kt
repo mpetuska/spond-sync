@@ -13,6 +13,7 @@ import dev.petuska.spond.sync.spond.data.event.NewEvent
 import dev.petuska.spond.sync.spond.data.event.Recipients
 import dev.petuska.spond.sync.spond.data.group.Group
 import dev.petuska.spond.sync.spond.data.group.MemberId
+import dev.petuska.spond.sync.spond.data.group.ProfileId
 import dev.petuska.spond.sync.spond.data.group.SubGroup
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.spond.sink.SpondSinkConfig.Events
@@ -45,8 +46,12 @@ class EventBuilderService(
     team: Team,
     base: Event,
     subGroup: SubGroup,
+    owners: List<ProfileId>?,
   ): Event {
     val homeMatch = triangle.host == team
+    val updatedOwners = owners?.map { newId ->
+      base.owners?.find { it.id == newId } ?: Event.Owner(id = newId, response = null)
+    }
     return base.copy(
       name = match.title,
       description = description(triangle, match),
@@ -57,6 +62,7 @@ class EventBuilderService(
       inviteTime = inviteTime(match) ?: base.inviteTime,
       rsvpDate = rsvpDate(match) ?: base.rsvpDate,
       maxAccepted = maxOf(config.maxAccepted, base.acceptedCount),
+      owners = updatedOwners,
       json = base.json.toMutableMap().apply { remove("responses") }.let(::JsonObject),
     )
   }
@@ -68,6 +74,7 @@ class EventBuilderService(
     group: Group,
     subGroup: SubGroup,
     subGroupMembers: List<MemberId>,
+    owners: List<ProfileId>?,
   ): NewEvent {
     val homeMatch = triangle.host == team
     return NewEvent(
@@ -85,6 +92,7 @@ class EventBuilderService(
       inviteTime = inviteTime(match),
       rsvpDate = rsvpDate(match),
       maxAccepted = config.maxAccepted,
+      owners = owners,
     )
   }
 
@@ -116,7 +124,8 @@ class EventBuilderService(
       diff("rsvpDate", old, new) { rsvpDate } ||
       diff("lastUpdated", old, new) {
         description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) }
-      }
+      } ||
+      diff("owners", old, new) { owners?.map { it.id }?.sorted() }
   }
 
   fun areResultsModified(old: Event, new: Event): Boolean {

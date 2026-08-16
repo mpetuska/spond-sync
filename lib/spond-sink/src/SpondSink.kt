@@ -14,13 +14,14 @@ import dev.petuska.spond.sync.spond.Spond
 import dev.petuska.spond.sync.spond.data.event.Event
 import dev.petuska.spond.sync.spond.data.event.MatchScore
 import dev.petuska.spond.sync.spond.data.group.Group
+import dev.petuska.spond.sync.spond.data.group.Member
+import dev.petuska.spond.sync.spond.data.group.ProfileId
 import dev.petuska.spond.sync.spond.data.group.SubGroup
-import dev.petuska.spond.sync.spond.data.group.SubGroupName
 import dev.petuska.spond.sync.spond.sink.service.EventBuilderService
 import dev.petuska.spond.sync.utils.Named
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.*
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.CancellationException
@@ -39,7 +40,7 @@ class SpondSink(
   private val config: SpondSinkConfig,
   private val timeSource: TimeSource,
   private val eventBuilderService: EventBuilderService,
-  private val subGroups: Map<TeamId, SubGroupName>,
+  private val teams: Map<TeamId, SpondSinkConfig.SubGroupConfig>,
   @Named("dry") private val dry: Boolean,
   logger: Logger,
 ) : DataSink<Event> {
@@ -61,6 +62,20 @@ class SpondSink(
       return group
     } else {
       return checkNotNull(group).await()
+    }
+  }
+
+  private suspend fun findMemberByName(name: String): Member? {
+    return getGroup().members.singleOrNull {
+      name.contains(it.firstName.trim(), ignoreCase = true) &&
+        name.contains(it.lastName.trim(), ignoreCase = true)
+    }
+  }
+
+  private suspend fun findMemberByEmail(email: String): Member? {
+    return getGroup().members.singleOrNull {
+      email.equals(it.profile.email.trim(), ignoreCase = true) ||
+        email.equals(it.email.trim(), ignoreCase = true)
     }
   }
 
@@ -88,8 +103,15 @@ class SpondSink(
   }
 
   private suspend fun getSubGroup(team: TeamId): SubGroup {
-    val name = subGroups[team]
+    val name = teams[team]?.name
     return getGroup().subGroups.single { it.name == name }
+  }
+
+  private suspend fun findOwners(teamId: TeamId): List<ProfileId>? {
+    val config = teams[teamId]
+    val owners = config?.hosts?.mapNotNull { findMemberByEmail(it)?.profile?.id }
+    log.v { "Found owners for $teamId: config=$config, owners=$owners" }
+    return owners
   }
 
   private fun eventFilter(event: Event): Boolean {
@@ -107,7 +129,14 @@ class SpondSink(
     log.v("[${match.id}] Preparing merged spond event data for source event ${existing.identity}.")
 
     val updatedSpondEvent = runCatching {
-      eventBuilderService.updateEvent(triangle, match, team, existing, subGroup)
+      eventBuilderService.updateEvent(
+        triangle = triangle,
+        match = match,
+        team = team,
+        base = existing,
+        subGroup = subGroup,
+        owners = findOwners(team.id),
+      )
     }
       .getOrElse {
         log.e("[${match.id}] Failed to prepare merged spond event data.", it)
@@ -167,6 +196,7 @@ class SpondSink(
     val spondEvent = runCatching {
       val group = getGroup()
       val subGroup = getSubGroup(team.id)
+      val owners = findOwners(team.id)
       val subGroupMembers = group.members.filter { subGroup.id in it.subGroups }.map { it.id }
       eventBuilderService.createEvent(
         triangle = triangle,
@@ -175,6 +205,7 @@ class SpondSink(
         group = group,
         subGroup = subGroup,
         subGroupMembers = subGroupMembers,
+        owners = owners,
       )
     }
       .getOrElse {
@@ -197,7 +228,14 @@ class SpondSink(
     val updatedEvent =
       runCatching {
         val subGroup = getSubGroup(team.id)
-        eventBuilderService.updateEvent(triangle, match, team, event, subGroup)
+        eventBuilderService.updateEvent(
+          triangle = triangle,
+          match = match,
+          team = team,
+          base = event,
+          subGroup = subGroup,
+          owners = findOwners(team.id),
+        )
       }
         .getOrNull() ?: return
 

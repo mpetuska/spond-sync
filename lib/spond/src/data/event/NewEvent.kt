@@ -1,5 +1,6 @@
 package dev.petuska.spond.sync.spond.data.event
 
+import dev.petuska.spond.sync.spond.data.group.MemberId
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.utils.Identifiable
 import kotlin.time.Instant
@@ -16,6 +17,7 @@ data class NewEvent(
   @SerialName("endTimestamp") @Serializable val end: Instant,
   @Serializable val inviteTime: Instant? = null,
   @Serializable val rsvpDate: Instant? = null,
+  val owners: List<MemberId>? = null,
   val maxAccepted: UInt? = null,
   val description: String? = null,
   val commentsDisabled: Boolean = false,

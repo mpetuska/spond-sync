@@ -15,4 +15,5 @@ settings:
   kotlin:
     optIns:
       - kotlin.time.ExperimentalTime
+      - kotlinx.serialization.ExperimentalSerializationApi
     serialization: json

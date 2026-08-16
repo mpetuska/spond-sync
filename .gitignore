@@ -8,6 +8,7 @@ out/
 local.properties
 *.config.json
 *.config.json5
+!configs/BVA*.config.json5
 kotlin.bat
 *.tmp
 *.log

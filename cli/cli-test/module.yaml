@@ -1,0 +1,12 @@
+product:
+  type: jvm/app
+  platforms: [ jvm ]
+
+apply: [ //templates/base.module-template.yaml ]
+
+dependencies:
+  - //cli/cli-core
+  - $libs.clikt
+  - $libs.kotlinx.coroutines.core
+  - $libs.kotlinx.datetime
+  - $libs.logback: runtime-only

@@ -1,11 +1,11 @@
 package dev.petuska.spond.sync.spond.data.event
 
 import dev.petuska.spond.sync.spond.data.WithId
+import dev.petuska.spond.sync.spond.data.group.MemberId
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.utils.Identifiable
 import dev.petuska.spond.sync.utils.serialization.PreservingJsonSerializer
 import kotlin.time.Instant
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,7 +13,6 @@ import kotlinx.serialization.json.JsonObject
 
 typealias EventId = String
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable(Event.Serializer::class)
 @KeepGeneratedSerializer
 data class Event(
@@ -27,10 +26,21 @@ data class Event(
   @Serializable val inviteTime: Instant? = null,
   @Serializable val rsvpDate: Instant? = null,
   val maxAccepted: UInt? = null,
-  @SerialName("#json") val json: JsonObject,
+  val owners: List<Owner>? = null,
+  @SerialName(PreservingJsonSerializer.KEY) val json: JsonObject,
 ) : Identifiable, WithId {
   override val identity: String
     get() = "Event(id=$id, start=$start, name=$name)"
+
+  @Serializable(Owner.Serializer::class)
+  @KeepGeneratedSerializer
+  data class Owner(
+    val id: MemberId,
+    val response: String?,
+    @SerialName(PreservingJsonSerializer.KEY) val json: JsonObject = JsonObject(emptyMap()),
+  ) {
+    internal object Serializer : PreservingJsonSerializer<Owner>(generatedSerializer())
+  }
 
   internal object Serializer : PreservingJsonSerializer<Event>(generatedSerializer())
 }

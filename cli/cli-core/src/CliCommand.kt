@@ -137,7 +137,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
         dry -> minOf(logLevel, Severity.Info)
         else -> logLevel
       }
-    val syncConfig = ConfigLoader(json).load(configs)
+    val syncConfig = ConfigLoader(Json(json) { isLenient = true }).load(configs)
     val app =
       createGraphFactory<AppGraph.Factory>()
         .create(

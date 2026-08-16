@@ -7,6 +7,7 @@ apply: [ //templates/metro.module-template.yaml ]
 dependencies:
   - $libs.kotlinx.io.core
   - $libs.ktor.client.core
+  - $libs.kermit
 
 settings:
   kotlin:
