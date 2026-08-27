@@ -17,10 +17,10 @@ import dev.petuska.spond.sync.core.model.Venue
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Url
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
@@ -50,15 +50,15 @@ class VolleyZoneSource(
     for ((name, url) in config.leagues.entries) {
       log.d("[$url] Fetching events for $name.")
       parseLeague(url).collect { match ->
-        if (match.start >= from && match.end < until) {
-          emit(match)
-        } else {
+        if (match.start < from || match.end > until) {
           log.d(
             "[$url][${match.identity}] Discarding match since its time " +
               "${match.start.atSource}..<${match.end.atSource} does not fit into requested " +
               "time frame ${from.atSource}..<${until.atSource}."
           )
+          return@collect
         }
+        emit(match)
       }
     }
   }
@@ -140,7 +140,17 @@ class VolleyZoneSource(
           return null
         }
       }
-    val start = parseTime(date = date, time = time)
+    val startTime = LocalTime.parse(time)
+    if (startTime.hour < 8) {
+      log.e(
+        "[$id] Invalid match start time: date=$date, time=$time," +
+          " homeTeam=$homeTeam, awayTeam=$awayTeam," +
+          " venue=$venue, venueExtra=$venueExtra," +
+          " comment=$comment, row=$row"
+      )
+      return null
+    }
+    val start = parseTime(date = date, time = startTime)
     val teamA = Team(id = TeamId(homeTeam), name = homeTeam)
     val teamB = Team(id = TeamId(awayTeam), name = awayTeam)
     return Match(
@@ -219,7 +229,7 @@ class VolleyZoneSource(
     )
   }
 
-  private fun parseTime(date: String, time: String): Instant {
+  private fun parseTime(date: String, time: LocalTime): Instant {
     val dateLocal =
       LocalDate.parse(
         input = date,
@@ -241,7 +251,7 @@ class VolleyZoneSource(
       } else {
         GMT
       }
-    return dateLocal.atTime(LocalTime.parse(time)).toInstant(timezone)
+    return dateLocal.atTime(time).toInstant(timezone)
   }
 
   /** Resolve match venue address into more detailed form. */
