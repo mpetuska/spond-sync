@@ -5,7 +5,9 @@ import dev.petuska.spond.sync.core.di.ClubScope
 import dev.petuska.spond.sync.core.model.TeamId
 import dev.petuska.spond.sync.spond.SpondCredentials
 import dev.petuska.spond.sync.spond.data.group.SubGroupName
-import dev.petuska.spond.sync.utils.Identifiable
+import dev.petuska.spond.sync.spond.sink.subsink.BothSubSink
+import dev.petuska.spond.sync.spond.sink.subsink.MatchesSubSink
+import dev.petuska.spond.sync.spond.sink.subsink.TrianglesSubSink
 import dev.petuska.spond.sync.utils.Named
 import dev.petuska.spond.sync.utils.tokens.MemoryTokenHandler
 import dev.petuska.spond.sync.utils.tokens.TokenHandler
@@ -17,7 +19,19 @@ import kotlinx.serialization.json.Json
 @SingleIn(ClubScope::class)
 @ContributesTo(ClubScope::class)
 interface SpondSinkComponent {
-  @Provides @SingleIn(ClubScope::class) fun sink(impl: SpondSink): DataSink<Identifiable> = impl
+  @Provides
+  @SingleIn(ClubScope::class)
+  fun sink(
+    config: SpondSinkConfig,
+    matches: () -> MatchesSubSink,
+    triangles: () -> TrianglesSubSink,
+    both: () -> BothSubSink,
+  ): DataSink =
+    when (config.events.mode) {
+      SpondSinkConfig.Events.Mode.Matches -> matches()
+      SpondSinkConfig.Events.Mode.Triangles -> triangles()
+      SpondSinkConfig.Events.Mode.Both -> both()
+    }
 
   @Provides
   @SingleIn(ClubScope::class)

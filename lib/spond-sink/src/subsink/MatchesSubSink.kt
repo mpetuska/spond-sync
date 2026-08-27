@@ -1,4 +1,4 @@
-package dev.petuska.spond.sync.spond.sink
+package dev.petuska.spond.sync.spond.sink.subsink
 
 import co.touchlab.kermit.Logger
 import dev.petuska.spond.sync.core.DataSink
@@ -13,81 +13,84 @@ import dev.petuska.spond.sync.core.model.Triangle
 import dev.petuska.spond.sync.spond.Spond
 import dev.petuska.spond.sync.spond.data.event.Event
 import dev.petuska.spond.sync.spond.data.event.MatchScore
-import dev.petuska.spond.sync.spond.data.group.Group
-import dev.petuska.spond.sync.spond.data.group.Member
-import dev.petuska.spond.sync.spond.data.group.ProfileId
-import dev.petuska.spond.sync.spond.data.group.SubGroup
+import dev.petuska.spond.sync.spond.sink.SpondSinkConfig
 import dev.petuska.spond.sync.spond.sink.service.EventBuilderService
+import dev.petuska.spond.sync.spond.sink.service.SpondService
 import dev.petuska.spond.sync.utils.Named
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.ktor.client.plugins.*
-import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
+import kotlinx.serialization.json.Json
 
 @Inject
 @SingleIn(ClubScope::class)
-class SpondSink(
-  private val client: Spond,
+class MatchesSubSink(
   private val config: SpondSinkConfig,
-  private val timeSource: TimeSource,
+  private val client: Spond,
+  private val spondService: SpondService,
   private val eventBuilderService: EventBuilderService,
-  private val teams: Map<TeamId, SpondSinkConfig.SubGroupConfig>,
+  private val timeSource: TimeSource,
+  private val json: Json,
   @Named("dry") private val dry: Boolean,
   logger: Logger,
-) : DataSink<Event> {
-  private val log = logger.withTag("SpondSink")
-  private val groupFetching = AtomicBoolean(false)
-  private var group: Deferred<Group>? = null
+) : DataSink {
+  private val log = logger.withTag("MatchesSubSink")
 
-  private suspend fun getGroup(): Group {
-    if (groupFetching.compareAndSet(expectedValue = false, newValue = true) && group == null) {
-      val result = CompletableDeferred<Group>()
-      this.group = result
-      val group =
-        client
-          .listGroups()
-          .onEach { log.v("Found group ${it.identity}") }
-          .firstOrNull { it.name == config.group }
-      checkNotNull(group) { "Unable to find Spond group \"${config.group}\"" }
-      result.complete(group)
-      return group
-    } else {
-      return checkNotNull(group).await()
+  override suspend fun syncTeam(team: Team, from: Time, until: Time, triangles: List<Triangle>) {
+    log.i("[${team.id}] Synchronising ${triangles.size} triangles.")
+    val matches: MutableMap<MatchId, Pair<Triangle, Match>> =
+      triangles
+        .flatMap { triangle ->
+          triangle.matches.toList().filter { team in it }.map { triangle to it }
+        }
+        .associateBy { (_, match) -> match.id }
+        .toMutableMap()
+    log.v("[${team.id}] Updating existing matches.")
+    listExistingMatches(team = team.id, from = from, until = until).buffer().collect { (matchId, it)
+      ->
+      val update = matches.remove(matchId)
+      if (update == null) {
+        log.w(
+          "[${team.id}] Sink match $matchId ${it.identity} was not found on source. Cancelling..."
+        )
+        cancelMatch(team.id, it)
+        return@collect
+      }
+      log.v("[${team.id}] Updating existing sink match ${it.identity}.")
+      updateMatch(
+        triangle = update.first,
+        match = update.second,
+        team = team,
+        existing = it,
+      )
+    }
+    log.v("[${team.id}] Creating new matches.")
+    val teamMatches = matches.values.toList()
+    for ((triangle, match) in teamMatches) {
+      matches.remove(match.id)
+      log.v("[${team.id}] Creating new sink match ${match.identity}.")
+      createMatch(triangle = triangle, match = match, team = team)
+    }
+    for ((_, _, id) in matches.values.map { it.second }) {
+      log.w("[$id] Discarding match not having any teams of interest for team ${team.id}.")
     }
   }
 
-  private suspend fun findMemberByName(name: String): Member? {
-    return getGroup().members.singleOrNull {
-      name.contains(it.firstName.trim(), ignoreCase = true) &&
-        name.contains(it.lastName.trim(), ignoreCase = true)
-    }
-  }
-
-  private suspend fun findMemberByEmail(email: String): Member? {
-    return getGroup().members.singleOrNull {
-      email.equals(it.profile?.email?.trim(), ignoreCase = true) ||
-        email.equals(it.email?.trim(), ignoreCase = true)
-    }
-  }
-
-  override fun listExistingMatches(
+  internal fun listExistingMatches(
     team: TeamId,
     from: Time,
     until: Time,
   ): Flow<Pair<MatchId, Event>> = flow {
     client
       .listEvents(
-        groupId = getGroup().id,
-        subGroupId = getSubGroup(team).id,
+        groupId = spondService.getGroup().id,
+        subGroupId = spondService.getSubGroup(team).id,
         minStart = from.atSink,
         maxEnd = until.atSink,
         includeScheduled = true,
@@ -96,26 +99,10 @@ class SpondSink(
         limit = 500u,
       )
       .filter(::eventFilter)
-      .collect {
-        val matchId = eventBuilderService.extractMatchId(it) ?: return@collect
-        emit(matchId to it)
+      .collect { event ->
+        val matchId = eventBuilderService.extractMatchId(event) ?: return@collect
+        emit(matchId to event)
       }
-  }
-
-  private suspend fun getSubGroup(team: TeamId): SubGroup {
-    val name = teams[team]?.name
-    return getGroup().subGroups.single { it.name == name }
-  }
-
-  private suspend fun findOwners(teamId: TeamId): List<ProfileId>? {
-    val config = teams[teamId]
-    val owners =
-      config?.hosts?.mapNotNull {
-        val member = findMemberByEmail(it)
-        member?.profile?.id ?: member?.id
-      }
-    log.v { "Found owners for $teamId: config=$config, owners=$owners" }
-    return owners
   }
 
   private fun eventFilter(event: Event): Boolean {
@@ -123,27 +110,28 @@ class SpondSink(
     return event.matchInfo != null && description?.contains(config.events.descriptionByline) == true
   }
 
-  override suspend fun cancelMatch(team: TeamId, existing: Event) {
+  suspend fun cancelMatch(team: TeamId, existing: Event) {
     log.w { "[$team] Cancelling match ${existing.identity}." }
     client.cancelEvent(existing.id, quiet = true)
   }
 
-  override suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: Event) {
-    val subGroup = getSubGroup(team.id)
+  suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: Event) {
+    val subGroup = spondService.getSubGroup(team.id)
     log.v("[${match.id}] Preparing merged spond event data for source event ${existing.identity}.")
 
-    val updatedSpondEvent = runCatching {
-      eventBuilderService.updateEvent(
-        triangle = triangle,
-        match = match,
-        team = team,
-        base = existing,
-        subGroup = subGroup,
-        owners = findOwners(team.id),
-      )
-    }
-      .getOrElse {
-        log.e("[${match.id}] Failed to prepare merged spond event data.", it)
+    val updatedSpondEvent =
+      try {
+        eventBuilderService.updateEvent(
+          triangle = triangle,
+          match = match,
+          team = team,
+          base = existing,
+          subGroup = subGroup,
+          owners = spondService.findOwners(team.id),
+        )
+      } catch (e: Exception) {
+        log.e("[${match.id}] Failed to prepare merged spond event data.", e)
+        if (e is CancellationException) throw e
         return
       }
     log.d("[${match.id}] Merged ${existing.identity} with new data.")
@@ -195,28 +183,30 @@ class SpondSink(
     }
   }
 
-  override suspend fun createMatch(triangle: Triangle, match: Match, team: Team) {
+  suspend fun createMatch(triangle: Triangle, match: Match, team: Team) {
     log.v("[${match.identity}] Preparing spond event data for source match.")
-    val spondEvent = runCatching {
-      val group = getGroup()
-      val subGroup = getSubGroup(team.id)
-      val owners = findOwners(team.id)
-      val subGroupMembers = group.members.filter { subGroup.id in it.subGroups }.map { it.id }
-      eventBuilderService.createEvent(
-        triangle = triangle,
-        match = match,
-        team = team,
-        group = group,
-        subGroup = subGroup,
-        subGroupMembers = subGroupMembers,
-        owners = owners,
-      )
-    }
-      .getOrElse {
-        log.e("[${match.id}] Failed to prepare mew spond event data.", it)
+    val spondEvent =
+      try {
+        val group = spondService.getGroup()
+        val subGroup = spondService.getSubGroup(team.id)
+        val owners = spondService.findOwners(team.id)
+        val subGroupMembers = group.members.filter { subGroup.id in it.subGroups }.map { it.id }
+        eventBuilderService.createEvent(
+          triangle = triangle,
+          match = match,
+          team = team,
+          group = group,
+          subGroup = subGroup,
+          subGroupMembers = subGroupMembers,
+          owners = owners,
+        )
+      } catch (e: Exception) {
+        log.e("[${match.id}] Failed to prepare spond event data.", e)
+        if (e is CancellationException) throw e
         return
       }
     log.d("[${match.id}] Prepared spond event data.")
+    log.v { "[${match.id}] Prepared event:\n${json.encodeToString(spondEvent)}." }
     val event =
       try {
         if (dry) {
@@ -230,18 +220,21 @@ class SpondSink(
         return
       }
     val updatedEvent =
-      runCatching {
-        val subGroup = getSubGroup(team.id)
+      try {
+        val subGroup = spondService.getSubGroup(team.id)
         eventBuilderService.updateEvent(
           triangle = triangle,
           match = match,
           team = team,
           base = event,
           subGroup = subGroup,
-          owners = findOwners(team.id),
+          owners = spondService.findOwners(team.id),
         )
+      } catch (e: Exception) {
+        log.e("[${match.id}] Failed to update new spond event ${event.identity}", e)
+        if (e is CancellationException) throw e
+        return
       }
-        .getOrNull() ?: return
 
     if (areResultsModified(event, updatedEvent)) {
       updateMatchResults(updatedEvent)
@@ -273,12 +266,4 @@ class SpondSink(
       }
     }
   }
-
-  private inline fun <T> runCatching(action: () -> T): Result<T> =
-    try {
-      Result.success(action())
-    } catch (e: Throwable) {
-      if (e is CancellationException) throw e
-      Result.failure(e)
-    }
 }

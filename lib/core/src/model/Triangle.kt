@@ -18,4 +18,9 @@ data class Triangle(
   val matches: Triple<Match, Match, Match>,
 ) : Identifiable {
   override val identity = "Triangle(id=$id,venue=$venue,$start=$start)"
+  val teamsList = teams.toList()
+
+  operator fun contains(team: Team) = contains(team.id)
+
+  operator fun contains(team: TeamId) = teamsList.any { it.id == team }
 }

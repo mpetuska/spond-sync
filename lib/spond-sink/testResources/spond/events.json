@@ -4,7 +4,7 @@
     "heading": "Existing Match",
     "startTimestamp": "2024-09-10T18:00:00Z",
     "endTimestamp": "2024-09-10T20:00:00Z",
-    "description": "Event ID: m1234\nManaged event.",
+    "description": "--- DO NOT EDIT BELOW THIS LINE ---\nEvent ID: m1234\nManaged event.",
     "matchInfo": {
       "type": "HOME",
       "teamName": "Test Team",

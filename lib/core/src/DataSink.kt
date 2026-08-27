@@ -1,19 +1,22 @@
 package dev.petuska.spond.sync.core
 
-import dev.petuska.spond.sync.core.model.Match
-import dev.petuska.spond.sync.core.model.MatchId
 import dev.petuska.spond.sync.core.model.Team
-import dev.petuska.spond.sync.core.model.TeamId
 import dev.petuska.spond.sync.core.model.Time
 import dev.petuska.spond.sync.core.model.Triangle
-import kotlinx.coroutines.flow.Flow
 
-interface DataSink<out M> {
-  fun listExistingMatches(team: TeamId, from: Time, until: Time): Flow<Pair<MatchId, M>>
-
-  suspend fun cancelMatch(team: TeamId, existing: @UnsafeVariance M)
-
-  suspend fun updateMatch(triangle: Triangle, match: Match, team: Team, existing: @UnsafeVariance M)
-
-  suspend fun createMatch(triangle: Triangle, match: Match, team: Team)
+interface DataSink {
+  /**
+   * Synchronise team events.
+   *
+   * @param team the team to sync
+   * @param from the start of the time range to sync
+   * @param until the end of the time range to sync
+   * @param triangles the relevant triangles to sync
+   */
+  suspend fun syncTeam(
+    team: Team,
+    from: Time,
+    until: Time,
+    triangles: List<Triangle>,
+  )
 }

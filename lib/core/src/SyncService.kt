@@ -3,18 +3,15 @@ package dev.petuska.spond.sync.core
 import co.touchlab.kermit.Logger
 import dev.petuska.spond.sync.core.di.ClubScope
 import dev.petuska.spond.sync.core.model.Match
-import dev.petuska.spond.sync.core.model.MatchId
 import dev.petuska.spond.sync.core.model.Team
 import dev.petuska.spond.sync.core.model.TeamId
 import dev.petuska.spond.sync.core.model.Time
 import dev.petuska.spond.sync.core.model.Triangle
 import dev.petuska.spond.sync.core.model.TriangleId
 import dev.petuska.spond.sync.core.util.toTriple
-import dev.petuska.spond.sync.utils.Identifiable
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlin.time.Instant
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.toList
 
 @Inject
@@ -22,7 +19,7 @@ import kotlinx.coroutines.flow.toList
 class SyncService(
   private val timeSource: TimeSource,
   private val source: DataSource,
-  private val sink: DataSink<Identifiable>,
+  private val sink: DataSink,
   private val teams: Set<TeamId>,
   logger: Logger = Logger,
 ) {
@@ -50,48 +47,11 @@ class SyncService(
     from: Time,
     until: Time,
   ) {
-    val updates: MutableMap<Pair<TeamId, MatchId>, Triple<Triangle, Match, Team>> =
-      triangles
-        .flatMap { triangle ->
-          triangle.matches.toList().flatMap { match ->
-            buildList {
-              if (match.teamA.id in teams) add(Triple(triangle, match, match.teamA))
-              if (match.teamB.id in teams) add(Triple(triangle, match, match.teamB))
-            }
-          }
-        }
-        .associateBy { (_, match, team) -> team.id to match.id }
-        .toMutableMap()
     for (teamId in teams) {
-      log.v("[$teamId] Updating existing matches.")
-      sink.listExistingMatches(teamId, from, until).buffer().collect { (matchId, it) ->
-        val update = updates.remove(teamId to matchId)
-        if (update == null) {
-          log.w("[$teamId] Sink match $matchId ${it.identity} was not found on source.")
-          // TODO: Clear no longer present matches from noLongerPresentSinkMatches
-          //  sink.cancelMatch(teamId, it)
-          return@collect
-        }
-        log.v("[$teamId] Updating existing sink match ${it.identity}.")
-        sink.updateMatch(
-          triangle = update.first,
-          match = update.second,
-          team = update.third,
-          existing = it,
-        )
-      }
-
-      log.v("[$teamId] Creating new matches.")
-      val teamMatches = updates.filterKeys { (id, _) -> id == teamId }.values
-      for ((triangle, match, team) in teamMatches) {
-        log.v("[$teamId] Creating new sink match ${match.identity}.")
-        updates.remove(team.id to match.id)
-        sink.createMatch(triangle = triangle, match = match, team = team)
-      }
-    }
-
-    for ((_, _, id) in updates.values.map { it.second }) {
-      log.v("[$id] Discarding match not having any teams of interest.")
+      val teamTriangles = triangles.filter { teamId in it }
+      val firstTriangle = teamTriangles.firstOrNull() ?: continue
+      val team = firstTriangle.teamsList.single { it.id == teamId }
+      sink.syncTeam(team, from, until, teamTriangles)
     }
   }
 

@@ -5,7 +5,7 @@ import dev.petuska.spond.sync.core.di.ClubScope
 import dev.petuska.spond.sync.core.di.Sink
 import dev.petuska.spond.sync.core.di.Source
 import dev.petuska.spond.sync.core.model.Time
-import dev.petuska.spond.sync.spond.sink.SpondSink
+import dev.petuska.spond.sync.spond.sink.subsink.MatchesSubSink
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.GraphExtension
@@ -24,7 +24,7 @@ interface ClubGraph {
   val seasonStart: Time
     get() = timeSource.fromSource(seasonStartAtSource)
 
-  val spondSink: SpondSink
+  val matchesSubSink: MatchesSubSink
 
   @Provides
   @Source

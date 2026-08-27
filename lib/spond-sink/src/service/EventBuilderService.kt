@@ -92,7 +92,7 @@ class EventBuilderService(
       inviteTime = inviteTime(match),
       rsvpDate = rsvpDate(match),
       maxAccepted = config.maxAccepted,
-      owners = owners,
+      owners = owners?.map(NewEvent::Owner),
     )
   }
 
@@ -141,12 +141,16 @@ class EventBuilderService(
   }
 
   fun extractMatchId(event: Event): String? {
-    return event.description
-      ?.split("\n")
+    return event
+      .metadata()
       ?.first { it.startsWith(PREFIX_EVENT_ID) }
       ?.removePrefix(PREFIX_EVENT_ID)
       ?.take(5)
   }
+
+  /** Extracts the metadata lines from the event description. */
+  private fun Event.metadata(): List<String>? =
+    description?.split("\n")?.dropWhile { it != SEPARATOR_LINE }?.drop(1)
 
   private val Event.acceptedCount: UInt
     get() =
@@ -181,6 +185,7 @@ class EventBuilderService(
     toLocalDateTime(TimeZone.UTC).date.atTime(12, 0).toInstant(TimeZone.UTC)
 
   private fun description(triangle: Triangle, match: Match) = buildString {
+    appendLine(SEPARATOR_LINE)
     appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
     appendLine()
     appendLine("Triangle ID: ${match.triangle}")
@@ -254,6 +259,7 @@ class EventBuilderService(
   }
 
   private companion object {
+    const val SEPARATOR_LINE = "--- DO NOT EDIT BELOW THIS LINE ---"
     const val PREFIX_EVENT_ID = "Event ID: "
     const val PREFIX_LAST_UPDATED = "Last updated: "
   }

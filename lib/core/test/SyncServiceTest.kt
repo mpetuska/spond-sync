@@ -23,7 +23,7 @@ val SyncServiceTest by testSuite {
     val t2 = triangle("TriangleB", teams.take(3)).toList()
 
     val triangles = mutableListOf<Triangle>()
-    val service = prepareService(t1 + t2) { triangle, _, _ -> triangles += triangle }
+    val service = prepareService(t1 + t2) { _, _, _, actual -> triangles += actual }
 
     service.syncMatches(
       from = component.club().seasonStart.atRuntime,
@@ -55,7 +55,7 @@ val SyncServiceTest by testSuite {
         .toList()
 
     val triangles = mutableListOf<Triangle>()
-    val service = prepareService(t1 + t2) { triangle, _, _ -> triangles += triangle }
+    val service = prepareService(t1 + t2) { _, _, _, actual -> triangles += actual }
 
     service.syncMatches(
       from = component.club().seasonStart.atRuntime,
@@ -81,12 +81,12 @@ private val teams = List(6) { TeamId("Test Team ${it + 1}") }
 
 private fun prepareService(
   matches: Collection<Match>,
-  sink: (triangle: Triangle, match: Match, team: Team) -> Unit,
+  sink: (team: Team, from: Time, until: Time, triangles: List<Triangle>) -> Unit,
 ): SyncService {
   return SyncService(
     timeSource = timeSource,
     source = component.fakeSource(matches),
-    sink = FakeSink(onCreateMatch = sink),
+    sink = FakeSink(onSyncTeam = sink),
     logger = component.logger,
     teams = matches.map { it.teamA.id }.toSet(),
   )

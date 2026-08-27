@@ -2,6 +2,7 @@ package dev.petuska.spond.sync.cli
 
 import co.touchlab.kermit.Logger
 import dev.petuska.spond.sync.core.SyncService
+import dev.petuska.spond.sync.core.TimeSource
 import dev.petuska.spond.sync.core.di.ClubScope
 import dev.petuska.spond.sync.spond.Spond
 import dev.petuska.spond.sync.spond.data.group.Group
@@ -9,8 +10,7 @@ import dev.petuska.spond.sync.spond.sink.SpondSinkConfig
 import dev.petuska.spond.sync.utils.Named
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import io.ktor.client.plugins.ClientRequestException
-import kotlin.time.Clock
+import io.ktor.client.plugins.*
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
@@ -26,6 +26,7 @@ class SyncWorker(
   private val syncService: SyncService,
   private val spond: Spond,
   private val config: SpondSinkConfig,
+  private val timeSource: TimeSource,
   @Named("dry") private val dry: Boolean,
   logger: Logger,
 ) {
@@ -96,7 +97,7 @@ class SyncWorker(
   }
 
   private fun determineSeasonStart(): LocalDateTime {
-    val now = Clock.System.now().toLocalDateTime(TimeZone.UTC)
+    val now = timeSource.now().atSink.toLocalDateTime(TimeZone.UTC)
     val year =
       if (now.month >= Month.AUGUST) {
         now.year

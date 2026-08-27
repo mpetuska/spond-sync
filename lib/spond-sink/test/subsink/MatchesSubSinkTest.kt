@@ -1,4 +1,4 @@
-package dev.petuska.spond.sync.spond.sink
+package dev.petuska.spond.sync.spond.sink.subsink
 
 import de.infix.testBalloon.framework.core.testSuite
 import dev.petuska.spond.sync.core.model.Match
@@ -11,19 +11,10 @@ import dev.petuska.spond.sync.spond.data.event.Event
 import dev.petuska.spond.sync.spond.sink.di.TestGraph
 import dev.petuska.spond.sync.testing.Resource
 import dev.zacsweers.metro.createGraphFactory
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.MockRequestHandleScope
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.engine.mock.respondError
-import io.ktor.client.engine.mock.respondOk
-import io.ktor.client.request.HttpRequestData
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.fullPath
-import io.ktor.http.headersOf
-import io.ktor.utils.io.ByteReadChannel
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Clock
@@ -39,7 +30,7 @@ private fun MockRequestHandleScope.respondJson(content: String) =
     headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
   )
 
-val SpondSinkTest by testSuite {
+val MatchesSubSinkTest by testSuite {
   test("listExistingMatches returns managed events") {
     val component =
       createGraphFactory<TestGraph.Factory>()
@@ -65,7 +56,7 @@ val SpondSinkTest by testSuite {
               }
             }
         )
-    val sink = component.club().spondSink
+    val sink = component.club().matchesSubSink
     val timeSource = component.club().timeSource
     val from = timeSource.fromRuntime(Clock.System.now())
     val until = from + 30.days
@@ -114,7 +105,7 @@ val SpondSinkTest by testSuite {
               }
             }
         )
-    val sink = component.club().spondSink
+    val sink = component.club().matchesSubSink
     val timeSource = component.club().timeSource
 
     val testTeam = Team(id = TeamId("test-team"), name = "Test Team")
@@ -192,7 +183,7 @@ val SpondSinkTest by testSuite {
               }
             }
         )
-    val sink = component.club().spondSink
+    val sink = component.club().matchesSubSink
     val timeSource = component.club().timeSource
 
     val testTeam = Team(id = TeamId("test-team"), name = "Test Team")
@@ -226,10 +217,7 @@ val SpondSinkTest by testSuite {
       )
 
     val existingContent = Resource.readText(Path("spond/events.json"), "spond-sink")
-    val existingEvent =
-      component.json
-        .decodeFromString<List<Event>>(existingContent)
-        .first()
+    val existingEvent = component.json.decodeFromString<List<Event>>(existingContent).first()
 
     sink.updateMatch(triangle, match, testTeam, existingEvent)
 
@@ -288,7 +276,7 @@ val SpondSinkTest by testSuite {
               }
             }
         )
-    val sink = component.club().spondSink
+    val sink = component.club().matchesSubSink
     val timeSource = component.club().timeSource
 
     val testTeam = Team(id = TeamId("test-team"), name = "Test Team")
@@ -327,10 +315,7 @@ val SpondSinkTest by testSuite {
       )
 
     val existingContent = Resource.readText(Path("spond/events.json"), "spond-sink")
-    val existingEvent =
-      component.json
-        .decodeFromString<List<Event>>(existingContent)
-        .first()
+    val existingEvent = component.json.decodeFromString<List<Event>>(existingContent).first()
 
     sink.updateMatch(triangle, match, testTeam, existingEvent)
 
@@ -358,13 +343,10 @@ val SpondSinkTest by testSuite {
               }
             }
         )
-    val sink = component.club().spondSink
+    val sink = component.club().matchesSubSink
 
     val existingContent = Resource.readText(Path("spond/events.json"), "spond-sink")
-    val existingEvent =
-      component.json
-        .decodeFromString<List<Event>>(existingContent)
-        .first()
+    val existingEvent = component.json.decodeFromString<List<Event>>(existingContent).first()
 
     sink.cancelMatch(TeamId("test-team"), existingEvent)
 
