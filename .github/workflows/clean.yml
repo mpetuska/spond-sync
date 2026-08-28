@@ -35,7 +35,7 @@ jobs:
     name: Clean
     if: "inputs.areYouSure"
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.timeoutMinutes }}
+    timeout-minutes: ${{ fromJson(inputs.timeoutMinutes) }}
     env:
       ACTIONS_STEP_DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG == true }}
     steps:
