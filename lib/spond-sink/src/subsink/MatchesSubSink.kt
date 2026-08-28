@@ -77,8 +77,8 @@ class MatchesSubSink(
       log.v("[${team.id}] Creating new sink match ${match.identity}.")
       createMatch(triangle = triangle, match = match, team = team)
     }
-    for ((_, _, id) in matches.values.map { it.second }) {
-      log.w("[$id] Discarding match not having any teams of interest for team ${team.id}.")
+    for ((id) in matches.values.map { it.second }) {
+      log.w("[${id}] Discarding match not having any teams of interest for team ${team.id}.")
     }
   }
 

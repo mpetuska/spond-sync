@@ -5,9 +5,9 @@ import dev.petuska.spond.sync.utils.Identifiable
 typealias MatchId = String
 
 data class Match(
-  val source: String,
-  val triangle: TriangleId,
   val id: MatchId,
+  val triangle: TriangleId,
+  val source: String,
   val order: UInt,
   val title: String,
   val venue: Venue,

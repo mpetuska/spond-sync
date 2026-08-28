@@ -48,8 +48,14 @@ class SyncService(
     until: Time,
   ) {
     for (teamId in teams) {
+      log.d("[$teamId] Filtering triangles.")
       val teamTriangles = triangles.filter { teamId in it }
-      val firstTriangle = teamTriangles.firstOrNull() ?: continue
+      val firstTriangle = teamTriangles.firstOrNull()
+      if (firstTriangle == null) {
+        log.w("[$teamId] Found no triangles.")
+        continue
+      }
+      log.i("[$teamId] Found ${teamTriangles.size} triangles.")
       val team = firstTriangle.teamsList.single { it.id == teamId }
       sink.syncTeam(team, from, until, teamTriangles)
     }

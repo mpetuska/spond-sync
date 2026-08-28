@@ -135,8 +135,9 @@ class VolleyZoneSource(
             "[$id] Cannot determine match order: date=$date, time=$time," +
               " homeTeam=$homeTeam, awayTeam=$awayTeam," +
               " venue=$venue, venueExtra=$venueExtra," +
-              " comment=$comment, row=$row"
+              " comment=$comment"
           )
+          log.d("row=$row")
           return null
         }
       }
@@ -146,8 +147,9 @@ class VolleyZoneSource(
         "[$id] Invalid match start time: date=$date, time=$time," +
           " homeTeam=$homeTeam, awayTeam=$awayTeam," +
           " venue=$venue, venueExtra=$venueExtra," +
-          " comment=$comment, row=$row"
+          " comment=$comment"
       )
+      log.d("row=$row")
       return null
     }
     val start = parseTime(date = date, time = startTime)
