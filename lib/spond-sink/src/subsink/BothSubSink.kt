@@ -16,6 +16,10 @@ class BothSubSink(
   private val matchesSubSink: MatchesSubSink,
   private val trianglesSubSink: TrianglesSubSink,
 ) : DataSink {
+  init {
+    TODO("BothSubSink not supported yet!")
+  }
+
   override suspend fun syncTeam(team: Team, from: Time, until: Time, triangles: List<Triangle>) {
     TODO("Not yet implemented")
   }

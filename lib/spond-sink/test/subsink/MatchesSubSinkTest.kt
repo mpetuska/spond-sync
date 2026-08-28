@@ -64,7 +64,7 @@ val MatchesSubSinkTest by testSuite {
     val existingMatches =
       sink.listExistingMatches(TeamId("test-team"), from, until).toList().toMap()
     assertEquals(1, existingMatches.size)
-    assertEquals("m1234", existingMatches.keys.first())
+    assertEquals("X101a", existingMatches.keys.first())
   }
 
   test("createMatch creates a new spond event") {

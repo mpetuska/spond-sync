@@ -27,6 +27,7 @@ data class Event(
   @Serializable val rsvpDate: Instant? = null,
   val maxAccepted: UInt? = null,
   val owners: List<Owner>? = null,
+  val type: String? = null,
   @SerialName(PreservingJsonSerializer.KEY) val json: JsonObject,
 ) : Identifiable, WithId {
   override val identity: String

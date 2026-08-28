@@ -5,7 +5,9 @@ import dev.petuska.spond.sync.core.TimeSource
 import dev.petuska.spond.sync.core.di.ClubScope
 import dev.petuska.spond.sync.core.model.Match
 import dev.petuska.spond.sync.core.model.Team
+import dev.petuska.spond.sync.core.model.Time
 import dev.petuska.spond.sync.core.model.Triangle
+import dev.petuska.spond.sync.core.model.Venue
 import dev.petuska.spond.sync.spond.data.event.Event
 import dev.petuska.spond.sync.spond.data.event.MatchInfo
 import dev.petuska.spond.sync.spond.data.event.MatchType
@@ -17,6 +19,7 @@ import dev.petuska.spond.sync.spond.data.group.ProfileId
 import dev.petuska.spond.sync.spond.data.group.SubGroup
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.spond.sink.SpondSinkConfig.Events
+import dev.petuska.spond.sync.utils.Identifiable
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlin.time.Duration.Companion.days
@@ -40,7 +43,54 @@ class EventBuilderService(
 ) {
   private val log = logger.withTag("EventBuilderService")
 
-  suspend fun updateEvent(
+  suspend fun createTriangle(
+    triangle: Triangle,
+    group: Group,
+    subGroup: SubGroup,
+    subGroupMembers: List<MemberId>,
+    owners: List<ProfileId>?,
+  ): NewEvent {
+    return NewEvent(
+      name = triangle.id.value,
+      description = triangleDescription(triangle),
+      location = location(triangle, triangle.venue),
+      recipients =
+        Recipients.New(
+          group = Recipients.NewRecipientsGroup(id = group.id, subGroups = listOf(subGroup.id)),
+          groupMembers = subGroupMembers,
+        ),
+      start = triangle.start.atSink,
+      end = triangle.end.atSink,
+      inviteTime = inviteTime(triangle.start.atSink),
+      rsvpDate = rsvpDate(triangle.start.atSink),
+      maxAccepted = config.maxAccepted,
+      owners = owners?.map(NewEvent::Owner),
+    )
+  }
+
+  suspend fun updateTriangle(
+    triangle: Triangle,
+    base: Event,
+    owners: List<ProfileId>?,
+  ): Event {
+    val updatedOwners = owners?.map { newId ->
+      base.owners?.find { it.id == newId } ?: Event.Owner(id = newId, response = null)
+    }
+    return base.copy(
+      name = triangle.id.value,
+      description = triangleDescription(triangle),
+      location = location(triangle, triangle.venue),
+      start = triangle.start.atSink,
+      end = triangle.end.atSink,
+      inviteTime = inviteTime(triangle.start.atSink) ?: base.inviteTime,
+      rsvpDate = rsvpDate(triangle.start.atSink) ?: base.rsvpDate,
+      maxAccepted = maxOf(config.maxAccepted, base.acceptedCount),
+      owners = updatedOwners,
+      json = base.json.toMutableMap().apply { remove("responses") }.let(::JsonObject),
+    )
+  }
+
+  suspend fun updateMatch(
     triangle: Triangle,
     match: Match,
     team: Team,
@@ -52,22 +102,23 @@ class EventBuilderService(
     val updatedOwners = owners?.map { newId ->
       base.owners?.find { it.id == newId } ?: Event.Owner(id = newId, response = null)
     }
+    val start = start(triangle, match, team)
     return base.copy(
       name = match.title,
-      description = description(triangle, match),
+      description = matchDescription(triangle, match),
       matchInfo = matchInfo(match, team, homeMatch, subGroup),
-      location = location(match),
-      start = start(triangle, match, team),
+      location = location(match, match.venue),
+      start = start,
       end = match.end.atSink,
-      inviteTime = inviteTime(match) ?: base.inviteTime,
-      rsvpDate = rsvpDate(match) ?: base.rsvpDate,
+      inviteTime = inviteTime(start) ?: base.inviteTime,
+      rsvpDate = rsvpDate(start) ?: base.rsvpDate,
       maxAccepted = maxOf(config.maxAccepted, base.acceptedCount),
       owners = updatedOwners,
       json = base.json.toMutableMap().apply { remove("responses") }.let(::JsonObject),
     )
   }
 
-  suspend fun createEvent(
+  suspend fun createMatch(
     triangle: Triangle,
     match: Match,
     team: Team,
@@ -77,20 +128,21 @@ class EventBuilderService(
     owners: List<ProfileId>?,
   ): NewEvent {
     val homeMatch = triangle.host == team
+    val start = start(triangle, match, team)
     return NewEvent(
       name = match.title,
-      description = description(triangle, match),
+      description = matchDescription(triangle, match),
       matchInfo = matchInfo(match, team, homeMatch, subGroup),
-      location = location(match),
+      location = location(match, match.venue),
       recipients =
         Recipients.New(
           group = Recipients.NewRecipientsGroup(id = group.id, subGroups = listOf(subGroup.id)),
           groupMembers = subGroupMembers,
         ),
-      start = start(triangle, match, team),
+      start = start,
       end = match.end.atSink,
-      inviteTime = inviteTime(match),
-      rsvpDate = rsvpDate(match),
+      inviteTime = inviteTime(start),
+      rsvpDate = rsvpDate(start),
       maxAccepted = config.maxAccepted,
       owners = owners?.map(NewEvent::Owner),
     )
@@ -128,6 +180,19 @@ class EventBuilderService(
       diff("owners", old, new) { owners?.map { it.id }?.sorted() }
   }
 
+  fun areResultsModified(old: Event, new: Triangle): Boolean {
+    return new.matches.toList().any { match ->
+      match.result != null &&
+        old.description?.contains(
+          buildString {
+            appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
+            appendLine()
+            appendResult(match)
+          }
+        ) != true
+    }
+  }
+
   fun areResultsModified(old: Event, new: Event): Boolean {
     if (new.matchInfo?.teamScore == null) {
       log.v { "[${old.identity}] New event has no matchInfo. Assuming no result diff..." }
@@ -140,12 +205,12 @@ class EventBuilderService(
       diff("matchInfo.teamColour", old, new) { matchInfo?.teamColour }
   }
 
-  fun extractMatchId(event: Event): String? {
+  fun extractEventId(event: Event): String? {
     return event
       .metadata()
       ?.first { it.startsWith(PREFIX_EVENT_ID) }
       ?.removePrefix(PREFIX_EVENT_ID)
-      ?.take(5)
+      ?.trim()
   }
 
   /** Extracts the metadata lines from the event description. */
@@ -169,14 +234,14 @@ class EventBuilderService(
     }.atSink
   }
 
-  private fun inviteTime(match: Match): Instant? {
-    return (match.start - config.invitationDayBeforeStart.toInt().days).atSink.atNoon().takeIf {
+  private fun inviteTime(start: Instant): Instant? {
+    return (start - config.invitationDayBeforeStart.toInt().days).atNoon().takeIf {
       it > timeSource.now().atSink
     }
   }
 
-  private fun rsvpDate(match: Match): Instant? {
-    return (match.start - config.rsvpDeadlineBeforeStart.toInt().days).atSink.atNoon().takeIf {
+  private fun rsvpDate(start: Instant): Instant? {
+    return (start - config.rsvpDeadlineBeforeStart.toInt().days).atNoon().takeIf {
       it > timeSource.now().atSink
     }
   }
@@ -184,13 +249,39 @@ class EventBuilderService(
   private fun Instant.atNoon(): Instant =
     toLocalDateTime(TimeZone.UTC).date.atTime(12, 0).toInstant(TimeZone.UTC)
 
-  private fun description(triangle: Triangle, match: Match) = buildString {
+  private fun triangleDescription(triangle: Triangle) = buildString {
+    appendLine(SEPARATOR_LINE)
+    appendLine("Triangle ID: ${triangle.id}")
+    appendLine("Host: ${triangle.host.name}")
+
+    val matches = triangle.matches.toList()
+    for (match in matches) {
+      appendLine()
+      appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
+      appendResult(match)
+    }
+
+    val lastUpdated = matches.maxOf { it.lastUpdated }
+    val source = matches.maxOf { it.source }
+    appendMetadata(
+      id = triangle.id.value,
+      lastUpdated = lastUpdated,
+      source = source,
+    )
+  }
+
+  private fun matchDescription(triangle: Triangle, match: Match) = buildString {
     appendLine(SEPARATOR_LINE)
     appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
     appendLine()
     appendLine("Triangle ID: ${match.triangle}")
     appendLine("Host: ${triangle.host.name}")
-    appendLine("Source: ${match.source}")
+    appendResult(match)
+
+    appendMetadata(id = match.id, lastUpdated = match.lastUpdated, source = match.source)
+  }
+
+  private fun StringBuilder.appendResult(match: Match) {
     val result = match.result
     if (result != null) {
       appendLine()
@@ -201,18 +292,22 @@ class EventBuilderService(
         appendLine("  ${set + 1}) $setsA:$setsB")
       }
     }
+  }
+
+  private fun StringBuilder.appendMetadata(id: String, lastUpdated: Time, source: String) {
     appendLine()
-    appendLine("${PREFIX_EVENT_ID}${match.id}")
-    appendLine("${PREFIX_LAST_UPDATED}${match.lastUpdated}")
+    appendLine("${PREFIX_EVENT_ID}${id}")
+    appendLine("${PREFIX_LAST_UPDATED}${lastUpdated.atSink}")
+    appendLine("$PREFIX_SOURCE${source}")
     appendLine(config.descriptionByline)
   }
 
-  private suspend fun location(match: Match): Location? {
-    val resolved = locationService.resolveSpondLocation(match.venue.address)
+  private suspend fun location(id: Identifiable, venue: Venue): Location? {
+    val resolved = locationService.resolveSpondLocation(venue.address)
     return if (resolved != null) {
       resolved
     } else {
-      log.w("[${match.identity}] Unable to resolve location from address ${match.venue.address}.")
+      log.w("[${id.identity}] Unable to resolve location from address ${venue.address}.")
       null
     }
   }
@@ -260,7 +355,8 @@ class EventBuilderService(
 
   private companion object {
     const val SEPARATOR_LINE = "--- DO NOT EDIT BELOW THIS LINE ---"
-    const val PREFIX_EVENT_ID = "Event ID: "
+    const val PREFIX_EVENT_ID = "ID: "
     const val PREFIX_LAST_UPDATED = "Last updated: "
+    const val PREFIX_SOURCE = "Source: "
   }
 }

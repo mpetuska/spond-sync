@@ -1,5 +1,7 @@
 package dev.petuska.spond.sync.core.model
 
+import dev.petuska.spond.sync.utils.Identifiable
+
 typealias MatchId = String
 
 data class Match(
@@ -15,8 +17,8 @@ data class Match(
   val teamB: Team,
   val result: Result?,
   val lastUpdated: Time,
-) {
-  val identity = "Match(id=$id, start=$start, order=$order, title=$title)"
+) : Identifiable {
+  override val identity = "Match(id=$id, start=$start, order=$order, title=$title)"
 
   data class Result(val sets: UInt, val teamA: TeamResult, val teamB: TeamResult)
 

@@ -100,7 +100,7 @@ class MatchesSubSink(
       )
       .filter(::eventFilter)
       .collect { event ->
-        val matchId = eventBuilderService.extractMatchId(event) ?: return@collect
+        val matchId = eventBuilderService.extractEventId(event) ?: return@collect
         emit(matchId to event)
       }
   }
@@ -121,7 +121,7 @@ class MatchesSubSink(
 
     val updatedSpondEvent =
       try {
-        eventBuilderService.updateEvent(
+        eventBuilderService.updateMatch(
           triangle = triangle,
           match = match,
           team = team,
@@ -191,7 +191,7 @@ class MatchesSubSink(
         val subGroup = spondService.getSubGroup(team.id)
         val owners = spondService.findOwners(team.id)
         val subGroupMembers = group.members.filter { subGroup.id in it.subGroups }.map { it.id }
-        eventBuilderService.createEvent(
+        eventBuilderService.createMatch(
           triangle = triangle,
           match = match,
           team = team,
@@ -222,7 +222,7 @@ class MatchesSubSink(
     val updatedEvent =
       try {
         val subGroup = spondService.getSubGroup(team.id)
-        eventBuilderService.updateEvent(
+        eventBuilderService.updateMatch(
           triangle = triangle,
           match = match,
           team = team,

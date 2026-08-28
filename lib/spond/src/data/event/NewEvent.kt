@@ -10,11 +10,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class NewEvent(
   @SerialName("heading") val name: String,
-  val matchInfo: MatchInfo,
   val location: Location?,
   val recipients: Recipients.New,
   @SerialName("startTimestamp") @Serializable val start: Instant,
   @SerialName("endTimestamp") @Serializable val end: Instant,
+  val matchInfo: MatchInfo? = null,
   @Serializable val inviteTime: Instant? = null,
   @Serializable val rsvpDate: Instant? = null,
   val owners: List<Owner>? = null,

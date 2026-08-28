@@ -70,7 +70,7 @@ class SyncService(
       id = id,
       venue = aVenues.single(),
       start = matches.minOf(Match::start),
-      end = matches.maxOf(Match::start),
+      end = matches.maxOf(Match::end),
       host = host,
       teams =
         matches.flatMap { setOf(it.teamA, it.teamB) }.distinct().sortedBy(Team::name).toTriple(),
