@@ -207,17 +207,6 @@ class TrianglesSubSink(
         )
         return
       }
-    try {
-      eventBuilderService.updateTriangle(
-        triangle = triangle,
-        base = event,
-        owners = spondService.findOwners(team.id),
-      )
-    } catch (e: Exception) {
-      log.e("[${triangle.id}] Failed to update new spond event ${event.identity}", e)
-      if (e is CancellationException) throw e
-      return
-    }
   }
 
   private fun areResultsModified(old: Event, new: Triangle): Boolean {
