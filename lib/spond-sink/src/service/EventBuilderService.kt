@@ -254,7 +254,7 @@ class EventBuilderService(
     appendLine("Triangle ID: ${triangle.id}")
     appendLine("Host: ${triangle.host.name}")
 
-    val matches = triangle.matches.toList()
+    val matches = triangle.matches.toList().sortedBy { it.id }
     for (match in matches) {
       appendLine()
       appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
