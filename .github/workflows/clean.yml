@@ -75,7 +75,7 @@ jobs:
           fi
         env:
           SYNC_CONFIG: ${{ secrets.SYNC_CONFIG }}
-          CRED_CONFIG: ${{ secrets.credentialsConfig }}
+          CRED_CONFIG: ${{ secrets.CRED_CONFIG }}
 
       - name: Clean Events [JVM]
         if: "inputs.useJvm"
