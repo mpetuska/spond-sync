@@ -56,7 +56,7 @@ data class SpondSinkConfig(
    */
   @Serializable
   data class Events(
-    val mode: Mode = Mode.Both,
+    val mode: Mode = Mode.Triangles,
     val opponentColourHex: String = "#FFFFFF",
     val invitationDayBeforeStart: UInt = 6u,
     val rsvpDeadlineBeforeStart: UInt = 2u,
@@ -66,15 +66,15 @@ data class SpondSinkConfig(
     @Serializable
     enum class Mode {
       /**
-       * Each triangle gets 2 separate match type events created for each game. All triangle data is
-       * stored in both events, and match results get uploaded to matching events.
-       */
-      @SerialName("matches") Matches,
-      /**
        * Each triangle gets a single regular type event created. All triangle data is stored in that
        * event. Match results are not getting uploaded.
        */
       @SerialName("triangles") Triangles,
+      /**
+       * Each triangle gets 2 separate match type events created for each game. All triangle data is
+       * stored in both events, and match results get uploaded to matching events.
+       */
+      @SerialName("matches") Matches,
       /**
        * Each triangle gets a single regular type event created for invites and common triangle
        * data. Additionally, two separate events get created for each match with no invitations
