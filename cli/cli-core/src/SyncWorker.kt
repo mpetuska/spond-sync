@@ -78,8 +78,7 @@ class SyncWorker(
         limit = 500u,
       )
       .filter { event ->
-        val description = event.description
-        event.matchInfo != null && description?.contains(config.events.descriptionByline) == true
+        event.description?.contains(config.events.descriptionByline) == true
       }
       .collect {
         log.v("[${it.identity}] Canceling event.")

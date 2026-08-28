@@ -5,11 +5,12 @@ kotlinx-datetime = "0.8.0"
 kotlinx-io = "0.9.1"
 kotlinx-serialization = "1.11.0"
 ktor = "3.5.2"
-metro = "1.4.1"
+metro = "1.4.2"
 test-balloon = "1.0.1-K2.4.0"
 
 [libraries]
 clikt = "com.github.ajalt.clikt:clikt:5.1.0"
+javac = "com.google.errorprone:javac:9+181-r4173-1"
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 kermit-core = { module = "co.touchlab:kermit-core", version.ref = "kermit" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -28,12 +29,11 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-http = { module = "io.ktor:ktor-http", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-logback = "ch.qos.logback:logback-classic:1.6.1"
+logback = "ch.qos.logback:logback-classic:1.6.3"
 metro-compiler = { module = "dev.zacsweers.metro:compiler", version.ref = "metro" }
 metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 test-balloon-compiler = { module = "de.infix.testBalloon:testBalloon-compiler-plugin", version.ref = "test-balloon" }
 test-balloon-runtime = { module = "de.infix.testBalloon:testBalloon-framework-core", version.ref = "test-balloon" }
-javac = "com.google.errorprone:javac:9+181-r4173-1"
 
 [plugins]
 version-catalog-update = "nl.littlerobots.version-catalog-update:1.1.1"
