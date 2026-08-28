@@ -1,5 +1,6 @@
 package dev.petuska.spond.sync.cli
 
+import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.context
@@ -149,6 +150,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
           json = json,
           dry = dry,
         )
+    Logger.setMinSeverity(logSeverity)
     app.logger.d { "Config: $syncConfig" }
     val club = app.club(syncConfig.spond)
     val worker = club.syncWorker
