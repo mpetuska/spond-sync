@@ -48,6 +48,7 @@ app also accepts multiple config files for merging.
     },
     // Optional
     "events": {
+      "mode": "triangles", // or "matches"
       "opponentColourHex": "#FFFFFF",
       "invitationDayBeforeStart": 6,
       "rsvpDeadlineBeforeStart": 2,
