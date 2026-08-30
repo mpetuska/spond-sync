@@ -143,14 +143,13 @@ class VolleyZoneSource(
       }
     val startTime = LocalTime.parse(time)
     if (startTime.hour < 8) {
-      log.e(
+      log.w(
         "[$id] Invalid match start time: date=$date, time=$time," +
           " homeTeam=$homeTeam, awayTeam=$awayTeam," +
           " venue=$venue, venueExtra=$venueExtra," +
           " comment=$comment"
       )
       log.d("row=$row")
-      return null
     }
     val start = parseTime(date = date, time = startTime)
     val teamA = Team(id = TeamId(homeTeam), name = homeTeam)
@@ -163,6 +162,7 @@ class VolleyZoneSource(
         title = "$homeTeam vs $awayTeam",
         venue = Venue(address = venue, alternativeAddress = venueExtra),
         start = timeSource.fromSource(start),
+        startTime = startTime,
         end = timeSource.fromSource(start + TriangleDuration),
         teamA = teamA,
         teamB = teamB,

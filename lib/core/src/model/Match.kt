@@ -1,22 +1,24 @@
 package dev.petuska.spond.sync.core.model
 
 import dev.petuska.spond.sync.utils.Identifiable
+import kotlinx.datetime.LocalTime
 
 typealias MatchId = String
 
 data class Match(
   val id: MatchId,
   val triangle: TriangleId,
-  val source: String,
-  val order: UInt,
   val title: String,
-  val venue: Venue,
   val start: Time,
+  val startTime: LocalTime,
   val end: Time,
+  val venue: Venue,
   val teamA: Team,
   val teamB: Team,
-  val result: Result?,
   val lastUpdated: Time,
+  val source: String,
+  val order: UInt,
+  val result: Result?,
 ) : Identifiable {
   override val identity = "Match(id=$id, start=$start, order=$order, title=$title)"
 
