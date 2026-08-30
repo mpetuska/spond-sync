@@ -16,6 +16,8 @@ import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 val SyncServiceTest by testSuite {
   test("Updates triangles without results") {
@@ -107,7 +109,7 @@ private fun match(
   teamB: TeamId,
   host: TeamId,
   order: UInt,
-  start: Time = component.club().seasonStart,
+  start: Time = component.club().seasonStart.plus(8.hours),
   end: Time = start + 4.hours,
   result: Match.Result? = null,
   title: String = "$teamA vs $teamB",
@@ -124,6 +126,7 @@ private fun match(
     title = title,
     venue = venue,
     start = start,
+    startTime = start.atSource.toLocalDateTime(TimeZone.UTC).time,
     end = end,
     teamA = Team(ta, ta.value),
     teamB = Team(tb, tb.value),

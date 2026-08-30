@@ -21,6 +21,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.flow.toList
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.files.Path
 
 private fun MockRequestHandleScope.respondJson(content: String) =
@@ -121,6 +123,7 @@ val MatchesSubSinkTest by testSuite {
         title = "Match Title",
         venue = venue,
         start = timeSource.fromRuntime(Clock.System.now() + 10.days),
+        startTime = Clock.System.now().plus(10.days).toLocalDateTime(TimeZone.UTC).time,
         end = timeSource.fromRuntime(Clock.System.now() + 10.days + 2.hours),
         teamA = testTeam,
         teamB = opponentTeam,
@@ -199,6 +202,7 @@ val MatchesSubSinkTest by testSuite {
         title = "Updated Match Title",
         venue = venue,
         start = timeSource.fromRuntime(Clock.System.now() + 10.days),
+        startTime = Clock.System.now().plus(10.days).toLocalDateTime(TimeZone.UTC).time,
         end = timeSource.fromRuntime(Clock.System.now() + 10.days + 2.hours),
         teamA = testTeam,
         teamB = opponentTeam,
@@ -292,6 +296,7 @@ val MatchesSubSinkTest by testSuite {
         title = "Updated Match Title",
         venue = venue,
         start = timeSource.fromRuntime(Clock.System.now() + 10.days),
+        startTime = Clock.System.now().plus(10.days).toLocalDateTime(TimeZone.UTC).time,
         end = timeSource.fromRuntime(Clock.System.now() + 10.days + 2.hours),
         teamA = testTeam,
         teamB = opponentTeam,

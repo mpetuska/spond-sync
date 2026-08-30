@@ -43,6 +43,6 @@ val VolleyZoneSourceTest by testSuite {
     val matches =
       source.listMatches(from = from, until = from + 365.days).onEach { log.v("$it") }.toList()
 
-    assertEquals(403, matches.size)
+    assertEquals(404, matches.size)
   }
 }
