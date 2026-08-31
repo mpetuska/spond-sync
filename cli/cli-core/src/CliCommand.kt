@@ -105,6 +105,13 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       )
       .flag("--nodry")
 
+  private val report by
+    option(
+        names = arrayOf("--report"),
+        help = "Generate a report to specified path.",
+      )
+      .convert { Path(it) }
+
   private val configs by
     argument(help = "Sync config json files. The files are merged in order specified.")
       .convert { Path(it) }
@@ -156,6 +163,7 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
     val worker = club.syncWorker
     if (clean) worker.cleanGroup(yes)
     if (sync) worker.syncGroup()
+    report?.let { worker.generateReport(it) }
     val writeConfig = writeConfig
     if (writeConfig != null)
       fileSystem.sink(writeConfig).buffered().use { json.encodeToSink(syncConfig, it) }

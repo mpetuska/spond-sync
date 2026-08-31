@@ -1,6 +1,7 @@
 package dev.petuska.spond.sync.cli
 
 import co.touchlab.kermit.Logger
+import dev.petuska.spond.sync.core.DataSource
 import dev.petuska.spond.sync.core.SyncService
 import dev.petuska.spond.sync.core.TimeSource
 import dev.petuska.spond.sync.core.di.ClubScope
@@ -19,6 +20,7 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.io.files.Path
 
 @Inject
 @SingleIn(ClubScope::class)
@@ -27,6 +29,7 @@ class SyncWorker(
   private val spond: Spond,
   private val config: SpondSinkConfig,
   private val timeSource: TimeSource,
+  private val source: DataSource,
   @Named("dry") private val dry: Boolean,
   logger: Logger,
 ) {
@@ -59,6 +62,14 @@ class SyncWorker(
       log.a("[${config.group}] Unable to find spond Group.")
       return
     }
+  }
+
+  suspend fun generateReport(out: Path) {
+    log.d("Determining season start date")
+    val seasonStartDate = determineSeasonStart()
+    log.i("Assuming season start at $seasonStartDate")
+    val from = seasonStartDate.toInstant(TimeZone.UTC)
+    syncService.generateReport(from = from, until = from + 365.days, out = out)
   }
 
   /** Cancels all group events. */

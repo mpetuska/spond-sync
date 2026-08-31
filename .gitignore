@@ -13,3 +13,4 @@ kotlin.bat
 *.tmp
 *.log
 .output.txt
+report.md
