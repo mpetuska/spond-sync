@@ -100,8 +100,8 @@ class VolleyZoneSource(
 
   /** Extract all available data from [row] and parse it into [Match]. */
   private fun parseMatch(source: Url, row: Element): Match? {
-    val homeTeam = row.attr("data-hometeam").trim()
-    val awayTeam = row.attr("data-awayteam").trim()
+    val homeTeam = row.attr("data-hometeam").trim().replace("?", "'").replace("’", "'")
+    val awayTeam = row.attr("data-awayteam").trim().replace("?", "'").replace("’", "'")
     val date = row.attr("data-date").trim()
     val time = row.attr("data-time").trim()
     val venue = row.attr("data-venue").trim()

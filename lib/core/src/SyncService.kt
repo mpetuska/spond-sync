@@ -77,14 +77,18 @@ class SyncService(
       log.e("[$id] Detected matches with invalid start times: $invalidStartTimes")
       return null
     }
+    val teams = matches.flatMap { setOf(it.teamA, it.teamB) }.distinct().sortedBy(Team::name)
+    if (teams.size != 3) {
+      log.e("[$id] Detected triangle with invalid number of teams: $teams")
+      return null
+    }
     return Triangle(
       id = id,
       venue = aVenues.single(),
       start = matches.minOf(Match::start),
       end = matches.maxOf(Match::end),
       host = host,
-      teams =
-        matches.flatMap { setOf(it.teamA, it.teamB) }.distinct().sortedBy(Team::name).toTriple(),
+      teams = teams.toTriple(),
       matches = matches.toTriple(),
     )
   }
