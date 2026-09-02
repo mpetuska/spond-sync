@@ -118,7 +118,7 @@ class SyncService(
       end = matches.maxOf(Match::end),
       host = host,
       teams = teams.toTriple(),
-      matches = matches.toTriple(),
+      matches = matches.sortedBy(Match::order).toTriple(),
     )
   }
 
