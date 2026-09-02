@@ -1,0 +1,98 @@
+{
+  spond: {
+    group: "Test Group",
+    api: {
+      username: "email@test.com",
+      password: "SuperSecurePassword123",
+      apiUrl: "https://api.spond.com/core/v1"
+    },
+    subGroups: {
+      "Spond Subgroup Women's 1": {
+        team: "VZ Team Women 1",
+        sources: ["BVA Women's Div 1"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      },
+      "Spond Subgroup Women's 2": {
+        team: "VZ Team Women 2",
+        sources: ["BVA Women's Div 2"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      },
+      "Spond Subgroup Men's 1": {
+        team: "VZ Team Mens 1",
+        sources: ["BVA Men's Div 1"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      },
+      "Spond Subgroup Men's 2": {
+        team: "VZ Team Mens 2",
+        sources: ["BVA Men's Div 2"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      },
+      "Spond Subgroup Mixed 1": {
+        team: "VZ Team Mixed 1",
+        sources: ["BVA Mixed Div 1"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      },
+      "Spond Subgroup Mixed 2": {
+        team: "VZ Team Mixed 2",
+        sources: ["BVA Mixed Div 2"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      },
+      "Spond Subgroup Mixed 3": {
+        team: "VZ Team Mixed 3",
+        sources: ["BVA Mixed Div 2"],
+        events: {
+          mode: "triangles",
+          opponentColourHex: "#FFFFFF",
+          invitationDayBeforeStart: 14,
+          rsvpDeadlineBeforeStart: 2,
+          maxAccepted: 10,
+          descriptionByline: "Managed by Spond butler."
+        }
+      }
+    },
+    syncResults: true,
+    forceUpdate: false,
+  }
+}

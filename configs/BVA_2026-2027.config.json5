@@ -1,32 +1,67 @@
 {
-  "volleyzone": {
-    "leagues": {
-      "Men's Div 1": "https://competitions.volleyzone.co.uk/league/218882",
-      "Men's Div 2": "https://competitions.volleyzone.co.uk/league/218955",
-      "Men's Div 3": "https://competitions.volleyzone.co.uk/league/218901",
-      "Women's Div 1": "https://competitions.volleyzone.co.uk/league/218950",
-      "Women's Div 2": "https://competitions.volleyzone.co.uk/league/218951",
-      "Mixed Div 1": "https://competitions.volleyzone.co.uk/league/218944",
-      "Mixed Div 2": "https://competitions.volleyzone.co.uk/league/218946"
+  addresses: {
+    "Wren School": "The Wren School, Bath Road, Reading, England, RG30 2BB, United Kingdom",
+    "Queen Mary’s College": "Queen Mary's College, Cliddesden Road, Basingstoke, Hampshire, England, RG21 3HF, United Kingdom",
+    "Oxford High School": "Oxford High School, Belbroughton Road, Oxford, Oxfordshire, England, OX2 6XA, United Kingdom",
+    "Bucks New University": "Bucks New University, High Wycombe, Buckinghamshire, England, HP11 2JZ, United Kingdom",
+    "Kendrick School": "Kendrick School, London Road, Spring Gardens, Coley, Reading, England, RG1 5BN, United Kingdom",
+    "Braywick Leisure Centre": "Braywick Leisure Centre, Braywick Rd, Maidenhead, England, SL6 1BN, United Kingdom",
+    "Trinity School": "Trinity School, Love Ln, Newbury, England, RG14 2DU, United Kingdom",
+    "Newbury Academy": "Trinity School, Love Ln, Newbury, England, RG14 2DU, United Kingdom",
+    "Samuel Cody School": "Samuel Cody School, Ballantyne Rd, Farnborough, England, GU14 8SN, United Kingdom",
+    "Queen Marys College": "Queen Marys College, Cliddesden Rd, Basingstoke, England, RG21 3HF, United Kingdom",
+    "Aldershot Garrison Sports Centre": "Aldershot Garrison Sports Centre, Garrison Sports Centre, Rawlinson Rd, Aldershot, England, GU11 2EY, United Kingdom",
+    "Newbold College of Higher Education": "Newbold College of Higher Education, Newbold College, St Mark's Rd, Bracknell, England, RG42 4AN, United Kingdom",
+    "Iffley Road Sports Centre": "Iffley Road Sports Centre, Iffley Rd, Oxford, England, OX4 1EQ, United Kingdom",
+    "Europa School UK": "Europa School UK, Culham, Abingdon, England, OX14 3DS, United Kingdom",
+    "Bracknell Leisure Centre": "Bracknell Leisure Centre, Bagshot Rd, Bracknell, England, RG12 9SE, United Kingdom",
+    "St.Michaels Catholic School": "St.Michaels Catholic School, Daws Hill Ln, High Wycombe, England, HP11 1PW, United Kingdom",
+    "Arborfield Green Leisure Centre": "Arborfield Green Leisure Centre, Sheerlands Rd, Reading, England, RG2 9GB, United Kingdom",
+  },
+  sources: {
+    "NVL Men's National Cup": {
+      type: "NVL",
+      url: "https://competitions.volleyzone.co.uk/league/217919"
     },
-    "addresses": {
-      "Wren School": "The Wren School, Bath Road, Reading, England, RG30 2BB, United Kingdom",
-      "Queen Mary’s College": "Queen Mary's College, Cliddesden Road, Basingstoke, Hampshire, England, RG21 3HF, United Kingdom",
-      "Oxford High School": "Oxford High School, Belbroughton Road, Oxford, Oxfordshire, England, OX2 6XA, United Kingdom",
-      "Bucks New University": "Bucks New University, High Wycombe, Buckinghamshire, England, HP11 2JZ, United Kingdom",
-      "Kendrick School": "Kendrick School, London Road, Spring Gardens, Coley, Reading, England, RG1 5BN, United Kingdom",
-      "Braywick Leisure Centre": "Braywick Leisure Centre, Braywick Rd, Maidenhead, England, SL6 1BN, United Kingdom",
-      "Trinity School": "Trinity School, Love Ln, Newbury, England, RG14 2DU, United Kingdom",
-      "Newbury Academy": "Trinity School, Love Ln, Newbury, England, RG14 2DU, United Kingdom",
-      "Samuel Cody School": "Samuel Cody School, Ballantyne Rd, Farnborough, England, GU14 8SN, United Kingdom",
-      "Queen Marys College": "Queen Marys College, Cliddesden Rd, Basingstoke, England, RG21 3HF, United Kingdom",
-      "Aldershot Garrison Sports Centre": "Aldershot Garrison Sports Centre, Garrison Sports Centre, Rawlinson Rd, Aldershot, England, GU11 2EY, United Kingdom",
-      "Newbold College of Higher Education": "Newbold College of Higher Education, Newbold College, St Mark's Rd, Bracknell, England, RG42 4AN, United Kingdom",
-      "Iffley Road Sports Centre": "Iffley Road Sports Centre, Iffley Rd, Oxford, England, OX4 1EQ, United Kingdom",
-      "Europa School UK": "Europa School UK, Culham, Abingdon, England, OX14 3DS, United Kingdom",
-      "Bracknell Leisure Centre": "Bracknell Leisure Centre, Bagshot Rd, Bracknell, England, RG12 9SE, United Kingdom",
-      "St.Michaels Catholic School": "St.Michaels Catholic School, Daws Hill Ln, High Wycombe, England, HP11 1PW, United Kingdom",
-      "Arborfield Green Leisure Centre": "Arborfield Green Leisure Centre, Sheerlands Rd, Reading, England, RG2 9GB, United Kingdom"
-    }
+    "NVL Men's National Shield": {
+      type: "NVL",
+      url: "https://competitions.volleyzone.co.uk/league/217917"
+    },
+    "NVL Women's National Cup": {
+      type: "NVL",
+      url: "https://competitions.volleyzone.co.uk/league/217920"
+    },
+    "NVL Women's National Shield": {
+      type: "NVL",
+      url: "https://competitions.volleyzone.co.uk/league/217921"
+    },
+    "BVA Men's Div 1": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218882"
+    },
+    "BVA Men's Div 2": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218955"
+    },
+    "BVA Men's Div 3": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218901"
+    },
+    "BVA Women's Div 1": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218950"
+    },
+    "BVA Women's Div 2": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218951"
+    },
+    "BVA Mixed Div 1": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218944"
+    },
+    "BVA Mixed Div 2": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218946"
+    },
   },
 }

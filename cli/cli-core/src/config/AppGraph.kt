@@ -1,30 +1,24 @@
 package dev.petuska.spond.sync.cli.config
 
-import co.touchlab.kermit.Logger
-import co.touchlab.kermit.Severity
-import dev.petuska.spond.sync.config.ClubGraph
-import dev.petuska.spond.sync.core.di.Sink
-import dev.petuska.spond.sync.core.di.Source
-import dev.petuska.spond.sync.utils.Named
-import dev.petuska.spond.sync.volleyzone.source.VolleyZoneSourceConfig
+import dev.petuska.spond.sync.runtime.SpondSyncRunner
+import dev.petuska.spond.sync.runtime.config.Config
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
+import dev.zacsweers.metro.Named
 import dev.zacsweers.metro.Provides
 import kotlin.time.Duration
 import kotlinx.serialization.json.Json
 
 @DependencyGraph(AppScope::class)
-expect interface AppGraph : ClubGraph.Factory {
-  val logger: Logger
+interface AppGraph {
+  val syncRunner: SpondSyncRunner
 
   @DependencyGraph.Factory
   interface Factory {
     fun create(
-      @Provides volleyZoneConfig: VolleyZoneSourceConfig,
-      @Provides @Source sourceOffset: Duration = Duration.ZERO,
-      @Provides @Sink sinkOffset: Duration = Duration.ZERO,
-      @Provides severity: Severity = Severity.Warn,
-      @Provides @Named("gitHubCi") gitHubCi: Boolean = false,
+      @Provides config: Config,
+      @Provides @Named("source") sourceOffset: Duration = Duration.ZERO,
+      @Provides @Named("sink") sinkOffset: Duration = Duration.ZERO,
       @Provides json: Json = Json,
       @Provides @Named("dry") dry: Boolean = false,
     ): AppGraph

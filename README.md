@@ -9,7 +9,7 @@ Implemented sources:
 
 ## Configuration
 
-All configurations are defined in [Config](./lib/config/src/Config.kt).
+All configurations are defined in [Config](lib/runtime/src/config/Config.kt).
 
 Configs can be split into multiple files and merged together using [ConfigMerger](./lib/config/src/ConfigMerger.kt). CLI
 app also accepts multiple config files for merging.
@@ -30,6 +30,11 @@ app also accepts multiple config files for merging.
     "subGroups": {
       "Spond subgroup name": {
         "team": "Source team name",
+        "sources": [
+          "League name"
+        ],
+        // Optional - event mode override. If not set default mode from events config will be used.
+        "mode": "triangles",
         // Optional - event hosts for matches
         "hosts": [
           "spond.user@email.com"
@@ -48,7 +53,8 @@ app also accepts multiple config files for merging.
     },
     // Optional
     "events": {
-      "mode": "triangles", // or "matches"
+      // "triangles" or "matches"
+      "mode": "triangles",
       "opponentColourHex": "#FFFFFF",
       "invitationDayBeforeStart": 6,
       "rsvpDeadlineBeforeStart": 2,

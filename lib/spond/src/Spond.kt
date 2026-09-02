@@ -11,20 +11,13 @@ import dev.petuska.spond.sync.spond.data.group.GroupId
 import dev.petuska.spond.sync.spond.data.location.AutocompleteLocation
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.spond.data.location.LocationId
-import dev.petuska.spond.sync.utils.Named
 import dev.petuska.spond.sync.utils.http.paginate
 import dev.petuska.spond.sync.utils.tokens.TokenHandler
 import dev.zacsweers.metro.Inject
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.parameter
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.request.url
+import dev.zacsweers.metro.Named
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
@@ -36,9 +29,8 @@ class Spond(
   @Named("spond") tokenHandler: TokenHandler,
   baseClient: HttpClient,
   private val json: Json,
-  baseLogger: Logger,
 ) {
-  private val log = baseLogger.withTag("Spond")
+  private val log = Logger.withTag("Spond")
   private val client = buildHttpClient(baseClient, credentials, json, log, tokenHandler)
 
   /** Get details of all group memberships and all members of those groups. */

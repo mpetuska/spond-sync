@@ -5,20 +5,22 @@ product:
 apply: [ //templates/metro.module-template.yaml ]
 
 dependencies:
-  - //lib//utils
-  - //lib//core
-  - //lib//spond
-  - //lib//volleyzone-source
-  - //lib//spond-sink
+  #  - //lib/utils
+  - //lib/runtime
+  - //lib/spond
+  - //lib/utils
+  #  - //lib/core
+  #  - //lib/volleyzone-source
+  #  - //lib/spond-sink
   - $libs.clikt
   - $libs.kotlinx.io.core
-  - $libs.kotlinx.coroutines.core
-  - $libs.kotlinx.datetime
+  - $libs.kotlinx.serialization.json.io
+  #  - $libs.kotlinx.coroutines.core
+  #  - $libs.kotlinx.datetime
   - $libs.kermit
   - $libs.ktor.client.core
   - $libs.ktor.client.logging
-  - $libs.kotlinx.serialization.json.io
-  - //lib/config
+#  - //lib/config
 
 dependencies@jvm:
   - $libs.ktor.client.cio

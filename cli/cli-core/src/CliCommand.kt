@@ -2,7 +2,9 @@ package dev.petuska.spond.sync.cli
 
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
+import co.touchlab.kermit.platformLogWriter
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.output.MordantHelpFormatter
@@ -14,9 +16,12 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
-import com.github.ajalt.mordant.terminal.warning
+import com.github.ajalt.mordant.terminal.prompt
 import dev.petuska.spond.sync.cli.config.AppGraph
-import dev.petuska.spond.sync.config.ConfigLoader
+import dev.petuska.spond.sync.cli.config.ColourLogFormatter
+import dev.petuska.spond.sync.cli.config.GHAFormatter
+import dev.petuska.spond.sync.runtime.config.Config
+import dev.petuska.spond.sync.runtime.config.ConfigLoader
 import dev.zacsweers.metro.createGraphFactory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -105,13 +110,6 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
       )
       .flag("--nodry")
 
-  private val report by
-    option(
-        names = arrayOf("--report"),
-        help = "Generate a report to specified path.",
-      )
-      .convert { Path(it) }
-
   private val configs by
     argument(help = "Sync config json files. The files are merged in order specified.")
       .convert { Path(it) }
@@ -126,16 +124,9 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
     allowComments = true
   }
 
+  private val lenientJson = Json(json) { isLenient = true }
+
   override suspend fun run() {
-    val configs = configs.filter {
-      if (fileSystem.exists(it)) {
-        true
-      } else {
-        terminal.warning("Specified config file $it does not exist!")
-        false
-      }
-    }
-    check(configs.isNotEmpty()) { "None of the supplied config files exist! ${this.configs}" }
     val logSeverity =
       when {
         actionsStepDebug -> Severity.Verbose
@@ -145,27 +136,57 @@ class CliCommand(private val fileSystem: FileSystem = SystemFileSystem) :
         dry -> minOf(logLevel, Severity.Info)
         else -> logLevel
       }
-    val syncConfig = ConfigLoader(Json(json) { isLenient = true }).load(configs)
+    Logger.setLogWriters(
+      platformLogWriter(
+        if (ci && githubRunAttempt != null) GHAFormatter(ColourLogFormatter())
+        else ColourLogFormatter()
+      )
+    )
+    Logger.setMinSeverity(logSeverity)
+    Logger.setTag("SpondSync")
+
+    val configs = configs.filter {
+      if (fileSystem.exists(it)) {
+        true
+      } else {
+        Logger.w("Specified config file $it does not exist!")
+        false
+      }
+    }
+    check(configs.isNotEmpty()) { "None of the supplied config files exist! ${this.configs}" }
+
+    val syncConfig = ConfigLoader(lenientJson).load(configs)
     val app =
       createGraphFactory<AppGraph.Factory>()
         .create(
-          volleyZoneConfig = syncConfig.volleyzone,
+          config = syncConfig,
           sourceOffset = sourceOffset,
           sinkOffset = sinkOffset,
-          severity = logSeverity,
-          gitHubCi = ci && githubRunAttempt != null,
           json = json,
           dry = dry,
         )
-    Logger.setMinSeverity(logSeverity)
-    app.logger.d { "Config: $syncConfig" }
-    val club = app.club(syncConfig.spond)
-    val worker = club.syncWorker
-    if (clean) worker.cleanGroup(yes)
-    if (sync) worker.syncGroup()
-    report?.let { worker.generateReport(it) }
+    Logger.d { "Config: $syncConfig" }
+    val runner = app.syncRunner
+
+    if (clean) {
+      if (yes || confirm(syncConfig)) {
+        runner.cleanGroup()
+      } else {
+        Logger.a("[${syncConfig.spond.group}] User declined - aborting...")
+        throw ProgramResult(1)
+      }
+    }
+    if (sync) runner.syncGroup()
     val writeConfig = writeConfig
     if (writeConfig != null)
-      fileSystem.sink(writeConfig).buffered().use { json.encodeToSink(syncConfig, it) }
+      fileSystem.sink(writeConfig).buffered().use { lenientJson.encodeToSink(syncConfig, it) }
   }
+
+  private fun confirm(syncConfig: Config): Boolean =
+    terminal.prompt(
+      "[${syncConfig.spond.group}] Are you sure you want to clear spond group?",
+      choices = listOf("y", "n"),
+      default = "n",
+      showDefault = true,
+    ) == "y"
 }

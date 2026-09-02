@@ -1,0 +1,25 @@
+product:
+  type: kmp/lib
+  platforms: [jvm, linuxX64]
+
+apply: [ //templates/metro.module-template.yaml ]
+
+dependencies:
+  - //lib/utils
+  - //lib/spond
+  - $libs.kotlinx.io.core
+  - $libs.kotlinx.serialization.json.io
+  - $libs.kotlinx.datetime
+  - $libs.ktor.client.core
+  - $libs.ksoup
+  - $libs.kermit
+
+test-dependencies:
+  - //lib/test-resources
+  - $libs.kotlinx.coroutines.test
+  - $libs.ktor.client.mock
+
+settings:
+  kotlin:
+    serialization: json
+    optIns: [ kotlinx.serialization.ExperimentalSerializationApi, kotlin.concurrent.atomics.ExperimentalAtomicApi ]

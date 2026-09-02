@@ -1,0 +1,32 @@
+{
+  sources: {
+    "BVA Men's Div 1": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218882"
+    },
+    "BVA Men's Div 2": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218955"
+    },
+    "BVA Women's Div 1": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218950"
+    },
+    "BVA Women's Div 2": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218951"
+    },
+    "BVA Mixed Div 1": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218944"
+    },
+    "BVA Mixed Div 2": {
+      type: "BVA",
+      url: "https://competitions.volleyzone.co.uk/league/218946"
+    },
+  },
+  addresses: {
+    "Address 1": "Address 1, Some Road, City, Region, POST CODE, Country",
+    "Address 2": "Address 2, Some Road, City, Region, POST CODE, Country",
+  }
+}
