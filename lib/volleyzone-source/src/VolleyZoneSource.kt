@@ -114,12 +114,13 @@ class VolleyZoneSource(
         ?.text()
         ?.takeIf { it.startsWith(venue, ignoreCase = true) }
     val comment = row.attr("data-comment").trim()
-    val friendly = comment.contains("friendly", ignoreCase = true)
-    val id = if(friendly) {
-      "Friendly"
-    } else {
-      comment.let(MatchIdRegex::find)?.value
-    }
+    val friendly = comment.contains("friend", ignoreCase = true)
+    val id =
+      if (friendly) {
+        "Friendly"
+      } else {
+        comment.let(MatchIdRegex::find)?.value
+      }
     if (id == null) {
       log.e(
         "Cannot find event ID: date=$date, time=$time," +
@@ -162,7 +163,7 @@ class VolleyZoneSource(
     val teamB = Team(id = TeamId(awayTeam), name = awayTeam)
     return Match(
         source = source.toString(),
-        triangle = TriangleId(id.dropLast(1)),
+        triangle = TriangleId(if (friendly) id else id.dropLast(1)),
         id = id,
         order = order.toUInt(),
         title = "$homeTeam vs $awayTeam",

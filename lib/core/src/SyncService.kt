@@ -227,7 +227,7 @@ class SyncService(
           .groupBy { it.triangle }
           .filterValues { matches -> matches.any { match -> teams.any { team -> team in match } } }
           .filterValues { matches ->
-            matches.filter { it.id.endsWith('a') }.none { match -> teams.any { it in match } }
+            matches.filter { it.order == 1u }.none { match -> teams.any { it in match } }
           }
           .entries
           .sortedBy { (_, v) -> v.minOf { it.start } }
