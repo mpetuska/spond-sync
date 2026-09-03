@@ -185,6 +185,6 @@ class NvlDataSource(
 
   private companion object {
     val MatchIdRegex = Regex("[A-Z]+\\d+-[A-Z]+\\d+")
-    val MatchDuration = 2.hours
+    val MatchDuration = 3.hours
   }
 }
