@@ -19,6 +19,10 @@
     "Arborfield Green Leisure Centre": "Arborfield Green Leisure Centre, Sheerlands Rd, Reading, England, RG2 9GB, United Kingdom",
   },
   sources: {
+    "NVL Men's Division 2 Central": {
+      type: "NVL",
+      url: "https://competitions.volleyzone.co.uk/league/216371"
+    },
     "NVL Men's National Cup": {
       type: "NVL",
       url: "https://competitions.volleyzone.co.uk/league/217919"
@@ -26,6 +30,10 @@
     "NVL Men's National Shield": {
       type: "NVL",
       url: "https://competitions.volleyzone.co.uk/league/217917"
+    },
+    "NVL Women's Division 1 South": {
+      type: "NVL",
+      url: "https://competitions.volleyzone.co.uk/league/216379"
     },
     "NVL Women's National Cup": {
       type: "NVL",

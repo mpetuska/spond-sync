@@ -82,7 +82,7 @@ class NvlDataSource(
       if (friendly) {
         "Friendly"
       } else {
-        comment?.let(MatchIdRegex::find)?.value
+        comment?.trim()
       }
     if (id == null) {
       log.e(

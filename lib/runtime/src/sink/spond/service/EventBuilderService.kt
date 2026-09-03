@@ -1,8 +1,11 @@
 package dev.petuska.spond.sync.runtime.sink.spond.service
 
 import co.touchlab.kermit.Logger
+import dev.petuska.spond.sync.runtime.config.Config
 import dev.petuska.spond.sync.runtime.config.sink.SpondSinkConfig
+import dev.petuska.spond.sync.runtime.config.source.SourceConfig
 import dev.petuska.spond.sync.runtime.model.Match
+import dev.petuska.spond.sync.runtime.model.SourceId
 import dev.petuska.spond.sync.runtime.model.TeamId
 import dev.petuska.spond.sync.runtime.model.Time
 import dev.petuska.spond.sync.runtime.model.Triangle
@@ -37,6 +40,7 @@ import kotlinx.serialization.json.jsonObject
 class EventBuilderService(
   private val spondService: SpondService,
   private val timeSource: TimeSource,
+  rootConfig: Config,
   @Assisted private val config: SpondSinkConfig.SubGroupConfig,
 ) {
   @AssistedFactory
@@ -45,6 +49,7 @@ class EventBuilderService(
   }
 
   private val log = Logger.withTag("EventBuilderService")
+  private val sources = rootConfig.sources
 
   suspend fun createTriangle(
     triangle: Triangle,
@@ -295,8 +300,22 @@ class EventBuilderService(
     appendLine()
     appendLine("${PREFIX_EVENT_ID}${id}")
     appendLine("${PREFIX_LAST_UPDATED}${lastUpdated.atSink}")
+    val league = findLeague(source)
+    if (league != null) appendLine("$PREFIX_LEAGUE${league}")
     appendLine("$PREFIX_SOURCE${source}")
     appendLine(config.events.descriptionByline)
+  }
+
+  private fun findLeague(source: String): SourceId? {
+    return sources
+      .filterValues {
+        when (it) {
+          is SourceConfig.BVA -> it.url.toString().contains(source)
+          is SourceConfig.NVL -> it.url.toString().contains(source)
+        }
+      }
+      .keys
+      .singleOrNull()
   }
 
   private suspend fun location(id: Identifiable, venue: Venue): Location? {
@@ -354,6 +373,7 @@ class EventBuilderService(
     const val SEPARATOR_LINE = "--- DO NOT EDIT BELOW THIS LINE ---"
     const val PREFIX_EVENT_ID = "ID: "
     const val PREFIX_LAST_UPDATED = "Last updated: "
+    const val PREFIX_LEAGUE = "League: "
     const val PREFIX_SOURCE = "Source: "
   }
 }

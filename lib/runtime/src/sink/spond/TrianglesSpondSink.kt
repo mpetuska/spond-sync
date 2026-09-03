@@ -183,7 +183,7 @@ class TrianglesSpondSink(
     client
       .listEvents(
         groupId = spondService.getGroup().id,
-        subGroupId = spondService.getSubGroup(config.team).id,
+        subGroupId = spondService.getSubGroup(subGroup).id,
         minStart = from.atSink,
         maxEnd = until.atSink,
         includeScheduled = true,
@@ -229,7 +229,7 @@ class TrianglesSpondSink(
         eventBuilderService.updateTriangle(
           triangle = triangle,
           base = existing,
-          owners = spondService.findOwners(config.team),
+          owners = spondService.findOwners(subGroup),
         )
       } catch (e: Exception) {
         log.e("[${triangle.id}] Failed to prepare merged spond event data.", e)
@@ -285,8 +285,8 @@ class TrianglesSpondSink(
     val spondEvent =
       try {
         val group = spondService.getGroup()
-        val subGroup = spondService.getSubGroup(config.team)
-        val owners = spondService.findOwners(config.team)
+        val subGroup = spondService.getSubGroup(subGroup)
+        val owners = spondService.findOwners(this.subGroup)
         val subGroupMembers = group.members.filter { subGroup.id in it.subGroups }.map { it.id }
         eventBuilderService.createTriangle(
           triangle = triangle,
@@ -333,7 +333,7 @@ class TrianglesSpondSink(
     client
       .listEvents(
         groupId = spondService.getGroup().id,
-        subGroupId = spondService.getSubGroup(config.team).id,
+        subGroupId = spondService.getSubGroup(subGroup).id,
         minStart = from.atSink,
         maxEnd = until.atSink,
         includeScheduled = true,

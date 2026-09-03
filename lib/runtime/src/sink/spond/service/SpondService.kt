@@ -8,6 +8,7 @@ import dev.petuska.spond.sync.spond.data.group.Group
 import dev.petuska.spond.sync.spond.data.group.Member
 import dev.petuska.spond.sync.spond.data.group.ProfileId
 import dev.petuska.spond.sync.spond.data.group.SubGroup
+import dev.petuska.spond.sync.spond.data.group.SubGroupName
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -47,8 +48,7 @@ class SpondService(
     }
   }
 
-  suspend fun getSubGroup(team: TeamId): SubGroup {
-    val name = config.subGroups.entries.find { (_, it) -> it.team == team }?.key
+  suspend fun getSubGroup(name: SubGroupName): SubGroup {
     return getGroup().subGroups.single { it.name == name }
   }
 
@@ -66,14 +66,14 @@ class SpondService(
     }
   }
 
-  suspend fun findOwners(teamId: TeamId): List<ProfileId>? {
-    val config = config.subGroups.values.find { it.team == teamId }
+  suspend fun findOwners(subGroup: SubGroupName): List<ProfileId>? {
+    val config = config.subGroups[subGroup]
     val owners =
       config?.hosts?.mapNotNull {
         val member = if ('@' in it) findMemberByEmail(it) else findMemberByName(it)
         member?.profile?.id ?: member?.id
       }
-    log.v { "Found owners for $teamId: config=$config, owners=$owners" }
+    log.v { "Found owners for $subGroup: config=$config, owners=$owners" }
     return owners
   }
 

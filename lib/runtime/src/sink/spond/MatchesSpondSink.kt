@@ -90,7 +90,7 @@ class MatchesSpondSink(
     client
       .listEvents(
         groupId = spondService.getGroup().id,
-        subGroupId = spondService.getSubGroup(config.team).id,
+        subGroupId = spondService.getSubGroup(subGroup).id,
         minStart = from.atSink,
         maxEnd = until.atSink,
         includeScheduled = true,
@@ -125,7 +125,7 @@ class MatchesSpondSink(
   }
 
   private suspend fun updateMatch(match: Match, existing: Event) {
-    val subGroup = spondService.getSubGroup(config.team)
+    val subGroup = spondService.getSubGroup(subGroup)
     log.v("[${match.id}] Preparing merged spond event data for source event ${existing.identity}.")
 
     val updatedSpondEvent =
@@ -134,7 +134,7 @@ class MatchesSpondSink(
           match = match,
           base = existing,
           subGroup = subGroup,
-          owners = spondService.findOwners(config.team),
+          owners = spondService.findOwners(this.subGroup),
         )
       } catch (e: Exception) {
         log.e("[${match.id}] Failed to prepare merged spond event data.", e)
@@ -190,8 +190,8 @@ class MatchesSpondSink(
     val spondEvent =
       try {
         val group = spondService.getGroup()
-        val subGroup = spondService.getSubGroup(config.team)
-        val owners = spondService.findOwners(config.team)
+        val subGroup = spondService.getSubGroup(subGroup)
+        val owners = spondService.findOwners(this.subGroup)
         val subGroupMembers = group.members.filter { subGroup.id in it.subGroups }.map { it.id }
         eventBuilderService.createMatch(
           match = match,
@@ -224,12 +224,12 @@ class MatchesSpondSink(
       }
     val updatedEvent =
       try {
-        val subGroup = spondService.getSubGroup(config.team)
+        val subGroup = spondService.getSubGroup(subGroup)
         eventBuilderService.updateMatch(
           match = match,
           base = event,
           subGroup = subGroup,
-          owners = spondService.findOwners(config.team),
+          owners = spondService.findOwners(this.subGroup),
         )
       } catch (e: Exception) {
         log.e("[${match.id}] Failed to update new spond event ${event.identity}", e)
@@ -272,7 +272,7 @@ class MatchesSpondSink(
     client
       .listEvents(
         groupId = spondService.getGroup().id,
-        subGroupId = spondService.getSubGroup(config.team).id,
+        subGroupId = spondService.getSubGroup(subGroup).id,
         minStart = from.atSink,
         maxEnd = until.atSink,
         includeScheduled = true,
