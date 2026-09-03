@@ -58,8 +58,10 @@ class EventBuilderService(
     subGroupMembers: List<MemberId>,
     owners: List<ProfileId>?,
   ): NewEvent {
+    val type = if (triangle.host.id == config.team) "Home" else "Away"
+    val title = "${triangle.id.value} ($type)"
     return NewEvent(
-      name = triangle.id.value,
+      name = title,
       description = triangleDescription(triangle),
       location = location(triangle, triangle.venue),
       recipients =
@@ -84,8 +86,10 @@ class EventBuilderService(
     val updatedOwners = owners?.map { newId ->
       base.owners?.find { it.id == newId } ?: Event.Owner(id = newId, response = null)
     }
+    val type = if (triangle.host.id == config.team) "Home" else "Away"
+    val title = "${triangle.id.value} ($type)"
     return base.copy(
-      name = triangle.id.value,
+      name = title,
       description = triangleDescription(triangle),
       location = location(triangle, triangle.venue),
       start = triangle.start.atSink,
@@ -174,6 +178,7 @@ class EventBuilderService(
     return areResultsModified(old, new) ||
       diffLocation ||
       diffInviteTime ||
+      diff("name", old, new) { name } ||
       diff("start", old, new) { start } ||
       diff("end", old, new) { end } ||
       diff("maxAccepted", old, new) { maxAccepted } ||
