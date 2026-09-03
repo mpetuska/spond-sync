@@ -155,10 +155,10 @@ class TrianglesSpondSink(
     listExistingTriangles().buffer().collect { (triangleId, it) ->
       val update = updates.remove(triangleId)
       if (update == null) {
-        log.w(
-          "[$subGroup] Sink event $triangleId ${it.identity} was not found on source. Cancelling..."
-        )
-        cancelTriangle(it)
+        log.w("[$subGroup] Sink event $triangleId ${it.identity} was not found on source.")
+        // Do not cancel "missing" triangles as they could be missing due to matches being
+        // temporarily invalid when initiating and approving time/venue changes.
+        // cancelTriangle(it)
         return@collect
       }
       log.v("[$subGroup] Updating existing sink triangle ${it.identity}.")
