@@ -16,8 +16,8 @@ suspend fun main(vararg args: String) {
   val sinkOffest = today.daysUntil(nextOctoberFirst)
   val args =
     args.asList() +
-//      "--source-offset=$sourceOffest" +
-//      "--sink-offset=$sinkOffest" +
+      //      "--source-offset=$sourceOffest" +
+      //      "--sink-offset=$sinkOffest" +
       "configs/BVA_2026-2027.config.json5" +
       "cli/cli-test/test.creds.json5" +
       "cli/cli-test/test.config.json5"

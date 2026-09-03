@@ -8,5 +8,5 @@ import kotlinx.serialization.Serializable
 sealed interface SourceConfig {
   @Serializable @SerialName("BVA") data class BVA(val url: Url) : SourceConfig
 
-  @Serializable  @SerialName("NVL")  data class NVL(val url: Url) : SourceConfig
+  @Serializable @SerialName("NVL") data class NVL(val url: Url) : SourceConfig
 }
