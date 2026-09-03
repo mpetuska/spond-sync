@@ -10,17 +10,17 @@ import kotlin.time.Duration
 import kotlinx.serialization.json.Json
 
 @DependencyGraph(AppScope::class)
-expect interface AppGraph {
-  val syncRunner: SpondSyncRunner
+actual interface AppGraph {
+  actual val syncRunner: SpondSyncRunner
 
   @DependencyGraph.Factory
-  interface Factory {
-    fun create(
+  actual interface Factory {
+    actual fun create(
       @Provides config: Config,
-      @Provides @Named("source") sourceOffset: Duration = Duration.ZERO,
-      @Provides @Named("sink") sinkOffset: Duration = Duration.ZERO,
-      @Provides json: Json = Json,
-      @Provides @Named("dry") dry: Boolean = false,
+      @Provides @Named("source") sourceOffset: Duration,
+      @Provides @Named("sink") sinkOffset: Duration,
+      @Provides json: Json,
+      @Provides @Named("dry") dry: Boolean,
     ): AppGraph
   }
 }

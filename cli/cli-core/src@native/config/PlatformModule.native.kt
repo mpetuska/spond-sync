@@ -7,8 +7,8 @@ import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.curl.Curl
 
-@ContributesTo(scope = AppScope::class)
-actual interface PlatformModule {
+@ContributesTo(AppScope::class)
+interface PlatformModule {
   @Provides
   @SingleIn(AppScope::class)
   fun httpClient(): HttpClient =

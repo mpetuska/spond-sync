@@ -8,8 +8,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
 
-@ContributesTo(scope = AppScope::class)
-actual interface PlatformModule {
+@ContributesTo(AppScope::class)
+interface PlatformModule {
   @Provides
   @SingleIn(AppScope::class)
   fun httpClient(): HttpClient {
