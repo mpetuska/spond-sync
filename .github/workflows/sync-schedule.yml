@@ -22,3 +22,4 @@ jobs:
     secrets:
       config: ${{ secrets.SYNC_CONFIG }}
       credentialsConfig: ${{ secrets.CRED_CONFIG }}
+      leagueConfig: ${{ secrets.LEAGUE_CONFIG }}

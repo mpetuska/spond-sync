@@ -5,6 +5,7 @@ import dev.petuska.spond.sync.spond.data.group.MemberId
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.utils.Identifiable
 import dev.petuska.spond.sync.utils.serialization.PreservingJsonSerializer
+import io.ktor.http.Url
 import kotlin.time.Instant
 import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
@@ -21,6 +22,7 @@ data class Event(
   @SerialName("startTimestamp") @Serializable val start: Instant,
   @SerialName("endTimestamp") @Serializable val end: Instant,
   val description: String? = null,
+  val picture: Url? = null,
   val matchInfo: MatchInfo? = null,
   val location: Location? = null,
   @Serializable val inviteTime: Instant? = null,

@@ -60,6 +60,15 @@ class EventBuilderService(
   ): NewEvent {
     val type = if (triangle.host.id == config.team) "Home" else "Away"
     val title = "${triangle.id.value} ($type)"
+    val hero =
+      triangle.matches
+        .map { it.source }
+        .toSet()
+        .singleOrNull()
+        ?.let(::findLeague)
+        ?.let(sources::get)
+        ?.hero
+        ?.let { spondService.ensureImageUploaded(it, null) }
     return NewEvent(
       name = title,
       description = triangleDescription(triangle),
@@ -75,6 +84,7 @@ class EventBuilderService(
       rsvpDate = rsvpDate(triangle.start.atSink),
       maxAccepted = config.events.maxAccepted,
       owners = owners?.map(NewEvent::Owner),
+      picture = hero,
     )
   }
 
@@ -88,6 +98,15 @@ class EventBuilderService(
     }
     val type = if (triangle.host.id == config.team) "Home" else "Away"
     val title = "${triangle.id.value} ($type)"
+    val hero =
+      triangle.matches
+        .map { it.source }
+        .toSet()
+        .singleOrNull()
+        ?.let(::findLeague)
+        ?.let(sources::get)
+        ?.hero
+        ?.let { spondService.ensureImageUploaded(it, base.picture) }
     return base.copy(
       name = title,
       description = triangleDescription(triangle),
@@ -98,6 +117,7 @@ class EventBuilderService(
       rsvpDate = rsvpDate(triangle.start.atSink) ?: base.rsvpDate,
       maxAccepted = maxOf(config.events.maxAccepted, base.acceptedCount),
       owners = updatedOwners,
+      picture = hero,
       json = base.json.toMutableMap().apply { remove("responses") }.let(::JsonObject),
     )
   }
@@ -113,6 +133,10 @@ class EventBuilderService(
       base.owners?.find { it.id == newId } ?: Event.Owner(id = newId, response = null)
     }
     val start = start(match.teamA.id, match)
+    val hero =
+      match.source.let(::findLeague)?.let(sources::get)?.hero?.let {
+        spondService.ensureImageUploaded(it, base.picture)
+      }
     return base.copy(
       name = match.title,
       description = matchDescription(match),
@@ -124,6 +148,7 @@ class EventBuilderService(
       rsvpDate = rsvpDate(start) ?: base.rsvpDate,
       maxAccepted = maxOf(config.events.maxAccepted, base.acceptedCount),
       owners = updatedOwners,
+      picture = hero,
       json = base.json.toMutableMap().apply { remove("responses") }.let(::JsonObject),
     )
   }
@@ -137,6 +162,10 @@ class EventBuilderService(
   ): NewEvent {
     val homeMatch = match.teamA.id == config.team
     val start = start(match.teamA.id, match)
+    val hero =
+      match.source.let(::findLeague)?.let(sources::get)?.hero?.let {
+        spondService.ensureImageUploaded(it, null)
+      }
     return NewEvent(
       name = match.title,
       description = matchDescription(match),
@@ -153,6 +182,7 @@ class EventBuilderService(
       rsvpDate = rsvpDate(start),
       maxAccepted = config.events.maxAccepted,
       owners = owners?.map(NewEvent::Owner),
+      picture = hero,
     )
   }
 
@@ -170,7 +200,7 @@ class EventBuilderService(
   }
 
   /** Compares the two events and returns two if [new] has been updated. */
-  fun isModified(old: Event, new: Event): Boolean {
+  fun isModified(old: Event, new: Event, diffName: Boolean): Boolean {
     val diffLocation =
       diff("location.address", old, new) { location?.address } ||
         diff("location.feature", old, new) { location?.feature }
@@ -178,7 +208,7 @@ class EventBuilderService(
     return areResultsModified(old, new) ||
       diffLocation ||
       diffInviteTime ||
-      diff("name", old, new) { name } ||
+      (diffName && diff("name", old, new) { name }) ||
       diff("start", old, new) { start } ||
       diff("end", old, new) { end } ||
       diff("maxAccepted", old, new) { maxAccepted } ||
@@ -186,6 +216,7 @@ class EventBuilderService(
       diff("lastUpdated", old, new) {
         description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) }
       } ||
+      diff("picture", old, new) { picture } ||
       diff("owners", old, new) { owners?.map { it.id }?.sorted() }
   }
 

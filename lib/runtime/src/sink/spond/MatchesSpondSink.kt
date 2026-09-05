@@ -143,7 +143,7 @@ class MatchesSpondSink(
       }
     log.d("[${match.id}] Merged ${existing.identity} with new data.")
 
-    val isModified = eventBuilderService.isModified(existing, updatedSpondEvent)
+    val isModified = eventBuilderService.isModified(existing, updatedSpondEvent, diffName = false)
     val resultsModified = areResultsModified(existing, updatedSpondEvent)
     if (!isModified && !resultsModified && !rootConfig.forceUpdate) {
       log.d(

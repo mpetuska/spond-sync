@@ -238,7 +238,7 @@ class TrianglesSpondSink(
       }
     log.d("[${triangle.id}] Merged ${existing.identity} with new data.")
 
-    val isModified = eventBuilderService.isModified(existing, updatedSpondEvent)
+    val isModified = eventBuilderService.isModified(existing, updatedSpondEvent, diffName = true)
     val resultsModified = areResultsModified(existing, triangle)
     if (!isModified && !resultsModified && !rootConfig.forceUpdate) {
       log.d(

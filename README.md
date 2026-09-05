@@ -49,7 +49,7 @@ app also accepts multiple config files for merging.
       "username": "obfuscated",
       "password": "obfuscated",
       // Optional
-      "apiUrl": "https://api.spond.com/core/v1",
+      "apiUrl": "https://api.spond.com",
     },
     // Optional
     "events": {

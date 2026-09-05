@@ -11,13 +11,29 @@ import dev.petuska.spond.sync.spond.data.group.GroupId
 import dev.petuska.spond.sync.spond.data.location.AutocompleteLocation
 import dev.petuska.spond.sync.spond.data.location.Location
 import dev.petuska.spond.sync.spond.data.location.LocationId
+import dev.petuska.spond.sync.spond.data.storage.FilesToken
+import dev.petuska.spond.sync.spond.data.storage.PrepareUploadRequest
+import dev.petuska.spond.sync.spond.data.storage.PrepareUploadResponse
+import dev.petuska.spond.sync.spond.data.storage.UploadResponse
 import dev.petuska.spond.sync.utils.http.paginate
 import dev.petuska.spond.sync.utils.tokens.TokenHandler
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.Named
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.request.url
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
@@ -34,14 +50,14 @@ class Spond(
   private val client = buildHttpClient(baseClient, credentials, json, log, tokenHandler)
 
   /** Get details of all group memberships and all members of those groups. */
-  fun listGroups(): Flow<Group> = paginate(UInt.MAX_VALUE) { url("groups") }
+  fun listGroups(): Flow<Group> = paginate(UInt.MAX_VALUE) { url("core/v1/groups") }
 
   /**
    * Get existing group.
    *
    * @param id the [Group.id] of the group to fetch.
    */
-  suspend fun getGroup(id: GroupId): Group = client.get("group/$id").body()
+  suspend fun getGroup(id: GroupId): Group = client.get("core/v1/group/$id").body()
 
   /**
    * Delete a group.
@@ -49,7 +65,7 @@ class Spond(
    * @param id the [Group.id] of the group to be deleted
    */
   suspend fun deleteGroup(id: GroupId) {
-    client.delete("group/$id")
+    client.delete("core/v1/group/$id")
   }
 
   //  /**
@@ -97,7 +113,7 @@ class Spond(
     limit: UInt = 20u,
   ): Flow<Event> =
     paginate(limit) {
-      url("sponds")
+      url("core/v1/sponds")
       parameter("groupId", groupId)
       parameter("subGroupId", subGroupId)
       parameter("scheduled", includeScheduled)
@@ -119,7 +135,7 @@ class Spond(
    * @param newEvent the details of the event to be created.
    */
   suspend fun createEvent(newEvent: NewEvent): Event =
-    client.post("sponds") { setBody(newEvent) }.body()
+    client.post("core/v1/sponds") { setBody(newEvent) }.body()
 
   /**
    * Get existing event.
@@ -134,7 +150,7 @@ class Spond(
     addProfileInfo: Boolean = false,
   ): Event =
     client
-      .get("sponds/$id") {
+      .get("core/v1/sponds/$id") {
         parameter("includeComments", includeComments)
         parameter("addProfileInfo", addProfileInfo)
       }
@@ -153,7 +169,7 @@ class Spond(
     sendUpdate: Boolean = true,
   ): Event =
     client
-      .post("sponds/${updatedEvent.id}") {
+      .post("core/v1/sponds/${updatedEvent.id}") {
         header("X-Spond-ClearResponses", clearResponses)
         header("X-Spond-SendUpdate", sendUpdate)
         setBody(updatedEvent)
@@ -168,7 +184,7 @@ class Spond(
    * @param reason cancellation reason to show the attendees.
    */
   suspend fun cancelEvent(id: EventId, quiet: Boolean = false, reason: String? = null) {
-    client.delete("sponds/$id") {
+    client.delete("core/v1/sponds/$id") {
       parameter("quiet", quiet)
       reason?.let { parameter("reason", it) }
     }
@@ -181,7 +197,7 @@ class Spond(
    * @param score the updates score data.
    */
   suspend fun updateMatchScore(id: EventId, score: MatchScore): Event =
-    client.post("sponds/$id/matchUpdate") { setBody(score) }.body()
+    client.post("core/v1/sponds/$id/matchUpdate") { setBody(score) }.body()
 
   /**
    * Autocompletes location candidates from a given [search] term.
@@ -190,7 +206,7 @@ class Spond(
    */
   fun autocompleteLocation(search: String): Flow<AutocompleteLocation> =
     paginate(UInt.MAX_VALUE) {
-      url("locations/autocomplete")
+      url("core/v1/locations/autocomplete")
       parameter("keyword", search)
       parameter("sessionToken", null)
     }
@@ -200,7 +216,70 @@ class Spond(
    *
    * @param id the id of the location to fetch.
    */
-  suspend fun getLocation(id: LocationId): Location = client.get { url("location/$id") }.body()
+  suspend fun getLocation(id: LocationId): Location =
+    client.get { url("core/v1/location/$id") }.body()
+
+  /**
+   * Get files token for a group.
+   *
+   * @param groupId the id of the group to get the token for.
+   */
+  suspend fun getFilesToken(groupId: GroupId): FilesToken =
+    client.get("core/v1/group/$groupId/filesToken").body()
+
+  /**
+   * Prepares a file upload.
+   *
+   * @param filesToken the token returned by [getFilesToken].
+   * @param request the details of the file to be uploaded.
+   */
+  suspend fun prepareUpload(
+    filesToken: FilesToken,
+    request: PrepareUploadRequest,
+  ): PrepareUploadResponse =
+    client
+      .post("storage/files/prepareUpload") {
+        header("Auth", filesToken.value)
+        setBody(request)
+      }
+      .body()
+
+  /**
+   * Uploads a file.
+   *
+   * @param filesToken the token returned by [getFilesToken].
+   * @param id the id returned by [prepareUpload].
+   * @param fileName the name of the file being uploaded.
+   * @param contentType the content type of the file being uploaded.
+   * @param content the content of the file being uploaded.
+   */
+  suspend fun uploadFile(
+    filesToken: FilesToken,
+    id: String,
+    fileName: String,
+    contentType: ContentType,
+    content: ByteArray,
+  ): UploadResponse =
+    client
+      .post("storage/files/$id") {
+        header("Auth", filesToken.value)
+        setBody(
+          MultiPartFormDataContent(
+            formData {
+              append(
+                "image",
+                content,
+                Headers.build {
+                  append(HttpHeaders.ContentType, contentType.toString())
+                  append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                },
+              )
+            }
+          )
+        )
+      }
+      .body<List<UploadResponse>>()
+      .first()
 
   private inline fun <reified T : WithId> paginate(
     limit: UInt,

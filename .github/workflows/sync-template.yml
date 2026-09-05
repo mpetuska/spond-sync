@@ -25,6 +25,9 @@ on:
       credentialsConfig:
         description: Secondary Config json to store credentials separately from main config. Values in this config will override original config values.
         required: false
+      leagueConfig:
+        description: Tertiary Config json to store league separately from main config. Values in this config will override original config values.
+        required: false
 
 env:
   LOG_LEVEL: ${{ inputs.logLevel }}
@@ -71,13 +74,17 @@ jobs:
           if [ -n "$CRED_CONFIG" ]; then
             echo $CRED_CONFIG > '${{ github.workspace }}/.cred.config'
           fi
+          if [ -n "$LEAGUE_CONFIG" ]; then
+            echo $LEAGUE_CONFIG > '${{ github.workspace }}/.league.config'
+          fi
         env:
           SYNC_CONFIG: ${{ secrets.config }}
           CRED_CONFIG: ${{ secrets.credentialsConfig }}
+          $LEAGUE_CONFIG: ${{ secrets.leagueConfig }}
 
       - name: Sync Data [JVM]
         if: "inputs.useJvm"
-        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config'
+        run: java -jar ./kexe/spond-sync.jar -- '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config' '${{ github.workspace }}/.league.config'
 
       - name: Sync Data [NATIVE]
         if: "!inputs.useJvm"

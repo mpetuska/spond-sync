@@ -14,7 +14,9 @@ import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
+import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
@@ -27,7 +29,14 @@ internal fun buildHttpClient(
   log: Logger,
   tokenHandler: TokenHandler,
 ) = baseClient.config {
-  val url = credentials.apiUrl.removeSuffix("/")
+  val url =
+    URLBuilder(credentials.apiUrl.removeSuffix("/"))
+      .apply {
+        encodedPath = ""
+        parameters.clear()
+        fragment = ""
+      }
+      .build()
   expectSuccess = true
   install(DefaultRequest) {
     contentType(ContentType.Application.Json)
@@ -53,7 +62,7 @@ internal fun buildHttpClient(
         log.d("Refreshing tokens")
         val resp =
           client
-            .preparePost("$url/auth2/login") {
+            .preparePost("$url/core/v1/auth2/login") {
               expectSuccess = true
               contentType(ContentType.Application.Json)
               setBody(mapOf("email" to credentials.username, "password" to credentials.password))
@@ -69,7 +78,10 @@ internal fun buildHttpClient(
           .also {
             log.i("Storing refreshed tokens")
             tokenHandler.onRefreshTokens(
-              SerializableBearerTokens(accessToken = it.accessToken, refreshToken = it.refreshToken)
+              SerializableBearerTokens(
+                accessToken = it.accessToken,
+                refreshToken = it.refreshToken,
+              )
             )
           }
       }
