@@ -21,54 +21,67 @@
   sources: {
     "NVL Men's Division 2 Central": {
       type: "NVL",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/nvl.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/216371"
     },
     "NVL Men's National Cup": {
       type: "NVL",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/cns.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/217919"
     },
     "NVL Men's National Shield": {
       type: "NVL",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/cns.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/217917"
     },
     "NVL Women's Division 1 South": {
       type: "NVL",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/nvl.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/216379"
     },
     "NVL Women's National Cup": {
       type: "NVL",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/cns.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/217920"
     },
     "NVL Women's National Shield": {
       type: "NVL",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/cns.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/217921"
     },
     "BVA Men's Div 1": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218882"
     },
     "BVA Men's Div 2": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218955"
     },
     "BVA Men's Div 3": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218901"
     },
     "BVA Women's Div 1": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218950"
     },
     "BVA Women's Div 2": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218951"
     },
     "BVA Mixed Div 1": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218944"
     },
     "BVA Mixed Div 2": {
       type: "BVA",
+      hero: "https://gitlab.com/petuska/spond-sync/-/raw/master/configs/hero/bva.hero.png",
       url: "https://competitions.volleyzone.co.uk/league/218946"
     },
   },
