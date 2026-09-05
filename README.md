@@ -39,6 +39,16 @@ app also accepts multiple config files for merging.
         "hosts": [
           "spond.user@email.com"
         ],
+        // Optional
+        "events": {
+          // "triangles" or "matches"
+          "mode": "triangles",
+          "opponentColourHex": "#FFFFFF",
+          "invitationDayBeforeStart": 6,
+          "rsvpDeadlineBeforeStart": 2,
+          "maxAccepted": 10,
+          "descriptionByline": "Generated event."
+        },
       },
     },
     // Optional
@@ -51,16 +61,6 @@ app also accepts multiple config files for merging.
       // Optional
       "apiUrl": "https://api.spond.com",
     },
-    // Optional
-    "events": {
-      // "triangles" or "matches"
-      "mode": "triangles",
-      "opponentColourHex": "#FFFFFF",
-      "invitationDayBeforeStart": 6,
-      "rsvpDeadlineBeforeStart": 2,
-      "maxAccepted": 10,
-      "descriptionByline": "Generated event."
-    },
   }
 }
 ```
@@ -69,6 +69,7 @@ app also accepts multiple config files for merging.
 
 Setup `SYNC_CONFIG` secret with the contents of your json config file. Optionally, you can split the credentials into a
 separate `CRED_CONFIG` secret. This makes it easier to update config without having to resubmit credentials each update.
+There is also a `LEAGUE_CONFIG` secret that can be used to override league addresses.
 Once ready, run `Build` action once and wait for it to complete. Then run `Sync Manual` action to sync events and verify
 your configuration. After that you can enable `Sync Schedule` action to have events syncing continuosly.
 
