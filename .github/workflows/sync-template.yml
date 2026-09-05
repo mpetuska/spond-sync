@@ -80,7 +80,7 @@ jobs:
         env:
           SYNC_CONFIG: ${{ secrets.config }}
           CRED_CONFIG: ${{ secrets.credentialsConfig }}
-          $LEAGUE_CONFIG: ${{ secrets.leagueConfig }}
+          LEAGUE_CONFIG: ${{ secrets.leagueConfig }}
 
       - name: Sync Data [JVM]
         if: "inputs.useJvm"
@@ -88,7 +88,7 @@ jobs:
 
       - name: Sync Data [NATIVE]
         if: "!inputs.useJvm"
-        run: ./kexe/spond-sync '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config'
+        run: ./kexe/spond-sync '${{ github.workspace }}/.config' '${{ github.workspace }}/.cred.config' '${{ github.workspace }}/.league.config'
 
       - name: Cleanup config
         if: always()
