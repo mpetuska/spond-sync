@@ -240,12 +240,11 @@ class EventBuilderService(
   }
 
   fun areResultsModified(old: Event, new: Triangle): Boolean {
-    return new.matches.toList().any { match ->
+    return new.matches.any { match ->
       match.result != null &&
         old.description?.contains(
           buildString {
             appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
-            appendLine()
             appendResult(match)
           }
         ) != true
@@ -341,12 +340,11 @@ class EventBuilderService(
   private fun StringBuilder.appendResult(match: Match) {
     val result = match.result
     if (result != null) {
-      appendLine()
-      appendLine("SETS (${result.teamA.sets}-${result.teamB.sets}):")
+      appendLine("  SETS (${result.teamA.sets}-${result.teamB.sets}):")
       for (set in 0..<result.sets.toInt()) {
         val setsA = result.teamA.scores?.getOrElse(set) { "--" }.toString().padStart(2)
         val setsB = result.teamB.scores?.getOrElse(set) { "--" }.toString().padStart(2)
-        appendLine("  ${set + 1}) $setsA:$setsB")
+        appendLine("    ${set + 1}) $setsA:$setsB")
       }
     }
   }
