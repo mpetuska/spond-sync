@@ -236,7 +236,7 @@ class EventBuilderService(
         description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) }
       } ||
       diff("picture", old, new) { picture } ||
-      diff("owners", old, new) { owners?.map { it.id }?.sorted() }
+      (new.owners?.isNotEmpty() == true && diff("owners", old, new) { owners?.map { it.id }?.sorted() })
   }
 
   fun areResultsModified(old: Event, new: Triangle): Boolean {
