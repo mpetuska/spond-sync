@@ -154,13 +154,6 @@ class MatchesSpondSink(
           " config.forceUpdate=${rootConfig.forceUpdate}"
       )
       return
-    } else {
-      log.i(
-        "[${match.id}] Updating spond event with new data ${existing.identity}." +
-          " isModified=$isModified," +
-          " resultsModified=$resultsModified," +
-          " config.forceUpdate=${rootConfig.forceUpdate}"
-      )
     }
 
     try {
@@ -169,6 +162,12 @@ class MatchesSpondSink(
           resultsModified ||
           rootConfig.forceUpdate
       ) {
+        log.i(
+          "[${match.id}] Updating spond event with new data ${existing.identity}." +
+            " isModified=$isModified," +
+            " resultsModified=$resultsModified," +
+            " config.forceUpdate=${rootConfig.forceUpdate}"
+        )
         if (dry) {
           log.i(
             "[DRY] Updating spond event ${existing.identity} for ${match.identity} to $updatedSpondEvent"
