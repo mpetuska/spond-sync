@@ -15,12 +15,17 @@ suspend fun main(vararg args: String) {
   val sourceOffest = today.daysUntil(lastOctoberFirst)
   val sinkOffest = today.daysUntil(nextOctoberFirst)
   val args =
-    args.asList() +
-      //      "--source-offset=$sourceOffest" +
-      //      "--sink-offset=$sinkOffest" +
-      "configs/BVA_2026-2027.config.json5" +
-      "cli/cli-test/test.creds.json5" +
-      "cli/cli-test/test.config.json5"
+    buildList {
+//      add("--source-offset=$sourceOffest")
+//      add("--sink-offset=$sinkOffest")
+      add("configs/BVA_2026-2027.config.json5")
+      add("cli/cli-test/test.creds.json5")
+      add("cli/cli-test/test.config.json5")
+      add("-li")
+//      add("--clean")
+//      add("--nosync")
+      addAll(args.asList())
+    }
   println(args.joinToString(" "))
   CliCommand().main(args)
 }

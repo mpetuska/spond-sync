@@ -157,6 +157,7 @@ class EventBuilderService(
             ?.trim()
             ?.takeIf(String::isNotBlank)
             ?.let(::appendLine)
+
           append(matchDescription(match))
         },
       matchInfo = matchInfo(match, homeMatch, subGroup),
@@ -232,7 +233,7 @@ class EventBuilderService(
       diff("end", old, new) { end } ||
       diff("maxAccepted", old, new) { maxAccepted } ||
       diff("rsvpDate", old, new) { rsvpDate } ||
-      diff("lastUpdated", old, new) {
+      diff("description", old, new) {
         description?.lines()?.filter { !it.startsWith(PREFIX_LAST_UPDATED) }
       } ||
       diff("picture", old, new) { picture } ||
@@ -321,6 +322,7 @@ class EventBuilderService(
 
     val lastUpdated = matches.maxOf { it.lastUpdated }
     val source = matches.maxOf { it.source }
+    appendLine()
     appendMetadata(
       id = triangle.id.value,
       lastUpdated = lastUpdated,
@@ -331,9 +333,9 @@ class EventBuilderService(
   private fun matchDescription(match: Match) = buildString {
     appendLine(SEPARATOR_LINE)
     appendLine("${match.id}: ${match.teamA.name} vs ${match.teamB.name}")
-    appendLine()
     appendResult(match)
 
+    appendLine()
     appendMetadata(id = match.id, lastUpdated = match.lastUpdated, source = match.source)
   }
 
@@ -350,7 +352,6 @@ class EventBuilderService(
   }
 
   private fun StringBuilder.appendMetadata(id: String, lastUpdated: Time, source: String) {
-    appendLine()
     appendLine("${PREFIX_EVENT_ID}${id}")
     appendLine("${PREFIX_LAST_UPDATED}${lastUpdated.atSink}")
     val league = findLeague(source)
