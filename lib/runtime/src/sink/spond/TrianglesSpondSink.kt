@@ -249,13 +249,6 @@ class TrianglesSpondSink(
           " config.forceUpdate=${rootConfig.forceUpdate}"
       )
       return
-    } else {
-      log.i(
-        "[${triangle.id}] Updating spond event with new data ${existing.identity}." +
-          " isModified=$isModified," +
-          " resultsModified=$resultsModified," +
-          " config.forceUpdate=${rootConfig.forceUpdate}"
-      )
     }
 
     try {
@@ -264,6 +257,12 @@ class TrianglesSpondSink(
           resultsModified ||
           rootConfig.forceUpdate
       ) {
+        log.i(
+          "[${triangle.id}] Updating spond event with new data ${existing.identity}." +
+            " isModified=$isModified," +
+            " resultsModified=$resultsModified," +
+            " config.forceUpdate=${rootConfig.forceUpdate}"
+        )
         if (dry) {
           log.i(
             "[DRY] Updating spond event ${existing.identity} for ${triangle.identity} to $updatedSpondEvent"
